@@ -82,7 +82,3 @@ See the main repository for contribution guidelines. When contributing:
 ## License
 
 This project includes a `LICENSE` file in the repository root — please consult it for licensing details.
-
----
-
-If you'd like, I can add example generator snippets (e.g., how to run the application library generator) or a focused developer guide linking to specific exported classes and functions. Which would you prefer next?
