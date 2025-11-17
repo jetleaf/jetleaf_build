@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the MULTILINE property from the ToStringOptions class, for the Dart programming language.">
+  <title>MULTILINE property - ToStringOptions class - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li><a href="../../jetleaf_build/ToStringOptions-class.html">ToStringOptions</a></li>
+    <li class="self-crumb">MULTILINE property</li>
+  </ol>
+  <div class="self-name">MULTILINE</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="jetleaf_build&#47;ToStringOptions-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-property">MULTILINE</span> property 
+</h1></div>
+
+    
+      <section class="multi-line-signature">
+        
+        <a href="../../jetleaf_build/ToStringOptions-class.html">ToStringOptions</a>
+        <span class="name ">MULTILINE</span>
+        <div class="features"><span class="feature">final</span></div>
+
+      </section>
+      
+<section class="desc markdown">
+  <p>Multi-line format: parameter names included, each on a new line.</p>
+<p>Configuration options for customizing <code>toString</code> output in JetLeaf objects.</p>
+<p>Used together with <a href="../../jetleaf_build/EqualsAndHashCode-mixin.html">EqualsAndHashCode</a> and the <code>equalizer</code> utility to control
+how objects are represented as strings. This allows fine-grained control over:</p>
+<ul>
+<li>Parameter naming (automatic, type-based, or custom)</li>
+<li>Multi-line vs compact formatting</li>
+<li>Inclusion/exclusion of class names</li>
+<li>Custom separators</li>
+</ul>
+<h3 id="predefined-formats">Predefined Formats</h3>
+<ul>
+<li><a href="../../jetleaf_build/ToStringOptions/STANDARD.html">STANDARD</a> → <code>User(id: 1, name: Alice)</code></li>
+<li><a href="../../jetleaf_build/ToStringOptions/COMPACT.html">COMPACT</a> → <code>User(1, Alice)</code></li>
+<li><a href="../../jetleaf_build/ToStringOptions/MULTILINE.html">MULTILINE</a> →
+<pre class="language-dart"><code>User(
+  id: 1,
+  name: Alice
+)
+</code></pre>
+</li>
+<li><a href="../../jetleaf_build/ToStringOptions/COMPACT_MULTILINE.html">COMPACT_MULTILINE</a> →
+<pre class="language-dart"><code>User(
+  1,
+  Alice
+)
+</code></pre>
+</li>
+<li><a href="../../jetleaf_build/ToStringOptions/SMART_NAMES.html">SMART_NAMES</a> → infers names based on values (e.g., <code>"email"</code>, <code>"age"</code>)</li>
+<li><a href="../../jetleaf_build/ToStringOptions/TYPE_BASED_NAMES.html">TYPE_BASED_NAMES</a> → uses runtime types (e.g., <code>"string"</code>, <code>"int"</code>)</li>
+</ul>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code class="language-dart">class User implements EqualsAndHashCode {
+  final String id;
+  final String name;
+
+  User(this.id, this.name);
+
+  @override
+  List&lt;Object?&gt; equalizedProperties() =&gt; [id, name];
+}
+
+void main() {
+  final user = User('1', 'Alice');
+  print(equalizer.toString(user, ToStringOptions.STANDARD));
+  // =&gt; User(id: 1, name: Alice)
+
+  print(equalizer.toString(user, ToStringOptions.COMPACT));
+  // =&gt; User(1, Alice)
+}
+</code></pre>
+</section>
+
+      
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">static final MULTILINE = ToStringOptions(useNewlines: true);</code></pre>
+</section>
+
+
+    
+</div> <!-- /.main-content -->
+<div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+  <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/ToStringOptions-class.html">ToStringOptions</a></li>
+    <li class="self-crumb">MULTILINE property</li>
+</ol>
+
+  <h5>ToStringOptions class</h5>
+  <div id="dartdoc-sidebar-left-content"></div>
+</div><!--/.sidebar-offcanvas-->
+<div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.0.0
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

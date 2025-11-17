@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the InternalMockLibraryGenerator.new constructor from Class InternalMockLibraryGenerator from the jetleaf_build library, for the Dart programming language.">
+  <title>InternalMockLibraryGenerator.new constructor - InternalMockLibraryGenerator - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li><a href="../../jetleaf_build/InternalMockLibraryGenerator-class.html">InternalMockLibraryGenerator</a></li>
+    <li class="self-crumb">InternalMockLibraryGenerator.new constructor</li>
+  </ol>
+  <div class="self-name">InternalMockLibraryGenerator.new</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar="jetleaf_build&#47;InternalMockLibraryGenerator-class-sidebar.html"
+      data-below-sidebar="">
+      <div>
+<h1><span class="kind-constructor">InternalMockLibraryGenerator</span> constructor 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+      <span class="name ">InternalMockLibraryGenerator</span>(<wbr>{<ol class="parameter-list"> <li><span class="parameter" id="-param-mirrorSystem"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a></span> <span class="parameter-name">mirrorSystem</span>, </span></li>
+<li><span class="parameter" id="-param-forceLoadedMirrors"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/LibraryMirror-class.html">LibraryMirror</a></span>&gt;</span></span> <span class="parameter-name">forceLoadedMirrors</span>, </span></li>
+<li><span class="parameter" id="-param-onInfo"><span>required</span> <span class="type-annotation">void</span> <span class="parameter-name">onInfo</span>(<ol class="parameter-list single-line"> <li><span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span></li>
+</ol>), </span></li>
+<li><span class="parameter" id="-param-onWarning"><span>required</span> <span class="type-annotation">void</span> <span class="parameter-name">onWarning</span>(<ol class="parameter-list single-line"> <li><span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span></li>
+</ol>), </span></li>
+<li><span class="parameter" id="-param-onError"><span>required</span> <span class="type-annotation">void</span> <span class="parameter-name">onError</span>(<ol class="parameter-list single-line"> <li><span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span></li>
+</ol>), </span></li>
+<li><span class="parameter" id="-param-configuration"><span>required</span> <span class="type-annotation"><a href="../../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">configuration</span>, </span></li>
+<li><span class="parameter" id="-param-packages"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../jetleaf_build/Package-class.html">Package</a></span>&gt;</span></span> <span class="parameter-name">packages</span>, </span></li>
+</ol>})
+    </section>
+    
+<section class="desc markdown">
+  <p>A mock implementation of <a href="../../jetleaf_build/LibraryGenerator-class.html">LibraryGenerator</a> that generates reflection metadata
+using Dart's mirrors API without filesystem operations.</p>
+<p>This generator is designed for testing and development scenarios where:</p>
+<ul>
+<li>Full reflection is needed but without filesystem access</li>
+<li>Only specific libraries need to be processed</li>
+<li>Simplified package resolution is acceptable</li>
+</ul>
+<h3 id="key-differences-from-librarygenerator">Key Differences from <a href="../../jetleaf_build/LibraryGenerator-class.html">LibraryGenerator</a></h3>
+<ul>
+<li>Operates only on in-memory mirror data</li>
+<li>Doesn't perform filesystem scanning</li>
+<li>Uses simplified package resolution</li>
+<li>Processes only current isolate and force-loaded mirrors</li>
+</ul>
+<h3 id="example-usage">Example Usage</h3>
+<pre class="language-dart"><code class="language-dart">final generator = MockLibraryGenerator(
+  mirrorSystem: currentMirrorSystem(),
+  forceLoadedMirrors: [reflectClass(MyClass)!.owner as LibraryMirror],
+  onInfo: (msg) =&gt; logger.info(msg),
+  onError: (err) =&gt; logger.error(err),
+  configuration: RuntimeScanLoader(
+    scanClasses: [MyClass, MyOtherClass],
+  ),
+  packages: [
+    Package(name: 'my_pkg', version: '1.0.0'),
+  ],
+);
+
+final libraries = await generator.generate();
+</code></pre>
+<p>Creates a mock library generator with direct mirror system access.</p>
+<p>Parameters:</p>
+<ul>
+<li><code>mirrorSystem</code>: The mirror system to use for reflection</li>
+<li><code>forceLoadedMirrors</code>: Additional libraries to process beyond current isolate</li>
+<li><code>onInfo</code>: Callback for informational messages</li>
+<li><code>onError</code>: Callback for error messages</li>
+<li><code>configuration</code>: Configuration for the scanning process</li>
+<li><code>packages</code>: Known package metadata</li>
+</ul>
+<p>All parameters are required and non-nullable.</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">InternalMockLibraryGenerator({
+  required super.mirrorSystem,
+  required super.forceLoadedMirrors,
+  required super.onInfo,
+  required super.onWarning,
+  required super.onError,
+  required super.configuration,
+  required super.packages,
+});</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/InternalMockLibraryGenerator-class.html">InternalMockLibraryGenerator</a></li>
+    <li class="self-crumb">InternalMockLibraryGenerator.new constructor</li>
+</ol>
+
+    <h5>InternalMockLibraryGenerator class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-left-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.0.0
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

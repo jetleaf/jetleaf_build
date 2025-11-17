@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the scan method from the MockRuntimeScanner class, for the Dart programming language.">
+  <title>scan method - MockRuntimeScanner class - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li><a href="../../jetleaf_build/MockRuntimeScanner-class.html">MockRuntimeScanner</a></li>
+    <li class="self-crumb">scan method</li>
+  </ol>
+  <div class="self-name">scan</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="jetleaf_build&#47;MockRuntimeScanner-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-method">scan</span> method 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+  <div>
+    <ol class="annotation-list">
+        <li>@<a href="https://api.dart.dev/stable/3.9.2/dart-core/override-constant.html">override</a></li>
+    </ol>
+  </div>
+<span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../jetleaf_build/RuntimeScannerSummary-class.html">RuntimeScannerSummary</a></span>&gt;</span></span>
+<span class="name ">scan</span>(<wbr><ol class="parameter-list"> <li><span class="parameter" id="scan-param-configuration"><span class="type-annotation"><a href="../../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">configuration</span>, {</span></li>
+<li><span class="parameter" id="scan-param-source"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a>?</span> <span class="parameter-name">source</span>, </span></li>
+</ol>})
+
+      <div class="features"><span class="feature">override</span></div>
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Executes a mock reflection scan with the given configuration.</p>
+<p>This simplified scan process:</p>
+<ol>
+<li>Sets up the mirror system</li>
+<li>Force-loads specified files</li>
+<li>Generates reflection metadata</li>
+<li>Updates the runtime context</li>
+<li>Includes core Dart types</li>
+</ol>
+<p>Parameters:</p>
+<ul>
+<li><code>outputFolder</code>: Output directory path (unused in mock implementation)</li>
+<li><code>configuration</code>: Configuration for the scanning process</li>
+<li><code>source</code>: Optional source directory (defaults to current)</li>
+</ul>
+<p>Returns a <a href="../../jetleaf_build/RuntimeScannerSummary-class.html">RuntimeScannerSummary</a> containing the scan results.</p>
+<p>Example:</p>
+<pre class="language-dart"><code class="language-dart">final summary = await mockScan.scan(
+  'build',
+  RuntimeScanLoader(
+    reload: true,
+    scanClasses: [MyImportantClass],
+  ),
+);
+</code></pre>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">@override
+Future&lt;RuntimeScannerSummary&gt; scan(RuntimeScannerConfiguration configuration, {Directory? source}) async {
+  final stopwatch = Stopwatch()..start();
+  _logInfo(&quot;Starting mock runtime scan...&quot;);
+
+  FileUtility FileUtils = FileUtility(_logInfo, _logWarning, _logError, configuration, false);
+
+  &#47;&#47; 1. Setup directory and verify its existence
+  Directory directory = source ?? Directory.current;
+  _package ??= await _readPackageName(directory);
+
+  &#47;&#47; 2. Get current mirror system
+  _logInfo(&#39;Setting up mirror system...&#39;);
+  mirrors.MirrorSystem access = mirrors.currentMirrorSystem();
+
+  &#47;&#47; 3. Force load specified files
+  final dartFiles = await FileUtils.findDartFiles(directory);
+  final resources = await FileUtils.discoverAllResources(_package!, access);
+  dartFiles.addAll(_forceLoadFiles);
+
+  _logInfo(&#39;Loading dart files that are not present in the [currentMirrorSystem#(${access.isolate.debugName})]...&#39;);
+  Map&lt;File, Uri&gt; urisToLoad = FileUtils.getUrisToLoad(dartFiles, _package!);
+  List&lt;mirrors.LibraryMirror&gt; forceLoadedMirrors = [];
+  for (final uriEntry in urisToLoad.entries) {
+    mirrors.LibraryMirror? mirror = await FileUtils.forceLoadLibrary(uriEntry.value, uriEntry.key, access);
+    if(mirror != null) {
+      forceLoadedMirrors.add(mirror);
+    }
+  }
+
+  List&lt;Uri&gt; dartUris = [
+    Uri.parse(&#39;dart:async&#39;)
+  ];
+
+  for (final uri in dartUris) {
+    mirrors.LibraryMirror? mirror = await FileUtils.forceLoadLibrary(uri, File(&#39;&#39;), access);
+    if(mirror != null) {
+      forceLoadedMirrors.add(mirror);
+    }
+  }
+  _logInfo(&#39;Loaded ${forceLoadedMirrors.length} dart files into the mirror system.&#39;);
+
+  configuration = _addDefaultPackagesToScan(configuration, _package!);
+
+  &#47;&#47; 4. Generate reflection metadata
+  _logInfo(&#39;Generating declaration metadata...&#39;);
+  final params = MockLibraryGeneratorParams(
+    mirrorSystem: access,
+    forceLoadedMirrors: forceLoadedMirrors,
+    onInfo: _logInfo,
+    onWarning: _logWarning,
+    onError: _logError,
+    configuration: configuration,
+    packages: [_createPackage(_package!)],
+  );
+  print(configuration);
+  final libraryGenerator = _libraryGeneratorFactory?.call(params) ?? MockLibraryGenerator(
+    mirrorSystem: params.mirrorSystem,
+    forceLoadedMirrors: params.forceLoadedMirrors,
+    onInfo: params.onInfo,
+    onWarning: params.onWarning,
+    onError: params.onError,
+    configuration: params.configuration,
+    packages: params.packages,
+  );
+
+  List&lt;LibraryDeclaration&gt; libraries = [];
+  libraries = await libraryGenerator.generate(dartFiles.toList());
+  _logInfo(&#39;Generated declaration metadata for ${libraries.length} libraries&#39;);
+
+  &#47;&#47; 5. Create or update context
+  final refreshContext = _context == null || configuration.reload;
+  if (refreshContext) {
+    _context = StandardRuntimeProvider();
+  }
+
+  if (libraries.isNotEmpty) {
+    _context?.addLibraries(libraries, replace: refreshContext);
+  }
+
+  &#47;&#47; 6. Generate AOT Runtime Resolvers
+  RuntimeResolving resolving = RuntimeResolving(
+    access: access,
+    libraries: libraries,
+    forceLoadedMirrors: forceLoadedMirrors,
+    outputFolder: configuration.outputPath,
+    fileUtils: FileUtils,
+    package: _package!,
+    logInfo: _logInfo,
+    logWarning: _logWarning,
+    logError: _logError,
+  );
+  _context?.addAssets(resources);
+  _context?.setRuntimeResolver(await resolving.resolve());
+
+  stopwatch.stop();
+  _logInfo(&quot;Mock scan completed in ${stopwatch.elapsedMilliseconds}ms&quot;);
+
+  final summary = DefaultRuntimeScannerSummary();
+  summary.setContext(_context!);
+  summary.setBuildTime(DateTime.now());
+
+  return summary;
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/MockRuntimeScanner-class.html">MockRuntimeScanner</a></li>
+    <li class="self-crumb">scan method</li>
+</ol>
+
+    <h5>MockRuntimeScanner class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.0.0
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

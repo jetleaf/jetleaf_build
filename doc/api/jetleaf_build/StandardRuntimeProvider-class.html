@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the StandardRuntimeProvider class from the jetleaf_build library, for the Dart programming language.">
+  <title>StandardRuntimeProvider class - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../static-assets/styles.css?v1">
+  <link rel="icon" href="../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../index.html">jetleaf_build</a></li>
+    <li><a href="../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li class="self-crumb">StandardRuntimeProvider class</li>
+  </ol>
+  <div class="self-name">StandardRuntimeProvider</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="jetleaf_build&#47;jetleaf_build-library-sidebar.html"
+    data-below-sidebar="jetleaf_build&#47;StandardRuntimeProvider-class-sidebar.html">
+    <div>
+<h1><span class="kind-class">StandardRuntimeProvider</span> class 
+    <a href="https://dart.dev/language/class-modifiers#final" class="feature feature-final" title="This class can neither be extended, implemented, nor mixed in.">final</a>
+ 
+</h1></div>
+
+    
+<section class="desc markdown">
+  <p>Default mutable implementation of <a href="../jetleaf_build/ConfigurableRuntimeProvider-class.html">ConfigurableRuntimeProvider</a>.</p>
+<p>This class collects runtime metadata during the context construction
+phase. Internally, it stores discovered libraries, packages, assets,
+environment entries, and special types. Once all metadata is added,
+it can be finalized into an immutable <code>ReflectedContext</code> via <code>build</code>.</p>
+<p>This class is used by the runtime engine, compilers, and
+custom context processors that extend the metadata model.</p>
+<h2 id="example">Example</h2>
+<pre class="language-dart"><code class="language-dart">final context = StandardRuntimeProvider();
+// Assuming you have a way to create ReflectedLibrary instances
+// context.addLibrary(myReflectedLibrary);
+context.addEnvironment('env', 'dev');
+
+final runtime = context.build();
+print(runtime.getMetadata().getAllClasses().length);
+</code></pre>
+</section>
+
+
+    <section>
+      <dl class="dl-horizontal">
+        
+  <dt>Inheritance</dt>
+  <dd>
+    <ul class="gt-separated dark clazz-relationships">
+      <li><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></li>
+        <li><a href="../jetleaf_build/RuntimeProvider-class.html">RuntimeProvider</a></li>
+        <li><a href="../jetleaf_build/ConfigurableRuntimeProvider-class.html">ConfigurableRuntimeProvider</a></li>
+      <li>StandardRuntimeProvider</li>
+    </ul>
+  </dd>
+
+        
+        
+
+
+        
+        
+
+
+      </dl>
+    </section>
+
+    
+  <section class="summary offset-anchor" id="constructors">
+    <h2>Constructors</h2>
+    <dl class="constructor-summary-list">
+        <dt id="StandardRuntimeProvider.new" class="callable">
+          <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/StandardRuntimeProvider.html">StandardRuntimeProvider.new</a></span><span class="signature">()</span>
+        </dt>
+        <dd>
+          Default mutable implementation of <a href="../jetleaf_build/ConfigurableRuntimeProvider-class.html">ConfigurableRuntimeProvider</a>.
+        </dd>
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="instance-properties">
+    <h2>Properties</h2>
+    <dl class="properties">
+        <dt id="hashCode" class="property inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/hashCode.html">hashCode</a></span>
+  <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  The hash code for this object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="runtimeType" class="property inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/runtimeType.html">runtimeType</a></span>
+  <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  A representation of the runtime type of the object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-methods">
+    <h2>Methods</h2>
+    <dl class="callables">
+        <dt id="addAsset" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/addAsset.html">addAsset</a></span><span class="signature">(<wbr><span class="parameter" id="addAsset-param-asset"><span class="type-annotation"><a href="../jetleaf_build/Asset-class.html">Asset</a></span> <span class="parameter-name">asset</span></span>)
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  A mutable context used to collect and assemble metadata during the
+framework’s initialization or AOT compilation phase.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="addAssets" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/addAssets.html">addAssets</a></span><span class="signature">(<wbr><span class="parameter" id="addAssets-param-assets"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/Asset-class.html">Asset</a></span>&gt;</span></span> <span class="parameter-name">assets</span>, {</span><span class="parameter" id="addAssets-param-replace"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">replace</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  A mutable context used to collect and assemble metadata during the
+framework’s initialization or AOT compilation phase.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="addLibraries" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/addLibraries.html">addLibraries</a></span><span class="signature">(<wbr><span class="parameter" id="addLibraries-param-libraries"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a></span>&gt;</span></span> <span class="parameter-name">libraries</span>, {</span><span class="parameter" id="addLibraries-param-replace"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">replace</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  A mutable context used to collect and assemble metadata during the
+framework’s initialization or AOT compilation phase.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="addLibrary" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/addLibrary.html">addLibrary</a></span><span class="signature">(<wbr><span class="parameter" id="addLibrary-param-library"><span class="type-annotation"><a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a></span> <span class="parameter-name">library</span></span>)
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  A mutable context used to collect and assemble metadata during the
+framework’s initialization or AOT compilation phase.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="addNonDartFile" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/addNonDartFile.html">addNonDartFile</a></span><span class="signature">(<wbr><span class="parameter" id="addNonDartFile-param-file"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span> <span class="parameter-name">file</span></span>)
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  A mutable context used to collect and assemble metadata during the
+framework’s initialization or AOT compilation phase.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="addNonDartFiles" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/addNonDartFiles.html">addNonDartFiles</a></span><span class="signature">(<wbr><span class="parameter" id="addNonDartFiles-param-files"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span>&gt;</span></span> <span class="parameter-name">files</span>, {</span><span class="parameter" id="addNonDartFiles-param-replace"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">replace</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  A mutable context used to collect and assemble metadata during the
+framework’s initialization or AOT compilation phase.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="addPackage" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/addPackage.html">addPackage</a></span><span class="signature">(<wbr><span class="parameter" id="addPackage-param-package"><span class="type-annotation"><a href="../jetleaf_build/Package-class.html">Package</a></span> <span class="parameter-name">package</span></span>)
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  A mutable context used to collect and assemble metadata during the
+framework’s initialization or AOT compilation phase.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="addPackages" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/addPackages.html">addPackages</a></span><span class="signature">(<wbr><span class="parameter" id="addPackages-param-packages"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/Package-class.html">Package</a></span>&gt;</span></span> <span class="parameter-name">packages</span>, {</span><span class="parameter" id="addPackages-param-replace"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">replace</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  A mutable context used to collect and assemble metadata during the
+framework’s initialization or AOT compilation phase.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="addSpecialType" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/addSpecialType.html">addSpecialType</a></span><span class="signature">(<wbr><span class="parameter" id="addSpecialType-param-type"><span class="type-annotation"><a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a></span> <span class="parameter-name">type</span></span>)
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  A mutable context used to collect and assemble metadata during the
+framework’s initialization or AOT compilation phase.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="addSpecialTypes" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/addSpecialTypes.html">addSpecialTypes</a></span><span class="signature">(<wbr><span class="parameter" id="addSpecialTypes-param-types"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a></span>&gt;</span></span> <span class="parameter-name">types</span>, {</span><span class="parameter" id="addSpecialTypes-param-replace"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">replace</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  A mutable context used to collect and assemble metadata during the
+framework’s initialization or AOT compilation phase.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="getAllAssets" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/getAllAssets.html">getAllAssets</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/Asset-class.html">Asset</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns all assets available in the reflection context.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="getAllLibraries" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/getAllLibraries.html">getAllLibraries</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns all reflected libraries available in the reflection context.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="getAllPackages" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/getAllPackages.html">getAllPackages</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/Package-class.html">Package</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns all packages available in the reflection context.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="getNonDartFiles" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/getNonDartFiles.html">getNonDartFiles</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Represents a runtime reflection context for a Dart application,
+providing access to libraries, packages, assets, and metadata.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="getRuntimeResolver" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/getRuntimeResolver.html">getRuntimeResolver</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/RuntimeResolver-class.html">RuntimeResolver</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Represents a runtime reflection context for a Dart application,
+providing access to libraries, packages, assets, and metadata.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="getSpecialTypes" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/getSpecialTypes.html">getSpecialTypes</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Represents a runtime reflection context for a Dart application,
+providing access to libraries, packages, assets, and metadata.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="noSuchMethod" class="callable inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Invocation-class.html">Invocation</a></span> <span class="parameter-name">invocation</span></span>)
+    <span class="returntype parameter">&#8594; dynamic</span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Invoked when a nonexistent method or property is accessed.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="setRuntimeResolver" class="callable">
+  <span class="name"><a href="../jetleaf_build/StandardRuntimeProvider/setRuntimeResolver.html">setRuntimeResolver</a></span><span class="signature">(<wbr><span class="parameter" id="setRuntimeResolver-param-resolver"><span class="type-annotation"><a href="../jetleaf_build/RuntimeResolver-class.html">RuntimeResolver</a></span> <span class="parameter-name">resolver</span></span>)
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  A mutable context used to collect and assemble metadata during the
+framework’s initialization or AOT compilation phase.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="toString" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/RuntimeProvider/toString.html">toString</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  A string representation of this object.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="operators">
+    <h2>Operators</h2>
+    <dl class="callables">
+        <dt id="operator ==" class="callable inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  The equality operator.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+    
+    
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../index.html">jetleaf_build</a></li>
+    <li><a href="../jetleaf_build/">jetleaf_build</a></li>
+    <li class="self-crumb">StandardRuntimeProvider class</li>
+</ol>
+
+    <h5>jetleaf_build library</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.0.0
+  </span>
+  
+</footer>
+
+
+<script src="../static-assets/highlight.pack.js?v1"></script>
+<script src="../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

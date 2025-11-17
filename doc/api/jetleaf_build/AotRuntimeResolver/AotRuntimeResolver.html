@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the AotRuntimeResolver.new constructor from Class AotRuntimeResolver from the jetleaf_build library, for the Dart programming language.">
+  <title>AotRuntimeResolver.new constructor - AotRuntimeResolver - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li><a href="../../jetleaf_build/AotRuntimeResolver-class.html">AotRuntimeResolver</a></li>
+    <li class="self-crumb">AotRuntimeResolver.new const constructor</li>
+  </ol>
+  <div class="self-name">AotRuntimeResolver.new</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar="jetleaf_build&#47;AotRuntimeResolver-class-sidebar.html"
+      data-below-sidebar="">
+      <div>
+<h1><span class="kind-constructor">AotRuntimeResolver</span> constructor 
+</h1></div>
+
+    <section class="multi-line-signature">
+      const
+      <span class="name ">AotRuntimeResolver</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="-param-resolver"><span class="type-annotation"><a href="../../jetleaf_build/RuntimeHintDescriptor-class.html">RuntimeHintDescriptor</a>?</span> <span class="parameter-name">resolver</span></span></li>
+</ol>)
+    </section>
+    
+<section class="desc markdown">
+  <p>A concrete implementation of <a href="../../jetleaf_build/RuntimeResolver-class.html">RuntimeResolver</a> that operates using
+a <a href="../../jetleaf_build/RuntimeHintDescriptor-class.html">RuntimeHintDescriptor</a> registry.</p>
+<p>This class is ideal for Ahead-Of-Time (AOT) compiled environments where
+<code>dart:mirrors</code> is not supported. Instead of using reflection, it leverages
+pre-registered <a href="../../jetleaf_build/RuntimeHint-class.html">RuntimeHint</a>s for dynamic method invocation,
+instance creation, and field access.</p>
+<h2 id="usage-example">Usage Example</h2>
+<p>First, register descriptors in a <a href="../../jetleaf_build/RuntimeHintDescriptor-class.html">RuntimeHintDescriptor</a>:</p>
+<pre class="language-dart"><code class="language-dart">final generativeExecutable = GenerativeExecutable()
+  ..register(MyClass, RuntimeHintDescriptor(
+    newInstance: (name, args, namedArgs) =&gt; MyClass(),
+    invokeMethod: (instance, method, {args = const [], namedArgs = const {}}) {
+      if (method == 'greet') return (instance as MyClass).greet();
+      throw Exception('Unknown method');
+    },
+    getValue: (instance, field) {
+      if (field == 'message') return (instance as MyClass).message;
+      throw Exception('Unknown field');
+    },
+    setValue: (instance, field, value) {
+      if (field == 'message') (instance as MyClass).message = value as String;
+    },
+  ));
+
+final resolver = AotExecutableResolver(generativeExecutable);
+final instance = resolver.newInstance&lt;MyClass&gt;('Aot');
+final greeting = resolver.invokeMethod(instance, 'greet');
+print(greeting); // Hello!
+</code></pre>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">const AotRuntimeResolver(this.resolver);</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/AotRuntimeResolver-class.html">AotRuntimeResolver</a></li>
+    <li class="self-crumb">AotRuntimeResolver.new const constructor</li>
+</ol>
+
+    <h5>AotRuntimeResolver class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-left-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.0.0
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the GenerativePackage.new constructor from Class GenerativePackage from the jetleaf_build library, for the Dart programming language.">
+  <title>GenerativePackage.new constructor - GenerativePackage - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li><a href="../../jetleaf_build/GenerativePackage-class.html">GenerativePackage</a></li>
+    <li class="self-crumb">GenerativePackage.new const constructor</li>
+  </ol>
+  <div class="self-name">GenerativePackage.new</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar="jetleaf_build&#47;GenerativePackage-class-sidebar.html"
+      data-below-sidebar="">
+      <div>
+<h1><span class="kind-constructor">GenerativePackage</span> constructor 
+</h1></div>
+
+    <section class="multi-line-signature">
+      const
+      <span class="name ">GenerativePackage</span>(<wbr>)
+    </section>
+    
+<section class="desc markdown">
+  <p>Default no-args constructor.</p>
+<p>Subclasses should override the getters to provide actual package data.</p>
+<p>Base class representing a <strong>package resource with a no-args constructor</strong>.</p>
+<p>Designed primarily for <strong>code generation scenarios</strong>, where subclasses
+are instantiated reflectively (e.g., via mirrors or generated code).</p>
+<p>Subclasses are expected to override the core getters to provide package
+metadata:</p>
+<ul>
+<li><code>_name</code> — the package name</li>
+<li><code>_version</code> — the package version</li>
+<li><code>_languageVersion</code> — the Dart language version</li>
+<li><code>_isRootPackage</code> — whether this package is the root package</li>
+<li><code>_filePath</code> — the path to the package descriptor or source</li>
+<li><code>_rootUri</code> — the root URI of the package</li>
+</ul>
+<p>Generated subclasses typically provide these as <code>final</code> fields for
+immutable, compile-time-safe package representations.</p>
+<h3 id="usage-example">Usage Example</h3>
+<pre class="language-dart"><code class="language-dart">class GeneratedPackageExample extends GenerativePackage {
+  @override
+  String getName() =&gt; "my_package";
+
+  @override
+  String getVersion() =&gt; "1.0.0";
+
+  @override
+  String? getLanguageVersion() =&gt; "2.20";
+
+  @override
+  bool getIsRootPackage() =&gt; true;
+
+  @override
+  String? getFilePath() =&gt; "/path/to/package";
+
+  @override
+  String? getRootUri() =&gt; "file:///path/to/package";
+}
+
+final pkg = GeneratedPackageExample();
+print(pkg.getName()); // "my_package"
+</code></pre>
+<h3 id="design-notes">Design Notes</h3>
+<ul>
+<li>Must have a <strong>no-args constructor</strong> to support reflective instantiation.</li>
+<li>Serves as a base for code-generated package classes, ensuring a uniform
+API across all packages.</li>
+<li>Provides default dummy values in the constructor to satisfy the base
+<a href="../../jetleaf_build/Package-class.html">Package</a> class; actual values must be supplied by overriding getters.</li>
+</ul>
+<h3 id="see-also">See Also</h3>
+<ul>
+<li><a href="../../jetleaf_build/Package-class.html">Package</a></li>
+</ul>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">const GenerativePackage() : super(
+  name: &#39;&#39;,
+  version: &#39;&#39;,
+  languageVersion: null,
+  isRootPackage: false,
+  filePath: null,
+  rootUri: null,
+);</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/GenerativePackage-class.html">GenerativePackage</a></li>
+    <li class="self-crumb">GenerativePackage.new const constructor</li>
+</ol>
+
+    <h5>GenerativePackage class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-left-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.0.0
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

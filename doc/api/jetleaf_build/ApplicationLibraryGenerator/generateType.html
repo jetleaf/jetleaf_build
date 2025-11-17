@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the generateType method from the ApplicationLibraryGenerator class, for the Dart programming language.">
+  <title>generateType method - ApplicationLibraryGenerator class - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li><a href="../../jetleaf_build/ApplicationLibraryGenerator-class.html">ApplicationLibraryGenerator</a></li>
+    <li class="self-crumb">generateType method</li>
+  </ol>
+  <div class="self-name">generateType</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="jetleaf_build&#47;ApplicationLibraryGenerator-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-method">generateType</span> method 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+<span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a></span>&gt;</span></span>
+<span class="name ">generateType</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="generateType-param-typeMirror"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/TypeMirror-class.html">TypeMirror</a></span> <span class="parameter-name">typeMirror</span>, </span></li>
+<li><span class="parameter" id="generateType-param-package"><span class="type-annotation"><a href="../../jetleaf_build/Package-class.html">Package</a></span> <span class="parameter-name">package</span>, </span></li>
+<li><span class="parameter" id="generateType-param-libraryUri"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">libraryUri</span></span></li>
+</ol>)
+
+      
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Generate type declaration with analyzer support</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">Future&lt;TypeDeclaration&gt; generateType(mirrors.TypeMirror typeMirror, Package package, String libraryUri) async {
+  &#47;&#47; Handle type variables
+  if (typeMirror is mirrors.TypeVariableMirror) {
+    return await _generateTypeVariable(typeMirror, package, libraryUri);
+  }
+
+  &#47;&#47; Handle dynamic and void
+  if (typeMirror.runtimeType.toString() == &#39;dynamic&#39;) {
+    return StandardTypeDeclaration(
+      name: &#39;dynamic&#39;,
+      type: dynamic,
+      element: null,
+      dartType: null,
+      qualifiedName: _buildQualifiedName(&#39;dynamic&#39;, &#39;dart:core&#39;),
+      simpleName: &#39;dynamic&#39;,
+      packageUri: &#39;dart:core&#39;,
+      isNullable: false,
+      kind: TypeKind.dynamicType,
+      isPublic: true,
+      isSynthetic: false,
+    );
+  }
+
+  if (typeMirror.runtimeType.toString() == &#39;void&#39;) {
+    return StandardTypeDeclaration(
+      name: &#39;void&#39;,
+      type: VoidType,
+      element: null,
+      dartType: null,
+      qualifiedName: _buildQualifiedName(&#39;void&#39;, &#39;dart:core&#39;),
+      simpleName: &#39;void&#39;,
+      packageUri: &#39;dart:core&#39;,
+      isNullable: false,
+      kind: TypeKind.voidType,
+      isPublic: true,
+      isSynthetic: false,
+    );
+  }
+
+  Type runtimeType;
+  try {
+    runtimeType = typeMirror.hasReflectedType ? typeMirror.reflectedType : typeMirror.runtimeType;
+  } catch (e) {
+    runtimeType = typeMirror.runtimeType;
+  }
+
+  if (_typeCache.containsKey(runtimeType)) {
+    return _typeCache[runtimeType]!;
+  }
+
+  final typeName = mirrors.MirrorSystem.getName(typeMirror.simpleName);
+
+  &#47;&#47; Get analyzer element for the type
+  final typeElement = await _getTypeElement(typeName, Uri.parse(libraryUri));
+  final dartType = typeElement != null ? (typeElement as InterfaceElement).thisType : null;
+
+  if (_isRecordType(runtimeType)) {
+    return await _generateRecordType(typeMirror, typeElement, package, libraryUri);
+  }
+
+  &#47;&#47; Handle primitive types
+  if (_isPrimitiveType(runtimeType)) {
+    return StandardTypeDeclaration(
+      name: typeName,
+      type: runtimeType,
+      element: typeElement,
+      dartType: dartType,
+      qualifiedName: _buildQualifiedName(typeName, &#39;dart:core&#39;),
+      simpleName: typeName,
+      packageUri: &#39;dart:core&#39;,
+      isNullable: false,
+      kind: TypeKind.primitiveType,
+      isPublic: !_isInternal(typeName),
+      isSynthetic: _isSynthetic(typeName),
+    );
+  }
+
+  &#47;&#47; Extract type arguments with analyzer support - now as LinkDeclarations
+  final typeArguments = &lt;LinkDeclaration&gt;[];
+  if (typeMirror is mirrors.ClassMirror &amp;&amp; typeMirror.typeArguments.isNotEmpty) {
+    for (final arg in typeMirror.typeArguments) {
+      final argLink = await _generateLinkDeclarationFromMirror(arg, package, libraryUri);
+      if (argLink != null) {
+        typeArguments.add(argLink);
+      }
+    }
+  }
+
+  &#47;&#47; Determine type kind
+  final kind = _determineTypeKind(typeMirror, dartType);
+
+  final declaration = StandardTypeDeclaration(
+    name: typeName,
+    type: runtimeType,
+    element: typeElement,
+    dartType: dartType,
+    qualifiedName: _buildQualifiedName(typeName, libraryUri),
+    simpleName: typeName,
+    packageUri: libraryUri,
+    isNullable: false,
+    kind: kind,
+    typeArguments: typeArguments,
+    isPublic: !_isInternal(typeName),
+    isSynthetic: _isSynthetic(typeName),
+  );
+
+  _typeCache[runtimeType] = declaration;
+  return declaration;
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/ApplicationLibraryGenerator-class.html">ApplicationLibraryGenerator</a></li>
+    <li class="self-crumb">generateType method</li>
+</ol>
+
+    <h5>ApplicationLibraryGenerator class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.0.0
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the FieldAccessException.new constructor from Class FieldAccessException from the jetleaf_build library, for the Dart programming language.">
+  <title>FieldAccessException.new constructor - FieldAccessException - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li><a href="../../jetleaf_build/FieldAccessException-class.html">FieldAccessException</a></li>
+    <li class="self-crumb">FieldAccessException.new constructor</li>
+  </ol>
+  <div class="self-name">FieldAccessException.new</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar="jetleaf_build&#47;FieldAccessException-class-sidebar.html"
+      data-below-sidebar="">
+      <div>
+<h1><span class="kind-constructor">FieldAccessException</span> constructor 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+      <span class="name ">FieldAccessException</span>(<wbr><ol class="parameter-list"> <li><span class="parameter" id="-param-type"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">type</span>, </span></li>
+<li><span class="parameter" id="-param-fieldName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">fieldName</span>, {</span></li>
+<li><span class="parameter" id="-param-cause"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span> <span class="parameter-name">cause</span>, </span></li>
+<li><span class="parameter" id="-param-stack"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/StackTrace-class.html">StackTrace</a>?</span> <span class="parameter-name">stack</span>, </span></li>
+</ol>})
+    </section>
+    
+<section class="desc markdown">
+  <p>Exception thrown when <strong>reading a field or getter fails</strong> on a given type.</p>
+<p>This error is typically raised when:</p>
+<ul>
+<li>The specified field does not exist</li>
+<li>Access to the field or getter is restricted (e.g., private or protected)</li>
+<li>The resolver attempts dynamic field access using reflection or metadata</li>
+</ul>
+<p>Extends <a href="../../jetleaf_build/RuntimeResolverException-class.html">RuntimeResolverException</a>, inheriting support for:</p>
+<ul>
+<li><code>message</code> — a description of the error</li>
+<li><code>cause</code> — optional underlying exception</li>
+<li><code>stackTrace</code> — optional diagnostic stack trace</li>
+</ul>
+<h3 id="usage-example">Usage Example</h3>
+<pre class="language-dart"><code class="language-dart">throw FieldAccessException(
+  "User",
+  "password",
+  cause: NoSuchFieldError(),
+);
+</code></pre>
+<h3 id="design-notes">Design Notes</h3>
+<ul>
+<li>Provides clear diagnostics including both type and field name.</li>
+<li>Supports exception chaining for better debugging.</li>
+<li>Indicates a terminal resolution error; cannot automatically recover.</li>
+</ul>
+<h3 id="example-behavior">Example Behavior</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Field/Getter</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>User</code></td>
+<td><code>email</code></td>
+<td>❌ Throws if field missing or inaccessible</td>
+</tr>
+<tr>
+<td><code>Config</code></td>
+<td><code>version</code></td>
+<td>❌ Throws if getter not available</td>
+</tr>
+<tr>
+<td><code>Widget</code></td>
+<td>private property</td>
+<td>❌ Throws on restricted access</td>
+</tr>
+</tbody>
+</table>
+<h3 id="see-also">See Also</h3>
+<ul>
+<li><a href="../../jetleaf_build/RuntimeResolverException-class.html">RuntimeResolverException</a></li>
+<li><a href="../../jetleaf_build/RuntimeException-class.html">RuntimeException</a></li>
+<li><code>NoSuchFieldError</code></li>
+</ul>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">FieldAccessException(String type, String fieldName, {Object? cause, StackTrace? stack}) : super(
+  &#39;Unable to read field&#47;getter &quot;$fieldName&quot; on type $type.&#39;,
+  cause: cause,
+  stackTrace: stack,
+);</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/FieldAccessException-class.html">FieldAccessException</a></li>
+    <li class="self-crumb">FieldAccessException.new constructor</li>
+</ol>
+
+    <h5>FieldAccessException class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-left-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.0.0
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+
