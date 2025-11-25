@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project adheres to a simple, human-readable changelog format.
 
+## [1.0.1] - 2025-11-25
+
+- Fixed JitRuntimeResolver
+- Added new checks in FileUtility
+
 ## [1.0.0] - 2025-11-17
 
 Initial stable release.
