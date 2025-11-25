@@ -35,6 +35,7 @@ import 'package:analyzer/file_system/physical_file_system.dart';
 import '../../annotations.dart';
 import '../../constant.dart';
 import '../../declaration/declaration.dart';
+import '../../must_avoid.dart';
 import '../utils/dart_type_resolver.dart';
 import '../utils/generic_type_parser.dart';
 import '../utils/utils.dart';
@@ -114,21 +115,28 @@ class ApplicationLibraryGenerator extends LibraryGenerator {
     final processedLibraries = <String>{};
 
     onInfo('Generating declaration metadata with analyzer integration...');
+    final nonNecessaryPackages = getNonNecessaryPackages();
     
     for (final libraryMirror in loader) {
       final fileUri = libraryMirror.uri;
+      final filePath = libraryMirror.uri.toString();
 
       try {
         final mustSkip = "jetleaf_build/src/runtime/";
-        if(libraryMirror.uri.toString() == "dart:mirrors" || libraryMirror.uri.toString().startsWith("package:$mustSkip") || libraryMirror.uri.toString().contains(mustSkip)) {
+        if(filePath == "dart:mirrors" || filePath.startsWith("package:$mustSkip") || filePath.contains(mustSkip)) {
           continue;
         }
 
-        if (!processedLibraries.add(fileUri.toString()) || _containsJsInterop(fileUri.toString())) {
+        if (!processedLibraries.add(filePath) || forgetPackage(filePath)) {
           continue;
         }
 
-        onInfo('Processing library: ${fileUri.toString()}');
+        if (nonNecessaryPackages.any((pkg) => filePath.startsWith('package:$pkg/') && !configuration.packagesToScan.contains(pkg))) {
+          // Skip this file
+          continue;
+        }
+
+        onInfo('Processing library: $filePath');
         LibraryDeclaration libDecl;
         
         if (_isBuiltInDartLibrary(fileUri)) {
@@ -143,7 +151,7 @@ class ApplicationLibraryGenerator extends LibraryGenerator {
           String? fileContent;
           try {
             fileContent = await _readSourceCode(fileUri);
-            if ((isTest(fileContent) && configuration.skipTests) || hasMirrorImport(fileContent) || _containsJsInterop(fileContent)) {
+            if ((isTest(fileContent) && configuration.skipTests) || hasMirrorImport(fileContent) || forgetPackage(fileContent)) {
               continue;
             }
           } catch (e) {
@@ -2842,10 +2850,6 @@ These classes may need manual type resolution or have complex generic constraint
   }
 
   bool _isSynthetic(String name) => name.startsWith("__") || name.contains("&");
-
-  bool _containsJsInterop(String text) {
-    return text.contains('@JS') || text.contains("package:js") || text.startsWith("package:web/") || text.startsWith("dart:js_interop");
-  }
 
   bool _isNullable({FieldElement? fieldElement, String? sourceCode, required String fieldName}) {
     // if (fieldElement != null) {

@@ -22,6 +22,7 @@ import 'package:path/path.dart' as p;
 import '../../constant.dart';
 import '../../declaration/declaration.dart';
 import '../../declaration/generative.dart';
+import '../../must_avoid.dart';
 import '../runtime_scanner/runtime_scanner_configuration.dart';
 
 typedef OnLogged = void Function(String message);
@@ -52,7 +53,11 @@ class FileUtility {
     _loadPackageConfig();
   }
 
+  /// List of all packages in the project - including dev dependencies
   List<PackageConfigEntry> get packageConfig => _packageConfig ?? [];
+
+  /// List of all Jetleaf packages you care about
+  final Set<String> jetleafPackages = {'jetleaf', 'jetson', 'jtl'};
 
   /// Loads the package configuration from .dart_tool/package_config.json.
   Future<void> _loadPackageConfig([Directory? source]) async {
@@ -274,7 +279,7 @@ class FileUtility {
   }
 
   /// Scans a directory for Dart files with minimal filtering
-  Future<void> _scanDirectoryForDartFiles(Directory dir, Set<File> dartFiles, Set<String> filesToScan, Set<String> filesToExclude) async {
+  Future<void> _scanDirectoryForDartFiles(Directory dir, Set<File> dartFiles, Set<String> filesToScan, Set<String> filesToExclude, [String packageName = ""]) async {
     await for (final entity in dir.list(recursive: true, followLinks: false)) {
       if (entity is File && entity.path.endsWith('.dart')) {
         final normalizedPath = p.normalize(entity.absolute.path);
@@ -291,6 +296,17 @@ class FileUtility {
 
         // Skip test files only if user configured skipTests
         if (_configuration.skipTests && _isTestFile(normalizedPath) && !filesToScan.contains(normalizedPath)) {
+          continue;
+        }
+
+        if (forgetPackage(normalizedPath) || forgetPackage(await entity.readAsString())) {
+          continue;
+        }
+
+        final build = "jetleaf_build";
+        final allowed = ['annotations.dart', 'constant.dart', 'exceptions.dart'];
+
+        if (packageName == build && !(allowed.contains(normalizedPath) || normalizedPath.contains("runtime_hint"))) {
           continue;
         }
 
@@ -314,19 +330,90 @@ class FileUtility {
       final packageName = pkg.name;
       final packageRoot = Directory(pkg.absoluteRootPath);
 
-      // Only exclude if user explicitly excludes this package
-      final bool excludePackage = _configuration.packagesToExclude.contains(packageName);
+      if (!await packageRoot.exists()) continue;
+
+      // Skip if user excluded the package
+      if (_configuration.packagesToExclude.contains(packageName)) {
+        _onInfo('Skipping excluded package: $packageName');
+        continue;
+      }
+
+      final keys = await extractPubspecDependencyKeys(packageRoot);
+      final hasJetleaf = keys.any(jetleafPackages.contains) || keys.any((key) => key.startsWith(PackageNames.MAIN));
+
+      if (!hasJetleaf) {
+        _onInfo('Skipping non-Jetleaf package: $packageName');
+        continue;
+      }
       
       // If user specified packages to scan, only include those. Otherwise include all.
       final bool includePackage = _configuration.packagesToScan.isEmpty || _configuration.packagesToScan.contains(packageName);
 
-      if (includePackage && !excludePackage && await packageRoot.exists()) {
+      if (includePackage) {
         _onInfo('Scanning package: $packageName');
-        await _scanDirectoryForDartFiles(packageRoot, dartFiles, filesToScan, filesToExclude);
-      } else if (excludePackage) {
-        _onInfo('Skipping excluded package: $packageName');
+        await _scanDirectoryForDartFiles(packageRoot, dartFiles, filesToScan, filesToExclude, packageName);
       }
     }
+  }
+
+  /// {@template extract_pubspec_dependency_keys}
+  /// Extracts all dependency keys declared in a `pubspec.yaml` located at the
+  /// given [packageRoot].
+  ///
+  /// This function:
+  /// - locates `pubspec.yaml` inside the directory
+  /// - returns an empty set if the file does not exist
+  /// - scans only `dependencies:` and `dev_dependencies:` sections
+  /// - stops reading when another top-level YAML key is reached
+  /// - ignores comments and empty lines
+  /// - extracts only the package names, not version constraints
+  ///
+  /// ### Example
+  /// ```dart
+  /// final deps = await extractPubspecDependencyKeys(Directory('/my/pkg'));
+  /// print(deps); // {http, shelf, path, ...}
+  /// ```
+  ///
+  /// Returns a `Set<String>` containing only dependency identifiers.
+  /// {@endtemplate}
+  Future<Set<String>> extractPubspecDependencyKeys(Directory packageRoot) async {
+    final pubspecFile = File('${packageRoot.path}/pubspec.yaml');
+
+    if (!await pubspecFile.exists()) return {};
+
+    final lines = await pubspecFile.readAsLines();
+
+    final Set<String> keys = {};
+    bool inDeps = false;
+
+    for (final rawLine in lines) {
+      final line = rawLine.trimRight();
+
+      // Enter dependency sections
+      if (line == 'dependencies:' || line == 'dev_dependencies:') {
+        inDeps = true;
+        continue;
+      }
+
+      // Leave section when hitting next top-level key
+      if (inDeps && !rawLine.startsWith(' ') && line.isNotEmpty) {
+        inDeps = false;
+        continue;
+      }
+
+      if (!inDeps) continue;
+
+      // Ignore comments or empty lines
+      if (line.isEmpty || line.trimLeft().startsWith('#')) continue;
+
+      // Extract the package key only
+      final match = RegExp(r'^\s*([\w\-]+)\s*:').firstMatch(rawLine);
+      if (match != null) {
+        keys.add(match.group(1)!);
+      }
+    }
+
+    return keys;
   }
 
   /// Checks if a file should be included based on path patterns

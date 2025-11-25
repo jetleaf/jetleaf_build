@@ -168,7 +168,7 @@ Consider:
       final symbol = Symbol(method);
 
       try {
-        final declaration = mirror.type.declarations[symbol];
+        final declaration = _findDeclaration(symbol, mirror.type);
         if (declaration is! mirrors.MethodMirror) {
           throw MethodNotFoundException(T.toString(), method);
         }
@@ -213,31 +213,18 @@ Consider:
   Object? getValue<T>(T instance, String name) {
     try {
       final mirror = mirrors.reflect(instance);
-      final symbol = Symbol(name);
+       Symbol symbol = Symbol(name);
 
       try {
-        final declaration = mirror.type.declarations[symbol];
+        mirrors.DeclarationMirror? declaration = _findDeclaration(symbol, mirror.type);
 
-        if (declaration is! mirrors.VariableMirror) {
-          // Might be a getter (method without args)
-          final symbol = Symbol(name);
-          try {
-            final declaration = mirror.type.declarations[symbol];
-            if (declaration is! mirrors.MethodMirror) {
-              throw FieldAccessException(T.toString(), name);
-            }
+        if (declaration == null) {
+          symbol = Symbol("$name=");
+          declaration = _findDeclaration(symbol, mirror.type);
+        }
 
-            if (declaration.isGetter) {
-              return mirror.invoke(symbol, []).reflectee;
-            }
-
-            throw FieldAccessException(T.toString(), name);
-          } on FieldAccessException catch (_) {
-            rethrow;
-          } catch (inner) {
-            // attempt a best-effort invoke (some runtimes may accept it)
-            return mirror.invoke(symbol, []).reflectee;
-          }
+        if (declaration is mirrors.MethodMirror && declaration.isGetter) {
+          return mirror.invoke(symbol, []).reflectee;
         }
 
         return mirror.getField(symbol).reflectee;
@@ -263,40 +250,48 @@ Consider:
     }
   }
 
+  /// Recursively find the field/method
+  mirrors.DeclarationMirror? _findDeclaration(Symbol symbol, mirrors.ClassMirror type) {
+    // 1. Check current class
+    final declaration = type.declarations[symbol];
+    if (declaration != null) return declaration;
+
+    // 2. Recursively check superclass
+    final superclass = type.superclass;
+    if (superclass != null) {
+      final foundInSuper = _findDeclaration(symbol, superclass);
+      if (foundInSuper != null) return foundInSuper;
+    }
+
+    // 3. Recursively check interfaces
+    for (final interface in type.superinterfaces) {
+      final foundInInterface = _findDeclaration(symbol, interface);
+      if (foundInInterface != null) return foundInInterface;
+    }
+
+    return null;
+  }
+
   @override
   void setValue<T>(T instance, String name, Object? value) {
     try {
       final mirror = mirrors.reflect(instance);
-      final symbol = Symbol(name);
-      
+       Symbol symbol = Symbol(name);
+
       try {
-        final fieldMirror = mirror.type.declarations[symbol];
+        mirrors.DeclarationMirror? declaration = _findDeclaration(symbol, mirror.type);
 
-        if (fieldMirror is! mirrors.VariableMirror) {
-          // Could be a setter method
-          final symbol = Symbol('$name=');
-          try {
-            final setterDecl = mirror.type.declarations[symbol];
-
-            if (setterDecl is! mirrors.MethodMirror) {
-              throw FieldMutationException(T.toString(), name);
-            }
-
-            if (setterDecl.isSetter) {
-              mirror.invoke(symbol, [value]);
-              return;
-            }
-
-            throw FieldMutationException(T.toString(), name);
-          } on FieldMutationException catch (_) {
-            rethrow;
-          } catch (inner) {
-            // attempt a best-effort invoke (some runtimes may accept it)
-            mirror.setField(symbol, value);
-          }
+        if (declaration == null) {
+          symbol = Symbol("$name=");
+          declaration = _findDeclaration(symbol, mirror.type);
         }
 
-        if (fieldMirror is mirrors.VariableMirror && fieldMirror.isConst) {
+        if (declaration is mirrors.MethodMirror && declaration.isSetter) {
+          mirror.invoke(symbol, [value]);
+          return;
+        }
+
+        if (declaration is mirrors.VariableMirror && declaration.isConst) {
           throw FieldMutationException(T.toString(), name);
         }
 

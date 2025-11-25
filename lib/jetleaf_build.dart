@@ -12,6 +12,97 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
+/// 🏗 **JetLeaf Build**
+///
+/// The JetLeaf Build library provides a comprehensive set of tools and
+/// runtime utilities for code generation, runtime scanning, reflection,
+/// and AOT/JIT support. It is designed to facilitate modular application
+/// development, automated code generation, and runtime configuration
+/// within the JetLeaf ecosystem.
+///
+/// ## 🔑 Core Modules
+///
+/// ### Declarations & Generative Tools
+/// - `declaration.dart`, `generative.dart` — manage code declarations
+///   and generative constructs.
+///
+/// ### Helpers
+/// - `base.dart`, `equals_and_hash_code.dart`, `to_string.dart` — utility
+///   functions for object equality, string representations, and core helpers.
+///
+/// ### Runners
+/// - `run_scan.dart`, `test_scan.dart` — scan codebases for runtime or
+///   test analysis.
+///
+/// ### Runtime Generators
+/// - `application_library_generator.dart` — generates application libraries.
+/// - `declaration_file_writer.dart` — writes code declarations to files.
+/// - `library_generator.dart`, `mock_library_generator.dart` — library and mock generation.
+/// - `tree_shaker.dart` — removes unused declarations for optimized builds.
+///
+/// ### Runtime Hints
+/// - `runtime_hint.dart`, `runtime_hint_descriptor.dart`, `runtime_hint_processor.dart`
+///   — provide metadata and processing hooks for runtime optimizations.
+///
+/// ### Runtime Providers
+/// - `runtime_provider.dart`, `standard_runtime_provider.dart`,
+///   `configurable_runtime_provider.dart`, `meta_runtime_provider.dart`,
+///   `runtime_metadata_provider.dart` — manage runtime services and
+///   dependency injection.
+///
+/// ### Runtime Resolvers
+/// - `runtime_resolver.dart`, `jit_runtime_resolver.dart`, `aot_runtime_resolver.dart`,
+///   `fallback_runtime_resolver.dart` — resolve runtime dependencies for
+///   JIT or AOT contexts.
+///
+/// ### Runtime Scanners
+/// - `runtime_scanner.dart`, `application_runtime_scanner.dart`,
+///   `mock_runtime_scanner.dart`, `runtime_scanner_summary.dart` — scan
+///   application code and generate runtime metadata.
+///
+/// ### Utilities
+/// - `dart_type_resolver.dart`, `file_utility.dart`, `generic_type_parser.dart`,
+///   `reflection_utils.dart`, `utils.dart` — type parsing, file operations,
+///   and reflection utilities.
+///
+/// ### Meta and Discovery
+/// - `meta_table.dart`, `type_discovery.dart` — manage metadata and
+///   type discovery across the application.
+///
+/// ### Annotations, Constants & Exceptions
+/// - `annotations.dart`, `constant.dart`, `exceptions.dart` — support
+///   declarative metadata, constants, and runtime exceptions.
+///
+///
+/// ## 🌐 Global Runtime Provider
+///
+/// ```dart
+/// /// A global reference to the active runtime provider in the JetLeaf framework.
+/// RuntimeProvider? GLOBAL_RUNTIME_PROVIDER;
+/// ```
+///
+/// `GLOBAL_RUNTIME_PROVIDER` holds the current instance of [RuntimeProvider],
+/// which manages runtime services, dependency injection, and configuration
+/// throughout the JetLeaf application lifecycle.
+///
+/// Typically initialized during application bootstrap. Provides access to
+/// core services such as logging, configuration, and runtime scanning:
+///
+/// ```dart
+/// if (GLOBAL_RUNTIME_PROVIDER != null) {
+///   final logger = GLOBAL_RUNTIME_PROVIDER!.get<Logger>();
+///   logger.info('Application started successfully.');
+/// }
+/// ```
+///
+/// ⚠️ Caution: This variable is nullable, so handle cases where it is
+/// uninitialized to avoid null pointer exceptions.
+///
+/// Prefer using dependency injection or runtime service accessors in
+/// production code rather than directly referencing
+/// `GLOBAL_RUNTIME_PROVIDER`.
+///
+/// {@category Build & Runtime}
 library;
 
 import 'src/runtime/runtime_provider/runtime_provider.dart';
@@ -70,6 +161,7 @@ export 'src/runtime/type_discovery.dart';
 export 'src/annotations.dart';
 export 'src/constant.dart' hide IterableExtension;
 export 'src/exceptions.dart';
+export 'src/must_avoid.dart';
 
 /// A global reference to the active runtime provider in the JetLeaf framework.
 ///
