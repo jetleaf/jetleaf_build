@@ -12,7 +12,7 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
-import 'package:jetleaf_build/src/runtime/utils/generic_type_parser.dart';
+import 'package:jetleaf_build/src/utils/generic_type_parser.dart';
 import 'package:test/test.dart';
 
 void main() {

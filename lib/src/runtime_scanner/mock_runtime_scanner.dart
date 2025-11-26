@@ -18,7 +18,7 @@ import 'dart:async';
 
 import 'package:path/path.dart' as p;
 
-import '../../declaration/declaration.dart';
+import '../declaration/declaration.dart';
 import '../utils/file_utility.dart';
 import '../runtime_provider/standard_runtime_provider.dart';
 import '../runtime_provider/configurable_runtime_provider.dart';

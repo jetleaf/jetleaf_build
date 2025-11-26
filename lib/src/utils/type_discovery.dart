@@ -14,10 +14,10 @@
 
 import 'package:analyzer/dart/element/element.dart';
 
-import '../constant.dart';
+import 'constant.dart';
 import '../declaration/declaration.dart';
-import 'utils/generic_type_parser.dart';
-import 'runtime_provider/meta_runtime_provider.dart';
+import 'generic_type_parser.dart';
+import '../runtime_provider/meta_runtime_provider.dart';
 
 /// {@template type_discovery}
 /// A powerful type discovery system that can find any declaration using various search criteria.

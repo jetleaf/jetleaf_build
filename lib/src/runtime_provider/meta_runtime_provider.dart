@@ -14,12 +14,12 @@
 
 import 'dart:io';
 
-import '../../constant.dart';
-import '../../exceptions.dart';
+import '../utils/constant.dart';
+import '../exceptions.dart';
 import 'runtime_provider.dart';
 import '../runtime_resolver/runtime_resolver.dart';
-import '../../declaration/declaration.dart';
-import '../meta_table.dart';
+import '../declaration/declaration.dart';
+import '../utils/meta_table.dart';
 
 /// {@template central_runtime}
 /// A central, globally accessible proxy for runtime metadata in JetLeaf.

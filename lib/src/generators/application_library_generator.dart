@@ -32,10 +32,10 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 
-import '../../annotations.dart';
-import '../../constant.dart';
-import '../../declaration/declaration.dart';
-import '../../must_avoid.dart';
+import '../annotations.dart';
+import '../utils/constant.dart';
+import '../declaration/declaration.dart';
+import '../utils/must_avoid.dart';
 import '../utils/dart_type_resolver.dart';
 import '../utils/generic_type_parser.dart';
 import '../utils/utils.dart';

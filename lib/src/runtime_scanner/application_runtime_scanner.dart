@@ -15,7 +15,7 @@
 import 'dart:io';
 import 'dart:mirrors' as mirrors;
 
-import '../../declaration/declaration.dart';
+import '../declaration/declaration.dart';
 import '../utils/file_utility.dart';
 import '../generators/application_library_generator.dart';
 import '../generators/library_generator.dart';
@@ -191,23 +191,25 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
     List<TypeDeclaration> specialTypes = [];
 
     // 5. Load dart files that are not present in the [currentMirrorSystem]
-    _logInfo('Loading dart files that are not present in the [currentMirrorSystem#${access.isolate.debugName}]...');
-    Map<File, Uri> urisToLoad = FileUtils.getUrisToLoad(dartFiles, _package!);
     List<mirrors.LibraryMirror> forceLoadedMirrors = [];
-    final forceLoaded = <String>{};
+    if (configuration.forceLoadLibraries) {
+      _logInfo('Loading dart files that are not present in the [currentMirrorSystem#${access.isolate.debugName}]...');
+      final forceLoaded = <String>{};
+      Map<File, Uri> urisToLoad = FileUtils.getUrisToLoad(dartFiles, _package!);
 
-    for (final uriEntry in urisToLoad.entries) {
-      if(RuntimeUtils.isNonLoadableJetLeafFile(uriEntry.value) || await RuntimeUtils.shouldNotIncludeLibrary(uriEntry.value, configuration)) {
-        continue;
-      }
+      for (final uriEntry in urisToLoad.entries) {
+        if(RuntimeUtils.isNonLoadableJetLeafFile(uriEntry.value) || await RuntimeUtils.shouldNotIncludeLibrary(uriEntry.value, configuration)) {
+          continue;
+        }
 
-      if (!forceLoaded.add(uriEntry.value.toString())) {
-        continue;
-      }
+        if (!forceLoaded.add(uriEntry.value.toString())) {
+          continue;
+        }
 
-      mirrors.LibraryMirror? mirror = await FileUtils.forceLoadLibrary(uriEntry.value, uriEntry.key, access);
-      if(mirror != null) {
-        forceLoadedMirrors.add(mirror);
+        mirrors.LibraryMirror? mirror = await FileUtils.forceLoadLibrary(uriEntry.value, uriEntry.key, access);
+        if(mirror != null) {
+          forceLoadedMirrors.add(mirror);
+        }
       }
     }
 

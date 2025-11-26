@@ -14,8 +14,8 @@
 
 import 'dart:io';
 
-import 'package:jetleaf_build/src/runtime/runtime_scanner/runtime_scanner_configuration.dart';
-import 'package:jetleaf_build/src/runtime/utils/utils.dart';
+import 'package:jetleaf_build/src/runtime_scanner/runtime_scanner_configuration.dart';
+import 'package:jetleaf_build/src/utils/utils.dart';
 import 'package:test/test.dart';
 
 void main() {

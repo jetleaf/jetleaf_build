@@ -14,7 +14,7 @@
 
 import 'dart:collection';
 
-import '../../declaration/declaration.dart';
+import '../declaration/declaration.dart';
 
 /// {@template tree_shaker}
 /// Performs tree-shaking analysis to determine which classes are actually used

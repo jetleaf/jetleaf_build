@@ -16,8 +16,8 @@ import 'dart:io';
 
 // Conditional import: use `reflection.dart` if dart:mirrors is available,
 // otherwise fall back to a stubbed scanner implementation.
-import '../runtime/runtime_provider/runtime_provider.dart';
-import '../runtime/runtime_scanner/runtime_scanner_configuration.dart';
+import '../runtime_provider/runtime_provider.dart';
+import '../runtime_scanner/runtime_scanner_configuration.dart';
 import 'jet_runtime_stub_scanner.dart'
     if (dart.library.mirrors) '../runtime/runtime_scanner/application_runtime_scanner.dart';
 
@@ -50,14 +50,14 @@ import 'jet_runtime_stub_scanner.dart'
 ///
 /// Returns a [Future] that resolves to the discovered [RuntimeProvider].
 /// {@endtemplate}
-Future<RuntimeProvider> runScan([Directory? source]) async {
+Future<RuntimeProvider> runScan({Directory? source, RuntimeScannerConfiguration? config, bool forceLoadLibraries = false}) async {
   final scanner = ApplicationRuntimeScanner(
     onInfo: (msg) => print("(∞INFO∞) $msg"),
     onWarning: (msg) => print("(∞WARN∞) $msg"),
     onError: (msg) => print("(∞ERROR∞) $msg"),
   );
 
-  final scan = await scanner.scan(RuntimeScannerConfiguration(
+  final scan = await scanner.scan(config ?? RuntimeScannerConfiguration(
     skipTests: true,
     reload: true,
     packagesToScan: [],
@@ -71,7 +71,8 @@ Future<RuntimeProvider> runScan([Directory? source]) async {
       "r:.*/benchmark/.*",
       "r:.*/.dart_tool/.*",
       "r:.*/build/.*",
-    ]
+    ],
+    forceLoadLibraries: forceLoadLibraries
   ), source: source);
 
   return scan.getContext();

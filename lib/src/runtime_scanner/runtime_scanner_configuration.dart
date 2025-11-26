@@ -147,6 +147,9 @@ class RuntimeScannerConfiguration {
   /// Output path for generated files
   final String outputPath;
 
+  /// Whether to force load libraries - Mostly for dev env
+  final bool forceLoadLibraries;
+
   /// {@macro runtime_scanner_configuration}
   ///
   /// {@template scan_loader_constructor}
@@ -184,6 +187,7 @@ class RuntimeScannerConfiguration {
     this.enableTreeShaking = false,
     this.writeDeclarationsToFiles = false,
     this.outputPath = 'build/generated',
+    this.forceLoadLibraries = false
   });
 
   /// Returns a copy of this configuration with updated values.
@@ -209,6 +213,7 @@ class RuntimeScannerConfiguration {
     bool? enableTreeShaking,
     bool? writeDeclarationsToFiles,
     String? outputPath,
+    bool? forceLoadLibraries
   }) {
     return RuntimeScannerConfiguration(
       reload: reload ?? this.reload,
@@ -226,6 +231,7 @@ class RuntimeScannerConfiguration {
       enableTreeShaking: enableTreeShaking ?? this.enableTreeShaking,
       writeDeclarationsToFiles: writeDeclarationsToFiles ?? this.writeDeclarationsToFiles,
       outputPath: outputPath ?? this.outputPath,
+      forceLoadLibraries: forceLoadLibraries ?? this.forceLoadLibraries
     );
   }
 
@@ -263,6 +269,7 @@ RuntimeScanLoader(
   enableTreeShaking: $enableTreeShaking,
   writeDeclarationsToFiles: $writeDeclarationsToFiles,
   outputPath: $outputPath,
+  forceLoadLibraries: $forceLoadLibraries
 )
 ''';
   }

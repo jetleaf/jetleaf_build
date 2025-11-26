@@ -19,7 +19,7 @@
 // Base interfaces and abstract classes
 import 'package:jetleaf_build/src/annotations.dart';
 import 'package:jetleaf_build/src/runner/test_scan.dart';
-import 'package:jetleaf_build/src/runtime/runtime_provider/meta_runtime_provider.dart';
+import 'package:jetleaf_build/src/runtime_provider/meta_runtime_provider.dart';
 
 abstract class BaseInterface {
   void doSomething();

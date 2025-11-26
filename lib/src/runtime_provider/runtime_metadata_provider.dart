@@ -12,7 +12,7 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
-import '../../declaration/declaration.dart';
+import '../declaration/declaration.dart';
 
 /// {@template reflection_metadata_provider}
 /// A contract for providing access to reflection metadata in JetLeaf.

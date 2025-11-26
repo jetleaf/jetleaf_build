@@ -19,10 +19,10 @@ import 'dart:mirrors' as mirrors;
 
 import 'package:path/path.dart' as p;
 
-import '../../constant.dart';
-import '../../declaration/declaration.dart';
-import '../../declaration/generative.dart';
-import '../../must_avoid.dart';
+import 'constant.dart';
+import '../declaration/declaration.dart';
+import '../declaration/generative.dart';
+import 'must_avoid.dart';
 import '../runtime_scanner/runtime_scanner_configuration.dart';
 
 typedef OnLogged = void Function(String message);

@@ -22,7 +22,7 @@ import 'package:meta/meta.dart';
 
 import '../exceptions.dart';
 import '../helpers/equals_and_hash_code.dart';
-import '../runtime/runtime_provider/meta_runtime_provider.dart';
+import '../runtime_provider/meta_runtime_provider.dart';
 
 part '_declaration.dart';
 

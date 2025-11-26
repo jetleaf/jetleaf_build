@@ -16,7 +16,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../../declaration/declaration.dart';
+import '../declaration/declaration.dart';
 
 /// {@template declaration_file_writer}
 /// Writes generated declarations to separate files organized by packages.

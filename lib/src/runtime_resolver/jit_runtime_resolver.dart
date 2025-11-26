@@ -14,7 +14,7 @@
 
 import 'dart:mirrors' as mirrors;
 
-import '../../exceptions.dart';
+import '../exceptions.dart';
 import '../utils/generic_type_parser.dart';
 import 'runtime_resolver.dart';
 

@@ -17,8 +17,9 @@ import 'dart:mirrors' as mirrors;
 
 import 'package:meta/meta.dart';
 
-import '../../declaration/declaration.dart';
+import '../declaration/declaration.dart';
 import '../runtime_scanner/runtime_scanner_configuration.dart';
+import '../utils/file_utility.dart';
 import '../utils/utils.dart';
 
 /// {@template library_generator}
@@ -55,13 +56,13 @@ abstract class LibraryGenerator {
   final mirrors.MirrorSystem mirrorSystem;
 
   /// Callback for informational messages
-  final void Function(String) onInfo;
+  final OnLogged onInfo;
 
   /// Callback for error messages
-  final void Function(String) onError;
+  final OnLogged onError;
 
   /// Callback for warning messages
-  final void Function(String) onWarning;
+  final OnLogged onWarning;
 
   /// The runtime scan loader configuration
   final RuntimeScannerConfiguration configuration;

@@ -14,7 +14,7 @@
 
 import 'dart:io';
 
-import '../../declaration/declaration.dart';
+import '../declaration/declaration.dart';
 import '../runtime_resolver/runtime_resolver.dart';
 import 'runtime_metadata_provider.dart';
 

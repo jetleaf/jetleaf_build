@@ -14,8 +14,8 @@
 
 import 'dart:io' show File;
 
-import '../../declaration/declaration.dart';
-import '../../exceptions.dart';
+import '../declaration/declaration.dart';
+import '../exceptions.dart';
 import '../runtime_resolver/runtime_resolver.dart';
 import 'configurable_runtime_provider.dart';
 

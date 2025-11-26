@@ -14,9 +14,9 @@
 
 import 'dart:io';
 
-import '../runtime/runtime_scanner/runtime_scanner.dart';
-import '../runtime/runtime_scanner/runtime_scanner_configuration.dart';
-import '../runtime/runtime_scanner/runtime_scanner_summary.dart';
+import '../runtime_scanner/runtime_scanner.dart';
+import '../runtime_scanner/runtime_scanner_configuration.dart';
+import '../runtime_scanner/runtime_scanner_summary.dart';
 
 /// {@template application_runtime_scanner}
 /// A JetLeaf-specific implementation of [RuntimeScanner].

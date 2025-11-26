@@ -14,8 +14,8 @@
 
 import 'dart:mirrors' as mirrors;
 
-import '../../constant.dart';
-import '../../declaration/declaration.dart';
+import '../utils/constant.dart';
+import '../declaration/declaration.dart';
 import '../utils/file_utility.dart';
 import '../runtime_hint/default_runtime_hint_descriptor.dart';
 import '../runtime_hint/runtime_hint_descriptor.dart';

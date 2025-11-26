@@ -105,7 +105,7 @@
 /// {@category Build & Runtime}
 library;
 
-import 'src/runtime/runtime_provider/runtime_provider.dart';
+import 'src/runtime_provider/runtime_provider.dart';
 
 export 'src/declaration/declaration.dart';
 export 'src/declaration/generative.dart';
@@ -117,51 +117,51 @@ export 'src/helpers/to_string.dart';
 export 'src/runner/run_scan.dart';
 export 'src/runner/test_scan.dart';
 
-export 'src/runtime/generators/application_library_generator.dart';
-export 'src/runtime/generators/declaration_file_writer.dart';
-export 'src/runtime/generators/library_generator.dart';
-export 'src/runtime/generators/mock_library_generator.dart';
-export 'src/runtime/generators/res.dart';
-export 'src/runtime/generators/tree_shaker.dart';
+export 'src/generators/application_library_generator.dart';
+export 'src/generators/declaration_file_writer.dart';
+export 'src/generators/library_generator.dart';
+export 'src/generators/mock_library_generator.dart';
+export 'src/generators/res.dart';
+export 'src/generators/tree_shaker.dart';
 
-export 'src/runtime/runtime_hint/default_runtime_hint_descriptor.dart';
-export 'src/runtime/runtime_hint/runtime_hint.dart';
-export 'src/runtime/runtime_hint/runtime_hint_descriptor.dart';
-export 'src/runtime/runtime_hint/runtime_hint_processor.dart';
+export 'src/runtime_hint/default_runtime_hint_descriptor.dart';
+export 'src/runtime_hint/runtime_hint.dart';
+export 'src/runtime_hint/runtime_hint_descriptor.dart';
+export 'src/runtime_hint/runtime_hint_processor.dart';
 
-export 'src/runtime/runtime_provider/configurable_runtime_provider.dart';
-export 'src/runtime/runtime_provider/meta_runtime_provider.dart';
-export 'src/runtime/runtime_provider/runtime_metadata_provider.dart';
-export 'src/runtime/runtime_provider/runtime_provider.dart';
-export 'src/runtime/runtime_provider/standard_runtime_provider.dart';
+export 'src/runtime_provider/configurable_runtime_provider.dart';
+export 'src/runtime_provider/meta_runtime_provider.dart';
+export 'src/runtime_provider/runtime_metadata_provider.dart';
+export 'src/runtime_provider/runtime_provider.dart';
+export 'src/runtime_provider/standard_runtime_provider.dart';
 
-export 'src/runtime/runtime_resolver/aot_runtime_resolver.dart';
-export 'src/runtime/runtime_resolver/fallback_runtime_resolver.dart';
-export 'src/runtime/runtime_resolver/jit_runtime_resolver.dart';
-export 'src/runtime/runtime_resolver/runtime_resolver.dart';
-export 'src/runtime/runtime_resolver/runtime_resolving.dart';
+export 'src/runtime_resolver/aot_runtime_resolver.dart';
+export 'src/runtime_resolver/fallback_runtime_resolver.dart';
+export 'src/runtime_resolver/jit_runtime_resolver.dart';
+export 'src/runtime_resolver/runtime_resolver.dart';
+export 'src/runtime_resolver/runtime_resolving.dart';
 
-export 'src/runtime/runtime_scanner/application_runtime_scanner.dart' hide OnLogged;
-export 'src/runtime/runtime_scanner/configurable_runtime_scanner_summary.dart';
-export 'src/runtime/runtime_scanner/default_runtime_scanner_summary.dart';
-export 'src/runtime/runtime_scanner/mock_runtime_scanner.dart' hide OnLogged;
-export 'src/runtime/runtime_scanner/runtime_scanner.dart';
-export 'src/runtime/runtime_scanner/runtime_scanner_configuration.dart';
-export 'src/runtime/runtime_scanner/runtime_scanner_summary.dart';
+export 'src/runtime_scanner/application_runtime_scanner.dart' hide OnLogged;
+export 'src/runtime_scanner/configurable_runtime_scanner_summary.dart';
+export 'src/runtime_scanner/default_runtime_scanner_summary.dart';
+export 'src/runtime_scanner/mock_runtime_scanner.dart' hide OnLogged;
+export 'src/runtime_scanner/runtime_scanner.dart';
+export 'src/runtime_scanner/runtime_scanner_configuration.dart';
+export 'src/runtime_scanner/runtime_scanner_summary.dart';
 
-export 'src/runtime/utils/dart_type_resolver.dart';
-export 'src/runtime/utils/file_utility.dart';
-export 'src/runtime/utils/generic_type_parser.dart';
-export 'src/runtime/utils/reflection_utils.dart';
-export 'src/runtime/utils/utils.dart' hide StringX;
+export 'src/utils/dart_type_resolver.dart';
+export 'src/utils/file_utility.dart';
+export 'src/utils/generic_type_parser.dart';
+export 'src/utils/reflection_utils.dart';
+export 'src/utils/utils.dart' hide StringX;
 
-export 'src/runtime/meta_table.dart';
-export 'src/runtime/type_discovery.dart';
+export 'src/utils/meta_table.dart';
+export 'src/utils/type_discovery.dart';
 
 export 'src/annotations.dart';
-export 'src/constant.dart' hide IterableExtension;
+export 'src/utils/constant.dart' hide IterableExtension;
 export 'src/exceptions.dart';
-export 'src/must_avoid.dart';
+export 'src/utils/must_avoid.dart';
 
 /// A global reference to the active runtime provider in the JetLeaf framework.
 ///

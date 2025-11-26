@@ -14,12 +14,12 @@
 
 import 'dart:io';
 
-import '../runtime/runtime_provider/meta_runtime_provider.dart';
-import '../runtime/runtime_scanner/runtime_scanner_configuration.dart';
-import '../runtime/generators/mock_library_generator.dart';
-import '../runtime/runtime_scanner/mock_runtime_scanner.dart';
+import '../runtime_provider/meta_runtime_provider.dart';
+import '../runtime_scanner/runtime_scanner_configuration.dart';
+import '../generators/mock_library_generator.dart';
+import '../runtime_scanner/mock_runtime_scanner.dart';
 
-Future<void> runTestScan({List<String> packagesToExclude = const [], List<String> filesToLoad = const []}) async {
+Future<void> runTestScan({List<String> packagesToExclude = const [], List<String> filesToLoad = const [], RuntimeScannerConfiguration? config}) async {
   final scan = await MockRuntimeScanner(
     onInfo: (msg) => print('[MOCK INFO] $msg'),
     onWarning: (msg) => print('[MOCK WARNING] $msg'),
@@ -34,7 +34,7 @@ Future<void> runTestScan({List<String> packagesToExclude = const [], List<String
       configuration: params.configuration,
       packages: params.packages
     )
-  ).scan(RuntimeScannerConfiguration(
+  ).scan(config ?? RuntimeScannerConfiguration(
     skipTests: true,
     packagesToExclude: [
       "test",
