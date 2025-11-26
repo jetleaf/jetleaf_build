@@ -46,7 +46,7 @@ import 'declaration_file_writer.dart';
 /// Enhanced reflection generator that integrates analyzer capabilities directly
 /// into declaration classes for perfect generic type handling and accurate
 /// assignability checking.
-class ApplicationLibraryGenerator extends LibraryGenerator {
+base class ApplicationLibraryGenerator extends LibraryGenerator {
   /// Analysis context collection for static analysis
   AnalysisContextCollection? _analysisContextCollection;
   
@@ -2451,7 +2451,7 @@ These classes may need manual type resolution or have complex generic constraint
         final annotationName = mirrors.MirrorSystem.getName(annotationType.simpleName);
 
         // Extract annotations and resolve type
-        if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+        if(GenericTypeParser.shouldCheckGeneric(type)) {
           final annotations = await _extractAnnotations(annotationType.metadata, package);
           final resolvedType = await _resolveTypeFromGenericAnnotation(annotations, annotationName);
           if (resolvedType != null) {

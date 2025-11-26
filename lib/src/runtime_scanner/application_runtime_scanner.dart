@@ -16,8 +16,8 @@ import 'dart:io';
 import 'dart:mirrors' as mirrors;
 
 import '../declaration/declaration.dart';
+import '../generators/default_library_generator.dart';
 import '../utils/file_utility.dart';
-import '../generators/application_library_generator.dart';
 import '../generators/library_generator.dart';
 import '../runtime_provider/standard_runtime_provider.dart';
 import '../runtime_provider/configurable_runtime_provider.dart';
@@ -215,7 +215,7 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
 
     // 5. Generate reflection metadata
     _logInfo('Resolving declaration metadata libraries...');
-    LibraryGenerator libraryGenerator = ApplicationLibraryGenerator(
+    LibraryGenerator libraryGenerator = DefaultLibraryGenerator(
       mirrorSystem: access,
       forceLoadedMirrors: forceLoadedMirrors,
       onInfo: _logInfo,
@@ -298,7 +298,6 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
   RuntimeScannerConfiguration _addDefaultPackagesToScan(RuntimeScannerConfiguration configuration, String currentPackage) {
     final defaultPackages = {
       currentPackage,
-      'jetleaf',
       ...configuration.packagesToScan
     }.toList();
     final filteredDefaults = defaultPackages.where((pkg) => !configuration.packagesToExclude.contains(pkg)).toList();

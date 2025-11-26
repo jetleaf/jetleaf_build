@@ -17,9 +17,10 @@ import 'dart:io';
 // Conditional import: use `reflection.dart` if dart:mirrors is available,
 // otherwise fall back to a stubbed scanner implementation.
 import '../runtime_provider/runtime_provider.dart';
+import '../runtime_scanner/application_runtime_scanner.dart';
 import '../runtime_scanner/runtime_scanner_configuration.dart';
-import 'jet_runtime_stub_scanner.dart'
-    if (dart.library.mirrors) '../runtime/runtime_scanner/application_runtime_scanner.dart';
+// import 'jet_runtime_stub_scanner.dart'
+//     if (dart.library.mirrors) '../runtime/runtime_scanner/application_runtime_scanner.dart';
 
 /// {@template run_scan}
 /// Executes a runtime scan using the [ApplicationRuntimeScanner].

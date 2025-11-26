@@ -117,11 +117,10 @@ export 'src/helpers/to_string.dart';
 export 'src/runner/run_scan.dart';
 export 'src/runner/test_scan.dart';
 
-export 'src/generators/application_library_generator.dart';
+export 'src/generators/default_library_generator.dart';
 export 'src/generators/declaration_file_writer.dart';
 export 'src/generators/library_generator.dart';
 export 'src/generators/mock_library_generator.dart';
-export 'src/generators/res.dart';
 export 'src/generators/tree_shaker.dart';
 
 export 'src/runtime_hint/default_runtime_hint_descriptor.dart';
@@ -144,7 +143,7 @@ export 'src/runtime_resolver/runtime_resolving.dart';
 export 'src/runtime_scanner/application_runtime_scanner.dart' hide OnLogged;
 export 'src/runtime_scanner/configurable_runtime_scanner_summary.dart';
 export 'src/runtime_scanner/default_runtime_scanner_summary.dart';
-export 'src/runtime_scanner/mock_runtime_scanner.dart' hide OnLogged;
+export 'src/runtime_scanner/mock_runtime_scanner.dart';
 export 'src/runtime_scanner/runtime_scanner.dart';
 export 'src/runtime_scanner/runtime_scanner_configuration.dart';
 export 'src/runtime_scanner/runtime_scanner_summary.dart';

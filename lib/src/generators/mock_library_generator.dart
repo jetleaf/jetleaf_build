@@ -16,7 +16,7 @@ import 'dart:mirrors' as mirrors;
 
 import '../utils/utils.dart';
 import '../declaration/declaration.dart';
-import 'application_library_generator.dart';
+import 'default_library_generator.dart';
 import 'library_generator.dart';
 import '../runtime_scanner/runtime_scanner_configuration.dart';
 
@@ -53,7 +53,7 @@ import '../runtime_scanner/runtime_scanner_configuration.dart';
 /// final libraries = await generator.generate();
 /// ```
 /// {@endtemplate}
-class MockLibraryGenerator extends ApplicationLibraryGenerator {
+base class MockLibraryGenerator extends DefaultLibraryGenerator {
   /// {@macro mock_library_generator}
   ///
   /// {@template mock_library_generator_constructor}
@@ -173,7 +173,7 @@ class MockLibraryGeneratorParams {
 /// This class is only visible within the framework and not to be used by external users.
 /// For users who want to test their application, they can use the `MockLibraryGenerator`
 /// to bootstrap their application.
-class InternalMockLibraryGenerator extends ApplicationLibraryGenerator {
+base class InternalMockLibraryGenerator extends DefaultLibraryGenerator {
   /// {@macro mock_library_generator}
   ///
   /// {@template mock_library_generator_constructor}

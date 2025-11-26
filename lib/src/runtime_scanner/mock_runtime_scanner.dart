@@ -29,19 +29,6 @@ import 'runtime_scanner_configuration.dart';
 import 'runtime_scanner_summary.dart';
 import '../generators/mock_library_generator.dart';
 
-/// {@template on_logged}
-/// Signature for logging callbacks used to report runtime scanning messages.
-///
-/// This is typically passed to [DefaultRuntimeScan] for custom logging:
-///
-/// ```dart
-/// void logInfo(String msg) => print('[INFO] $msg');
-/// final scanner = DefaultRuntimeScan(onInfo: logInfo);
-/// ```
-///
-/// {@endtemplate}
-typedef OnLogged = void Function(String message);
-
 /// {@template mock_runtime_scan}
 /// A lightweight mock implementation of [RuntimeScanner] for testing and development.
 ///
@@ -215,7 +202,7 @@ class MockRuntimeScanner implements RuntimeScanner {
       configuration: configuration,
       packages: [_createPackage(_package!)],
     );
-    print(configuration);
+    
     final libraryGenerator = _libraryGeneratorFactory?.call(params) ?? MockLibraryGenerator(
       mirrorSystem: params.mirrorSystem,
       forceLoadedMirrors: params.forceLoadedMirrors,
