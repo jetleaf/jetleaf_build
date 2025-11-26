@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project adheres to a simple, human-readable changelog format.
 
+## [1.0.2] - 2025-11-26
+
+- Fixed issues on production
+
 ## [1.0.1] - 2025-11-25
 
 - Fixed JitRuntimeResolver
