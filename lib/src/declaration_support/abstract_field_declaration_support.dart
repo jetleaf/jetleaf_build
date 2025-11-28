@@ -31,18 +31,10 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
 
   /// Generate field declaration with analyzer support
   @protected
-  Future<FieldDeclaration> generateField(
-    mirrors.VariableMirror fieldMirror,
-    Element? parentElement,
-    Package package,
-    String libraryUri,
-    Uri sourceUri,
-    String className,
-    ClassDeclaration? parentClass,
-    String? sourceCode,
-  ) async {
+  Future<FieldDeclaration> generateField(mirrors.VariableMirror fieldMirror, Element? parentElement, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration? parentClass, String? sourceCode) async {
     final fieldName = mirrors.MirrorSystem.getName(fieldMirror.simpleName);
     
+    // Get analyzer field element
     FieldElement? fieldElement;
     if (parentElement is InterfaceElement) {
       fieldElement = parentElement.getField(fieldName);
@@ -52,7 +44,8 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
     final mirrorType = fieldMirror.type;
     Type runtimeType = mirrorType.hasReflectedType ? mirrorType.reflectedType : mirrorType.runtimeType;
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Extract annotations and resolve type
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final annotations = await extractAnnotations(mirrorType.metadata, package);
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, fieldName);
       if (resolvedType != null) {
@@ -96,20 +89,14 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
 
   /// Generate built-in field
   @protected
-  Future<FieldDeclaration> generateBuiltInField(
-    mirrors.VariableMirror fieldMirror, 
-    Package package, 
-    String libraryUri, 
-    Uri sourceUri, 
-    String className, 
-    ClassDeclaration? parentClass
-  ) async {
+  Future<FieldDeclaration> generateBuiltInField(mirrors.VariableMirror fieldMirror, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration? parentClass) async {
     final fieldName = mirrors.MirrorSystem.getName(fieldMirror.simpleName);
 
     final mirrorType = fieldMirror.type;
     Type runtimeType = mirrorType.hasReflectedType ? mirrorType.reflectedType : mirrorType.runtimeType;
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Extract annotations and resolve type
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final annotations = await extractAnnotations(mirrorType.metadata, package);
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, fieldName);
       if (resolvedType != null) {
@@ -120,8 +107,8 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
     return StandardFieldDeclaration(
       name: fieldName,
       type: runtimeType,
-      element: null,
-      dartType: null,
+      element: null, // Built-in fields don't have analyzer elements
+      dartType: null, // Built-in fields don't have analyzer DartType
       libraryDeclaration: libraryCache[libraryUri]!,
       parentClass: parentClass != null ? StandardLinkDeclaration(
         name: parentClass.getName(),
@@ -149,18 +136,14 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
 
   /// Generate built-in top-level field
   @protected
-  Future<FieldDeclaration> generateBuiltInTopLevelField(
-    mirrors.VariableMirror fieldMirror, 
-    Package package, 
-    String libraryUri, 
-    Uri sourceUri
-  ) async {
+  Future<FieldDeclaration> generateBuiltInTopLevelField(mirrors.VariableMirror fieldMirror, Package package, String libraryUri, Uri sourceUri) async {
     final fieldName = mirrors.MirrorSystem.getName(fieldMirror.simpleName);
 
     final mirrorType = fieldMirror.type;
     Type runtimeType = mirrorType.hasReflectedType ? mirrorType.reflectedType : mirrorType.runtimeType;
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Extract annotations and resolve type
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final annotations = await extractAnnotations(mirrorType.metadata, package);
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, fieldName);
       if (resolvedType != null) {
@@ -171,8 +154,8 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
     return StandardFieldDeclaration(
       name: fieldName,
       type: runtimeType,
-      element: null,
-      dartType: null,
+      element: null, // Built-in fields don't have analyzer elements
+      dartType: null, // Built-in fields don't have analyzer DartType
       libraryDeclaration: libraryCache[libraryUri]!,
       parentClass: null,
       linkDeclaration: await getLinkDeclaration(fieldMirror.type, package, libraryUri),
@@ -191,15 +174,11 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
 
   /// Generate top-level field with analyzer support
   @protected
-  Future<FieldDeclaration> generateTopLevelField(
-    mirrors.VariableMirror fieldMirror,
-    Package package,
-    String libraryUri,
-    Uri sourceUri,
-  ) async {
+  Future<FieldDeclaration> generateTopLevelField(mirrors.VariableMirror fieldMirror, Package package, String libraryUri, Uri sourceUri) async {
     final fieldName = mirrors.MirrorSystem.getName(fieldMirror.simpleName);
     final libraryElement = await getLibraryElement(Uri.parse(libraryUri));
     
+    // Get top-level variable element
     TopLevelVariableElement? variableElement;
     if (libraryElement != null) {
       variableElement = libraryElement.topLevelVariables.where((v) => v.name == fieldName).firstOrNull;
@@ -209,7 +188,8 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
     final mirrorType = fieldMirror.type;
     Type runtimeType = mirrorType.hasReflectedType ? mirrorType.reflectedType : mirrorType.runtimeType;
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Extract annotations and resolve type
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final annotations = await extractAnnotations(mirrorType.metadata, package);
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, fieldName);
       if (resolvedType != null) {

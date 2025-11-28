@@ -31,13 +31,7 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
 
   /// Extract parameters with analyzer support
   @protected
-  Future<List<ParameterDeclaration>> extractParameters(
-    List<mirrors.ParameterMirror> mirrorParams, 
-    List<TypeParameterElement>? analyzerParams, 
-    Package package, 
-    String libraryUri, 
-    MemberDeclaration parentMember
-  ) async {
+  Future<List<ParameterDeclaration>> extractParameters(List<mirrors.ParameterMirror> mirrorParams, List<TypeParameterElement>? analyzerParams, Package package, String libraryUri, MemberDeclaration parentMember) async {
     final parameters = <ParameterDeclaration>[];
     
     for (int i = 0; i < mirrorParams.length; i++) {
@@ -50,6 +44,7 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
       final dartType = analyzerParam?.bound;
       final paramType = await getLinkDeclaration(mirrorParam.type, package, libraryUri, dartType);
       
+      // Safe access to default value
       dynamic defaultValue;
       if (mirrorParam.hasDefaultValue && mirrorParam.defaultValue != null && mirrorParam.defaultValue!.hasReflectee) {
         defaultValue = mirrorParam.defaultValue!.reflectee;
@@ -58,7 +53,8 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
       final mirrorType = mirrorParam.type;
       Type runtimeType = mirrorType.hasReflectedType ? mirrorType.reflectedType : mirrorType.runtimeType;
 
-      if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+      // Extract annotations and resolve type
+      if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
         final annotations = await extractAnnotations(mirrorType.metadata, package);
         final resolvedType = await resolveTypeFromGenericAnnotation(annotations, paramName);
         if (resolvedType != null) {
@@ -92,17 +88,10 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
 
   /// Generate method declaration with analyzer support
   @protected
-  Future<MethodDeclaration> generateMethod(
-    mirrors.MethodMirror methodMirror,
-    Element? parentElement,
-    Package package,
-    String libraryUri,
-    Uri sourceUri,
-    String className,
-    ClassDeclaration? parentClass,
-  ) async {
+  Future<MethodDeclaration> generateMethod(mirrors.MethodMirror methodMirror, Element? parentElement, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration? parentClass) async {
     final methodName = mirrors.MirrorSystem.getName(methodMirror.simpleName);
     
+    // Get appropriate analyzer element
     Element? methodElement;
     if (parentElement is InterfaceElement) {
       if (methodMirror.isGetter) {
@@ -118,7 +107,8 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
     final mirrorType = methodMirror.returnType;
     Type runtimeType = mirrorType.hasReflectedType ? mirrorType.reflectedType : mirrorType.runtimeType;
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Extract annotations and resolve type
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final annotations = await extractAnnotations(mirrorType.metadata, package);
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, methodName);
       if (resolvedType != null) {
@@ -162,20 +152,14 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
 
   /// Generate built-in method
   @protected
-  Future<MethodDeclaration> generateBuiltInMethod(
-    mirrors.MethodMirror methodMirror, 
-    Package package, 
-    String libraryUri, 
-    Uri sourceUri, 
-    String className, 
-    ClassDeclaration? parentClass
-  ) async {
+  Future<MethodDeclaration> generateBuiltInMethod(mirrors.MethodMirror methodMirror, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration? parentClass) async {
     final methodName = mirrors.MirrorSystem.getName(methodMirror.simpleName);
 
     final mirrorType = methodMirror.returnType;
     Type runtimeType = mirrorType.hasReflectedType ? mirrorType.reflectedType : mirrorType.runtimeType;
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Extract annotations and resolve type
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final annotations = await extractAnnotations(mirrorType.metadata, package);
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, methodName);
       if (resolvedType != null) {
@@ -185,8 +169,8 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
 
     final result = StandardMethodDeclaration(
       name: methodName,
-      element: null,
-      dartType: null,
+      element: null, // Built-in methods don't have analyzer elements
+      dartType: null, // Built-in methods don't have analyzer DartType
       type: runtimeType,
       libraryDeclaration: libraryCache[libraryUri]!,
       returnType: await getLinkDeclaration(methodMirror.returnType, package, libraryUri),
@@ -219,18 +203,14 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
 
   /// Generate built-in top-level method
   @protected
-  Future<MethodDeclaration> generateBuiltInTopLevelMethod(
-    mirrors.MethodMirror methodMirror, 
-    Package package, 
-    String libraryUri, 
-    Uri sourceUri
-  ) async {
+  Future<MethodDeclaration> generateBuiltInTopLevelMethod(mirrors.MethodMirror methodMirror, Package package, String libraryUri, Uri sourceUri) async {
     final methodName = mirrors.MirrorSystem.getName(methodMirror.simpleName);
 
     final mirrorType = methodMirror.returnType;
     Type runtimeType = mirrorType.hasReflectedType ? mirrorType.reflectedType : mirrorType.runtimeType;
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Extract annotations and resolve type
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final annotations = await extractAnnotations(mirrorType.metadata, package);
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, methodName);
       if (resolvedType != null) {
@@ -240,8 +220,8 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
 
     final result = StandardMethodDeclaration(
       name: methodName,
-      element: null,
-      dartType: null,
+      element: null, // Built-in methods don't have analyzer elements
+      dartType: null, // Built-in methods don't have analyzer DartType
       type: runtimeType,
       libraryDeclaration: libraryCache[libraryUri]!,
       returnType: await getLinkDeclaration(methodMirror.returnType, package, libraryUri),
@@ -264,16 +244,12 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
 
   /// Generate top-level method with analyzer support
   @protected
-  Future<MethodDeclaration> generateTopLevelMethod(
-    mirrors.MethodMirror methodMirror,
-    Package package,
-    String libraryUri,
-    Uri sourceUri,
-  ) async {
+  Future<MethodDeclaration> generateTopLevelMethod(mirrors.MethodMirror methodMirror, Package package, String libraryUri, Uri sourceUri) async {
     final methodName = mirrors.MirrorSystem.getName(methodMirror.simpleName);
     
     final libraryElement = await getLibraryElement(Uri.parse(libraryUri));
     
+    // Get top-level function element
     ExecutableElement? functionElement;
     if (libraryElement != null) {
       functionElement = libraryElement.topLevelFunctions.where((f) => f.name == methodName).firstOrNull;
@@ -283,7 +259,8 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
     final mirrorType = methodMirror.returnType;
     Type runtimeType = mirrorType.hasReflectedType ? mirrorType.reflectedType : mirrorType.runtimeType;
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Extract annotations and resolve type
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final annotations = await extractAnnotations(mirrorType.metadata, package);
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, methodName);
       if (resolvedType != null) {

@@ -58,10 +58,10 @@ Future<RuntimeProvider> runScan({Directory? source, RuntimeScannerConfiguration?
     onError: (msg) => print("(∞ERROR∞) $msg"),
   );
 
-  final scan = await scanner.scan(config ?? RuntimeScannerConfiguration(
-    skipTests: true,
-    reload: true,
-    packagesToScan: [],
+  final scan = await scanner.scan(RuntimeScannerConfiguration(
+    skipTests: config?.skipTests ?? true,
+    reload: config?.reload ?? true,
+    packagesToScan: config?.packagesToScan ?? [],
     packagesToExclude: [
       'collection',
       'analyzer',
@@ -72,8 +72,20 @@ Future<RuntimeProvider> runScan({Directory? source, RuntimeScannerConfiguration?
       "r:.*/benchmark/.*",
       "r:.*/.dart_tool/.*",
       "r:.*/build/.*",
+      ...config?.packagesToExclude ?? []
     ],
-    forceLoadLibraries: forceLoadLibraries
+    additions: config?.additions ?? [],
+    updateAssets: config?.updateAssets ?? false,
+    writeDeclarationsToFiles: config?.writeDeclarationsToFiles ?? false,
+    forceLoadLibraries: config?.forceLoadLibraries ?? forceLoadLibraries,
+    scanClasses: config?.scanClasses ?? [],
+    filesToScan: config?.filesToScan ?? [],
+    filesToExclude: config?.filesToExclude ?? [],
+    enableTreeShaking: config?.enableTreeShaking ?? false,
+    excludeClasses: config?.excludeClasses ?? [],
+    updatePackages: config?.updatePackages ?? false,
+    removals: config?.removals ?? [],
+    outputPath: config?.outputPath ?? "build/generated"
   ), source: source);
 
   return scan.getContext();

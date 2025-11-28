@@ -39,22 +39,20 @@ abstract class AbstractClassDeclarationSupport extends AbstractEnumDeclarationSu
 
   /// Generate class declaration with analyzer support
   @protected
-  Future<ClassDeclaration> generateClass(
-    mirrors.ClassMirror classMirror, 
-    Package package, 
-    String libraryUri, 
-    Uri sourceUri
-  ) async {
+  Future<ClassDeclaration> generateClass(mirrors.ClassMirror classMirror, Package package, String libraryUri, Uri sourceUri) async {
     final className = mirrors.MirrorSystem.getName(classMirror.simpleName);
     
+    // Get runtime type with fallback and safety check
     Type runtimeType = classMirror.hasReflectedType ? classMirror.reflectedType : classMirror.runtimeType;
 
+    // Get analyzer element and type
     final classElement = await getClassElement(className, sourceUri);
     final dartType = classElement?.thisType;
 
     final annotations = await extractAnnotations(classMirror.metadata, package);
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Resolve type from @Generic annotation if needed
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, className);
       if (resolvedType != null) {
         runtimeType = resolvedType;
@@ -66,12 +64,15 @@ abstract class AbstractClassDeclarationSupport extends AbstractEnumDeclarationSu
     final methods = <MethodDeclaration>[];
     final records = <RecordDeclaration>[];
 
+    // Get source code for modifier detection
     String? sourceCode = sourceCache[sourceUri.toString()];
 
+    // Extract inheritance relationships using LinkDeclarations
     final supertype = await extractSupertypeAsLink(classMirror, classElement, package, libraryUri);
     final interfaces = await extractInterfacesAsLink(classMirror, classElement, package, libraryUri);
     final mixins = await extractMixinsAsLink(classMirror, classElement, package, libraryUri);
 
+    // Create class declaration with full analyzer integration
     StandardClassDeclaration reflectedClass = StandardClassDeclaration(
       name: className,
       type: runtimeType,
@@ -123,19 +124,16 @@ abstract class AbstractClassDeclarationSupport extends AbstractEnumDeclarationSu
 
   /// Generate built-in class declaration
   @protected
-  Future<ClassDeclaration> generateBuiltInClass(
-    mirrors.ClassMirror classMirror, 
-    Package package, 
-    String libraryUri, 
-    Uri sourceUri
-  ) async {
+  Future<ClassDeclaration> generateBuiltInClass(mirrors.ClassMirror classMirror, Package package, String libraryUri, Uri sourceUri) async {
     final className = mirrors.MirrorSystem.getName(classMirror.simpleName);
     
+    // Get runtime type with fallback and safety check
     Type runtimeType = classMirror.hasReflectedType ? classMirror.reflectedType : classMirror.runtimeType;
 
     final annotations = await extractAnnotations(classMirror.metadata, package);
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Resolve type from @Generic annotation if needed
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       Type? resolvedType = await resolveTypeFromGenericAnnotation(annotations, className);
       resolvedType ??= resolvePublicDartType(libraryUri, className);
       if (resolvedType != null) {
@@ -148,16 +146,18 @@ abstract class AbstractClassDeclarationSupport extends AbstractEnumDeclarationSu
     final methods = <MethodDeclaration>[];
     final records = <RecordDeclaration>[];
 
+    // Extract inheritance relationships using LinkDeclarations
     final supertype = await extractSupertypeAsLink(classMirror, null, package, libraryUri);
     final interfaces = await extractInterfacesAsLink(classMirror, null, package, libraryUri);
     final mixins = await extractMixinsAsLink(classMirror, null, package, libraryUri);
     final sourceCode = await readSourceCode(classMirror.location?.sourceUri ?? Uri.parse(libraryUri));
 
+    // Create class declaration for built-in class
     StandardClassDeclaration reflectedClass = StandardClassDeclaration(
       name: className,
       type: runtimeType,
-      element: null,
-      dartType: null,
+      element: null, // Built-in classes don't have analyzer elements
+      dartType: null, // Built-in classes don't have analyzer DartType
       qualifiedName: buildQualifiedName(className, (classMirror.location?.sourceUri ?? Uri.parse(libraryUri)).toString()),
       parentLibrary: libraryCache[libraryUri]!,
       isNullable: false,

@@ -18,6 +18,7 @@ import 'package:meta/meta.dart';
 import '../annotations.dart';
 import '../declaration/declaration.dart';
 import '../utils/constant.dart';
+import '../utils/dart_type_resolver.dart';
 import '../utils/generic_type_parser.dart';
 import '../utils/utils.dart';
 import 'library_generator.dart';
@@ -45,6 +46,9 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
   /// Cache for DartType to Type mapping
   final Map<String, Type> dartTypeToTypeCache = {};
 
+  /// Cache of analyzer library elements by URI
+  final Map<String, LibraryElement> libraryElementCache = {};
+
   AbstractTypeSupport({
     required super.mirrorSystem,
     required super.forceLoadedMirrors,
@@ -59,27 +63,19 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
 
   /// Check if type is primitive
   @protected
-  bool isPrimitiveType(Type type) {
-    return type == int || type == double || type == bool || type == String || type == num;
-  }
+  bool isPrimitiveType(Type type) => type == int || type == double || type == bool || type == String || type == num;
 
   /// Check if type is List
   @protected
-  bool isListType(Type type) {
-    return type.toString().startsWith('List<') || type == List;
-  }
+  bool isListType(Type type) => type.toString().startsWith('List<') || type == List;
 
   /// Check if type is Map
   @protected
-  bool isMapType(Type type) {
-    return type.toString().startsWith('Map<') || type == Map;
-  }
+  bool isMapType(Type type) => type.toString().startsWith('Map<') || type == Map;
 
   /// Check if type is Record
   @protected
-  bool isRecordType(Type type) {
-    return type.toString().startsWith('(') && type.toString().endsWith(')');
-  }
+  bool isRecordType(Type type) => type.toString().startsWith('(') && type.toString().endsWith(')');
 
   /// Determine type kind from mirror
   @protected
@@ -105,9 +101,7 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
 
   /// Build qualified name from library URI and type name
   @protected
-  String buildQualifiedName(String typeName, String libraryUri) {
-    return '$libraryUri.$typeName'.replaceAll("..", '.');
-  }
+  String buildQualifiedName(String typeName, String libraryUri) => '$libraryUri.$typeName'.replaceAll("..", '.');
 
   /// Build qualified name from analyzer element
   @protected
@@ -124,15 +118,16 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
 
   /// Checks if a URI represents a built-in Dart library
   @protected
-  bool isBuiltInDartLibrary(Uri uri) {
-    return uri.scheme == 'dart';
-  }
+  bool isBuiltInDartLibrary(Uri uri) => uri.scheme == 'dart';
 
   /// Check if name is internal (starts with _ but not __)
   @protected
   bool isInternal(String name) {
+    // Find the last slash or colon
     final sepIndex = name.lastIndexOf(RegExp(r'[/\\:]'));
     final segment = sepIndex >= 0 ? name.substring(sepIndex + 1) : name;
+
+    // Internal if segment starts with _ but not __
     return segment.startsWith('_') && !segment.startsWith('__');
   }
 
@@ -143,23 +138,30 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
   /// Check if mirror type name is synthetic (X0, X1, etc.)
   @protected
   bool isMirrorSyntheticType(String name) {
+    // Match X followed by digits (X0, X1, X2, etc.)
     return RegExp(r'^X\d+$').hasMatch(name);
   }
 
   /// Get variance from type parameter
   @protected
   TypeVariance getVarianceFromTypeParameter(TypeParameterElement? analyzerParam, mirrors.TypeVariableMirror? mirrorParam) {
+    // Check analyzer parameter first
     if (analyzerParam != null) {
+      // In current Dart, variance is not explicitly supported yet
+      // This is future-proofing for when it becomes available
       final name = analyzerParam.name;
       if (name?.startsWith('in ') ?? false) return TypeVariance.contravariant;
       if (name?.startsWith('out ') ?? false) return TypeVariance.covariant;
     }
+    
+    // Default to invariant
     return TypeVariance.invariant;
   }
 
   /// Get variance from type parameter element
   @protected
   TypeVariance getVariance(TypeParameterElement? tp) {
+    // Dart doesn't have explicit variance annotations yet, but we can infer
     if (tp?.name?.startsWith('in ') ?? false) return TypeVariance.contravariant;
     if (tp?.name?.startsWith('out ') ?? false) return TypeVariance.covariant;
     return TypeVariance.invariant;
@@ -197,16 +199,19 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
   /// Get package URI for a type
   @protected
   String getPackageUriForType(String typeName, Type actualType) {
+    // Check if it's a built-in Dart type
     if (isPrimitiveType(actualType) || 
         actualType == List || actualType == Map || actualType == Set || 
         actualType == Iterable || actualType == Future || actualType == Stream) {
       return 'dart:core';
     }
     
+    // For async types
     if (actualType == Future || actualType == Stream) {
       return 'dart:async';
     }
     
+    // Default fallback
     return 'dart:core';
   }
 
@@ -303,20 +308,43 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
 
   @protected
   bool isNullable({FieldElement? fieldElement, String? sourceCode, required String fieldName}) {
+    // if (fieldElement != null) {
+    //   final DartType t = fieldElement.type;
+    //   return t.nullabilitySuffix == NullabilitySuffix.question;
+    // }
+
+    // if (typeNode != null) {
+    //   if (typeNode is ast.NamedType) {
+    //     final DartType? resolved = typeNode.type;
+    //     if (resolved != null) {
+    //       return resolved.nullabilitySuffix == NullabilitySuffix.question;
+    //     }
+    //   }
+
+    //   // fallback: check if the annotation text contains '?'
+    //   return typeNode.toSource().contains('?');
+    // }
+
     if (sourceCode == null) return false;
     final code = RuntimeUtils.stripComments(sourceCode);
 
+    // Patterns WITHOUT inline (?m) flags; use multiLine: true below.
     final List<RegExp> patterns = [
+      // field declarations: optional 'late/static/final/const', then a type that contains '?', then the name
       RegExp(
         r'\b(?:late\s+)?(?:static\s+)?(?:final\s+|const\s+)?[A-Za-z_$][A-Za-z0-9_$<>\?,\s]*\?\s+' +
             RegExp.escape(fieldName) +
             r'\b',
         multiLine: true,
       ),
+
+      // constructor or parameter with explicit nullable type: 'Foo? name' (positional or named)
       RegExp(
         r'\b[A-Za-z_$][A-Za-z0-9_$<>\?,\s]*\?\s+' + RegExp.escape(fieldName) + r'\b',
         multiLine: true,
       ),
+
+      // heuristic for 'this.name' in parameter lists where the param token includes a '?'
       RegExp(
         r'[(,][^)]{0,120}\b[A-Za-z_$][A-Za-z0-9_$<>\?,\s]*\?\s*(?:this\.)?' +
             RegExp.escape(fieldName) +
@@ -335,7 +363,7 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
       Type type = mirror.hasReflectedType ? mirror.reflectedType : mirror.runtimeType;
       String name = mirrors.MirrorSystem.getName(mirror.simpleName);
       
-      if (GenericTypeParser.shouldCheckGeneric(type)) {
+      if(GenericTypeParser.shouldCheckGeneric(type)) {
         final annotations = await extractAnnotations(mirror.metadata, package);
         final resolvedType = await resolveTypeFromGenericAnnotation(annotations, name);
         if (resolvedType != null) {
@@ -352,7 +380,7 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
   /// Resolve type from @Generic annotation
   @protected
   Future<Type?> resolveTypeFromGenericAnnotation(List<AnnotationDeclaration> annotations, String name) async {
-    if (annotations.where((a) => a.getLinkDeclaration().getType() == Generic).length > 1) {
+    if(annotations.where((a) => a.getLinkDeclaration().getType() == Generic).length > 1) {
       onWarning("Multiple @Generic annotations found for $name. Jetleaf will resolve to the first one it can get.");
     }
 
@@ -366,7 +394,238 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
     return null;
   }
 
+  /// Get package URI from mirror
+  @protected
+  Future<String> getPkgUri(mirrors.TypeMirror mirror, String packageName, String libraryUri) async {
+    final realClassUri = await findRealClassUriFromMirror(mirror, packageName);
+    return mirror.location?.sourceUri.toString() ?? realClassUri ?? libraryUri;
+  }
+
+  /// Find the real class URI by searching through all libraries
+  @protected
+  Future<String?> findRealClassUri(String className, String? hintUri) async {
+    // First try the hint URI if available
+    if (hintUri != null) {
+      final libraryElement = await getLibraryElement(Uri.parse(hintUri));
+      if (libraryElement?.getClass(className) != null ||
+          libraryElement?.getMixin(className) != null ||
+          libraryElement?.getEnum(className) != null) {
+        return hintUri;
+      }
+    }
+
+    // Search through all cached libraries
+    for (final entry in libraryElementCache.entries) {
+      final libraryElement = entry.value;
+      if (libraryElement.getClass(className) != null ||
+          libraryElement.getMixin(className) != null ||
+          libraryElement.getEnum(className) != null) {
+        return entry.key;
+      }
+    }
+
+    // Search through mirror system
+    for (final libraryMirror in libraries) {
+      for (final declaration in libraryMirror.declarations.values) {
+        if (declaration is mirrors.ClassMirror) {
+          final mirrorClassName = mirrors.MirrorSystem.getName(declaration.simpleName);
+          if (mirrorClassName == className) {
+            return libraryMirror.uri.toString();
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /// Find the real class URI from mirror
+  @protected
+  Future<String?> findRealClassUriFromMirror(mirrors.TypeMirror typeMirror, String? packageName) async {
+    // 1) If this is a class mirror, the declaring library is the authoritative source.
+    try {
+      if (typeMirror is mirrors.ClassMirror) {
+        final lib = typeMirror.owner as mirrors.LibraryMirror?;
+        if (lib != null) {
+          return lib.uri.toString();
+        }
+        // If parameterized originalDeclaration exists, prefer its owner.
+        final orig = typeMirror.originalDeclaration;
+        if (orig is mirrors.ClassMirror) {
+          final origLib = orig.owner as mirrors.LibraryMirror?;
+          if (origLib != null) {
+            return origLib.uri.toString();
+          }
+        }
+      }
+    } catch (_) {
+      // ignore and fall back to search
+    }
+
+    // 2) Fall back to scanning loaded libraries (mirrorSystem.libraries). Prefer root package.
+    final candidates = <String>[];
+    final nameToMatch = mirrors.MirrorSystem.getName(typeMirror.simpleName);
+
+    for (final lib in libraries) {
+      final decl = lib.declarations[typeMirror.simpleName];
+      if (decl is mirrors.ClassMirror) {
+        // quick direct declaration match
+        candidates.add(lib.uri.toString());
+        continue;
+      }
+
+      // If not directly declared under that symbol, try a best-effort name match:
+      for (final d in lib.declarations.values) {
+        if (d is mirrors.ClassMirror) {
+          final dName = mirrors.MirrorSystem.getName(d.simpleName);
+          if (dName == nameToMatch) {
+            candidates.add(lib.uri.toString());
+            break;
+          }
+        }
+      }
+    }
+
+    if (candidates.isEmpty) return null;
+
+    // 3) Prefer candidate in root package, then non-sdk (not dart:) libraries, else first candidate.
+    if (packageName != null) {
+      final pkgPrefix = 'package:$packageName/';
+      final byRoot = candidates.firstWhere(
+        (uri) => uri.startsWith(pkgPrefix),
+        orElse: () => '',
+      );
+      if (byRoot.isNotEmpty) return byRoot;
+    }
+
+    // prefer non-dart: libraries (user or package libs)
+    final nonSdk = candidates.firstWhere((u) => !u.startsWith('dart:'), orElse: () => '');
+    if (nonSdk.isNotEmpty) return nonSdk;
+
+    // last fallback: first candidate
+    return candidates.first;
+  }
+
+  /// Find runtime type from DartType
+  @protected
+  Future<Type> findRuntimeTypeFromDartType(DartType dartType, String libraryUri, Package package) async {
+    final cacheKey = '${dartType.element?.name}_${dartType.element?.library?.uri}_${dartType.getDisplayString()}';
+    if (dartTypeToTypeCache.containsKey(cacheKey)) {
+      return dartTypeToTypeCache[cacheKey]!;
+    }
+
+    // Handle built-in types first
+    if (dartType.isDartCoreBool) return bool;
+    if (dartType.isDartCoreDouble) return double;
+    if (dartType.isDartCoreInt) return int;
+    if (dartType.isDartCoreNum) return num;
+    if (dartType.isDartCoreString) return String;
+    if (dartType.isDartCoreList) return List;
+    if (dartType.isDartCoreMap) return Map;
+    if (dartType.isDartCoreSet) return Set;
+    if (dartType.isDartCoreIterable) return Iterable;
+    if (dartType.isDartAsyncFuture) return Future;
+    if (dartType.isDartAsyncStream) return Stream;
+    if (dartType is DynamicType) return dynamic;
+    if (dartType is VoidType) return VoidType;
+
+    // Try to resolve from dart type resolver
+    final elementName = dartType.element?.name;
+    final libraryUri = dartType.element?.library?.uri.toString();
+    
+    if (elementName != null && libraryUri != null) {
+      final resolvedType = resolvePublicDartType(libraryUri, elementName);
+      if (resolvedType != null) {
+        dartTypeToTypeCache[cacheKey] = resolvedType;
+        return resolvedType;
+      }
+    }
+
+    // Try to find the type in our mirror system
+    if (elementName != null) {
+      // Look through all libraries to find a matching class
+      for (final libraryMirror in libraries) {
+        for (final declaration in libraryMirror.declarations.values) {
+          if (declaration is mirrors.ClassMirror) {
+            final className = mirrors.MirrorSystem.getName(declaration.simpleName);
+            if (className == elementName) {
+              try {
+                final runtimeType = await tryAndGetOriginalType(declaration, package);
+                dartTypeToTypeCache[cacheKey] = runtimeType;
+                return runtimeType;
+              } catch (e) {
+                // Continue searching
+              }
+            }
+          }
+        }
+      }
+    }
+
+    Type fallbackType = Object;
+    if (dartType.element != null) {
+      // Try to create a synthetic type based on the element
+      try {
+        fallbackType = dartType.element!.runtimeType;
+      } catch (e) {
+        fallbackType = Object;
+      }
+    }
+    
+    dartTypeToTypeCache[cacheKey] = fallbackType;
+    return fallbackType;
+  }
+
+  /// Find base runtime type from DartType (without type parameters)
+  @protected
+  Future<Type> findBaseRuntimeTypeFromDartType(DartType dartType, String libraryUri, Package package) async {
+    // Handle built-in types
+    if (dartType.isDartCoreBool) return bool;
+    if (dartType.isDartCoreDouble) return double;
+    if (dartType.isDartCoreInt) return int;
+    if (dartType.isDartCoreNum) return num;
+    if (dartType.isDartCoreString) return String;
+    if (dartType.isDartCoreList) return List;
+    if (dartType.isDartCoreMap) return Map;
+    if (dartType.isDartCoreSet) return Set;
+    if (dartType.isDartCoreIterable) return Iterable;
+    if (dartType.isDartAsyncFuture) return Future;
+    if (dartType.isDartAsyncStream) return Stream;
+    if (dartType is DynamicType) return dynamic;
+    if (dartType is VoidType) return VoidType;
+
+    // For parameterized types, find the base class
+    final elementName = dartType.element?.name;
+    if (elementName != null) {
+      // Look through all libraries to find the base class
+      for (final libraryMirror in libraries) {
+        for (final declaration in libraryMirror.declarations.values) {
+          if (declaration is mirrors.ClassMirror) {
+            final className = mirrors.MirrorSystem.getName(declaration.simpleName);
+            if (className == elementName) {
+              try {
+                return await tryAndGetOriginalType(declaration, package);
+              } catch (e) {
+                // Continue searching
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Fallback to the actual runtime type
+    return await findRuntimeTypeFromDartType(dartType, libraryUri, package);
+  }
+
   /// Extract annotations - to be implemented by subclasses
   @protected
   Future<List<AnnotationDeclaration>> extractAnnotations(List<mirrors.InstanceMirror> metadata, Package package);
+
+  /// Get library element from analyzer - to be implemented by subclasses
+  @protected
+  Future<LibraryElement?> getLibraryElement(Uri uri);
+
+  /// List of library mirrors to process
+  List<mirrors.LibraryMirror> get libraries;
 }

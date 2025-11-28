@@ -31,17 +31,10 @@ abstract class AbstractConstructorDeclarationSupport extends AbstractMethodDecla
 
   /// Generate constructor declaration with analyzer support
   @protected
-  Future<ConstructorDeclaration> generateConstructor(
-    mirrors.MethodMirror constructorMirror,
-    Element? parentElement,
-    Package package,
-    String libraryUri,
-    Uri sourceUri,
-    String className,
-    ClassDeclaration parentClass,
-  ) async {
+  Future<ConstructorDeclaration> generateConstructor(mirrors.MethodMirror constructorMirror, Element? parentElement, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration parentClass) async {
     final constructorName = mirrors.MirrorSystem.getName(constructorMirror.constructorName);
     
+    // Get analyzer constructor element
     ConstructorElement? constructorElement;
     if (parentElement is InterfaceElement) {
       if (constructorName.isEmpty) {
@@ -54,7 +47,8 @@ abstract class AbstractConstructorDeclarationSupport extends AbstractMethodDecla
     final mirrorType = constructorMirror.returnType;
     Type runtimeType = mirrorType.hasReflectedType ? mirrorType.reflectedType : mirrorType.runtimeType;
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Extract annotations and resolve type
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final annotations = await extractAnnotations(mirrorType.metadata, package);
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, constructorName);
       if (resolvedType != null) {
@@ -93,20 +87,14 @@ abstract class AbstractConstructorDeclarationSupport extends AbstractMethodDecla
 
   /// Generate built-in constructor
   @protected
-  Future<ConstructorDeclaration> generateBuiltInConstructor(
-    mirrors.MethodMirror constructorMirror, 
-    Package package, 
-    String libraryUri, 
-    Uri sourceUri, 
-    String className, 
-    ClassDeclaration parentClass
-  ) async {
+  Future<ConstructorDeclaration> generateBuiltInConstructor(mirrors.MethodMirror constructorMirror, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration parentClass) async {
     final constructorName = mirrors.MirrorSystem.getName(constructorMirror.constructorName);
 
     final mirrorType = constructorMirror.returnType;
     Type runtimeType = mirrorType.hasReflectedType ? mirrorType.reflectedType : mirrorType.runtimeType;
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Extract annotations and resolve type
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final annotations = await extractAnnotations(mirrorType.metadata, package);
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, constructorName);
       if (resolvedType != null) {
@@ -117,8 +105,8 @@ abstract class AbstractConstructorDeclarationSupport extends AbstractMethodDecla
     final result = StandardConstructorDeclaration(
       name: constructorName.isEmpty ? '' : constructorName,
       type: runtimeType,
-      element: null,
-      dartType: null,
+      element: null, // Built-in constructors don't have analyzer elements
+      dartType: null, // Built-in constructors don't have analyzer DartType
       libraryDeclaration: libraryCache[libraryUri]!,
       parentClass: StandardLinkDeclaration(
         name: parentClass.getName(),

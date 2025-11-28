@@ -12,19 +12,11 @@ import 'package:jetleaf_build/src/utils/constant.dart';
 
 import '../utils/generic_type_parser.dart';
 import '../utils/must_avoid.dart';
-import 'abstract_library_declaration_support.dart';
-import 'declaration_file_writer.dart';
-import 'tree_shaker.dart';
+import '../declaration_support/abstract_library_declaration_support.dart';
 
 base class DefaultLibraryGenerator extends AbstractLibraryDeclarationSupport {
   /// Analysis context collection for static analysis
   AnalysisContextCollection? _analysisContextCollection;
-
-  /// Tree shaker instance for dependency analysis
-  TreeShaker? _treeShaker;
-  
-  /// Declaration file writer for organized output
-  DeclarationFileWriter? _fileWriter;
 
   final bool refresh;
   
@@ -43,11 +35,6 @@ base class DefaultLibraryGenerator extends AbstractLibraryDeclarationSupport {
   Future<List<LibraryDeclaration>> generate(List<File> dartFiles) async {
     // Initialize analyzer
     await _initializeAnalyzer(dartFiles);
-    
-    // Initialize tree shaker if needed
-    if (configuration.enableTreeShaking) {
-      _treeShaker = TreeShaker();
-    }
     
     // Create package lookup
     for (final package in packages) {
@@ -111,25 +98,6 @@ base class DefaultLibraryGenerator extends AbstractLibraryDeclarationSupport {
       } catch (e, stackTrace) {
         onError('Error processing library ${fileUri.toString()}: $e\n$stackTrace');
       }
-    }
-
-    // Apply tree-shaking if enabled
-    Set<String> usedClasses = {};
-    if (configuration.enableTreeShaking && _treeShaker != null) {
-      final userPackageNames = packages
-          .where((p) => p.getIsRootPackage())
-          .map((p) => p.getName())
-          .toSet();
-      
-      usedClasses = _treeShaker!.shake(libraries, userPackageNames);
-      onInfo('Tree-shaking enabled: ${usedClasses.length} classes marked as used');
-    }
-
-    // Write declarations to files if configured
-    if (configuration.writeDeclarationsToFiles) {
-      _fileWriter = DeclarationFileWriter(configuration.outputPath, refresh);
-      await _fileWriter!.writeDeclarations(libraries, usedClasses, configuration.enableTreeShaking);
-      onInfo('Declarations written to ${configuration.outputPath}/classes/');
     }
 
     // Check for unresolved generic classes

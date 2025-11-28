@@ -18,10 +18,10 @@ import 'package:meta/meta.dart';
 import '../declaration/declaration.dart';
 import '../utils/dart_type_resolver.dart';
 import '../utils/generic_type_parser.dart';
-import 'abstract_constructor_declaration_support.dart';
+import 'abstract_record_declaration_support.dart';
 
-/// Support class for generating TypedefDeclaration, RecordDeclaration, TypeVariableDeclaration and TypeDeclarations.
-abstract class AbstractTypeDeclarationSupport extends AbstractConstructorDeclarationSupport {
+/// Support class for generating TypeVariableDeclaration and TypeDeclarations.
+abstract class AbstractTypeDeclarationSupport extends AbstractRecordDeclarationSupport {
   AbstractTypeDeclarationSupport({
     required super.mirrorSystem,
     required super.forceLoadedMirrors,
@@ -31,13 +31,6 @@ abstract class AbstractTypeDeclarationSupport extends AbstractConstructorDeclara
     required super.configuration,
     required super.packages,
   });
-
-  /// Get typedef element from analyzer
-  @protected
-  Future<TypeAliasElement?> getTypedefElement(String typedefName, Uri sourceUri) async {
-    final libraryElement = await getLibraryElement(sourceUri);
-    return libraryElement?.getTypeAlias(typedefName);
-  }
 
   /// Get type element from analyzer
   @protected
@@ -51,86 +44,14 @@ abstract class AbstractTypeDeclarationSupport extends AbstractConstructorDeclara
            libraryElement.getTypeAlias(typeName);
   }
 
-  /// Generate typedef declaration with analyzer support
-  @protected
-  Future<TypedefDeclaration> generateTypedef(mirrors.TypedefMirror typedefMirror, Package package, String libraryUri, Uri sourceUri) async {
-    final typedefName = mirrors.MirrorSystem.getName(typedefMirror.simpleName);
-    final typedefElement = await getTypedefElement(typedefName, sourceUri);
-    final dartType = typedefElement?.aliasedType;
-
-    Type runtimeType = typedefMirror.hasReflectedType ? typedefMirror.reflectedType : typedefMirror.runtimeType;
-
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
-      final annotations = await extractAnnotations(typedefMirror.metadata, package);
-      final resolvedType = await resolveTypeFromGenericAnnotation(annotations, typedefName);
-      if (resolvedType != null) {
-        runtimeType = resolvedType;
-      }
-    }
-
-    StandardTypedefDeclaration reflectedTypedef = StandardTypedefDeclaration(
-      name: typedefName,
-      type: runtimeType,
-      element: typedefElement,
-      dartType: dartType,
-      qualifiedName: buildQualifiedName(typedefName, (typedefMirror.location?.sourceUri ?? Uri.parse(libraryUri)).toString()),
-      parentLibrary: libraryCache[libraryUri]!,
-      aliasedType: await generateType(typedefMirror.referent, package, libraryUri),
-      isNullable: false,
-      isPublic: !isInternal(typedefName),
-      isSynthetic: isSynthetic(typedefName),
-      typeArguments: await extractTypeArgumentsAsLinks(typedefMirror.typeVariables, typedefElement?.typeParameters, package, libraryUri),
-      annotations: await extractAnnotations(typedefMirror.metadata, package),
-      sourceLocation: sourceUri,
-    );
-
-    typeCache[runtimeType] = reflectedTypedef;
-    return reflectedTypedef;
-  }
-
-  /// Generate built-in typedef declaration
-  @protected
-  Future<TypedefDeclaration> generateBuiltInTypedef(mirrors.TypedefMirror typedefMirror, Package package, String libraryUri, Uri sourceUri) async {
-    final typedefName = mirrors.MirrorSystem.getName(typedefMirror.simpleName);
-
-    Type runtimeType = typedefMirror.hasReflectedType ? typedefMirror.reflectedType : typedefMirror.runtimeType;
-
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
-      final annotations = await extractAnnotations(typedefMirror.metadata, package);
-      Type? resolvedType = await resolveTypeFromGenericAnnotation(annotations, typedefName);
-      resolvedType ??= resolvePublicDartType(libraryUri, typedefName);
-      if (resolvedType != null) {
-        runtimeType = resolvedType;
-      }
-    }
-
-    StandardTypedefDeclaration reflectedTypedef = StandardTypedefDeclaration(
-      name: typedefName,
-      type: runtimeType,
-      element: null,
-      dartType: null,
-      qualifiedName: buildQualifiedName(typedefName, (typedefMirror.location?.sourceUri ?? Uri.parse(libraryUri)).toString()),
-      parentLibrary: libraryCache[libraryUri]!,
-      aliasedType: await generateType(typedefMirror.referent, package, libraryUri),
-      isNullable: false,
-      isPublic: !isInternal(typedefName),
-      isSynthetic: isSynthetic(typedefName),
-      typeArguments: await extractTypeArgumentsAsLinks(typedefMirror.typeVariables, null, package, libraryUri),
-      annotations: await extractAnnotations(typedefMirror.metadata, package),
-      sourceLocation: sourceUri,
-    );
-
-    typeCache[runtimeType] = reflectedTypedef;
-    return reflectedTypedef;
-  }
-
-  /// Generate type declaration with analyzer support
-  @protected
+  @override
   Future<TypeDeclaration> generateType(mirrors.TypeMirror typeMirror, Package package, String libraryUri) async {
+    // Handle type variables
     if (typeMirror is mirrors.TypeVariableMirror) {
       return await generateTypeVariable(typeMirror, package, libraryUri);
     }
 
+    // Handle dynamic and void
     if (typeMirror.runtimeType.toString() == 'dynamic') {
       return StandardTypeDeclaration(
         name: 'dynamic',
@@ -176,6 +97,7 @@ abstract class AbstractTypeDeclarationSupport extends AbstractConstructorDeclara
 
     final typeName = mirrors.MirrorSystem.getName(typeMirror.simpleName);
 
+    // Get analyzer element for the type
     final typeElement = await getTypeElement(typeName, Uri.parse(libraryUri));
     final dartType = typeElement != null ? (typeElement as InterfaceElement).thisType : null;
 
@@ -183,6 +105,7 @@ abstract class AbstractTypeDeclarationSupport extends AbstractConstructorDeclara
       return await generateRecordType(typeMirror, typeElement, package, libraryUri);
     }
 
+    // Handle primitive types
     if (isPrimitiveType(runtimeType)) {
       return StandardTypeDeclaration(
         name: typeName,
@@ -199,6 +122,7 @@ abstract class AbstractTypeDeclarationSupport extends AbstractConstructorDeclara
       );
     }
 
+    // Extract type arguments with analyzer support - now as LinkDeclarations
     final typeArguments = <LinkDeclaration>[];
     if (typeMirror is mirrors.ClassMirror && typeMirror.typeArguments.isNotEmpty) {
       for (final arg in typeMirror.typeArguments) {
@@ -209,6 +133,7 @@ abstract class AbstractTypeDeclarationSupport extends AbstractConstructorDeclara
       }
     }
 
+    // Determine type kind
     final kind = determineTypeKind(typeMirror, dartType);
 
     final declaration = StandardTypeDeclaration(
@@ -240,6 +165,7 @@ abstract class AbstractTypeDeclarationSupport extends AbstractConstructorDeclara
       return typeVariableCache[cacheKey]!;
     }
 
+    // Get upper bound with analyzer support
     TypeDeclaration? upperBound;
     if (analyzerElement?.bound != null) {
       upperBound = await generateTypeFromDartType(analyzerElement!.bound!, package, libraryUri);
@@ -271,12 +197,15 @@ abstract class AbstractTypeDeclarationSupport extends AbstractConstructorDeclara
   Future<TypeDeclaration> generateTypeFromDartType(DartType dartType, Package package, String libraryUri) async {
     final typeName = dartType.getDisplayString();
     
+    // Try to find the actual runtime type from mirrors first
     Type runtimeType = await findRuntimeTypeFromDartType(dartType, libraryUri, package);
     
+    // Check cache first
     if (typeCache.containsKey(runtimeType)) {
       return typeCache[runtimeType]!;
     }
 
+    // Handle different DartType kinds
     if (dartType is DynamicType) {
       return StandardTypeDeclaration(
         name: 'dynamic',
@@ -309,6 +238,7 @@ abstract class AbstractTypeDeclarationSupport extends AbstractConstructorDeclara
       );
     }
 
+    // Handle parameterized types - now using LinkDeclarations
     final typeArguments = <LinkDeclaration>[];
     if (dartType is ParameterizedType && dartType.typeArguments.isNotEmpty) {
       for (final arg in dartType.typeArguments) {
@@ -319,6 +249,7 @@ abstract class AbstractTypeDeclarationSupport extends AbstractConstructorDeclara
       }
     }
 
+    // Determine type kind from element
     TypeKind kind = TypeKind.unknownType;
     if (dartType.element is ClassElement) {
       final classElement = dartType.element as ClassElement;
@@ -352,118 +283,5 @@ abstract class AbstractTypeDeclarationSupport extends AbstractConstructorDeclara
 
     typeCache[runtimeType] = declaration;
     return declaration;
-  }
-
-  /// Generate record type with analyzer support
-  @protected
-  Future<RecordDeclaration> generateRecordType(mirrors.TypeMirror typeMirror, Element? typeElement, Package package, String libraryUri) async {
-    final recordName = typeMirror.hasReflectedType ? typeMirror.reflectedType.toString() : typeMirror.runtimeType.toString();
-    final positionalFields = <RecordFieldDeclaration>[];
-    final namedFields = <String, RecordFieldDeclaration>{};
-
-    final recordContent = recordName.substring(1, recordName.length - 1);
-    final parts = splitRecordContent(recordContent);
-    
-    int positionalIndex = 0;
-    bool inNamedSection = false;
-
-    Type runtimeType = typeMirror.hasReflectedType ? typeMirror.reflectedType : typeMirror.runtimeType;
-
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
-      final annotations = await extractAnnotations(typeMirror.metadata, package);
-      final resolvedType = await resolveTypeFromGenericAnnotation(annotations, recordName);
-      if (resolvedType != null) {
-        runtimeType = resolvedType;
-      }
-    }
-
-    final record = StandardRecordDeclaration(
-      name: recordName,
-      type: runtimeType,
-      element: typeElement,
-      dartType: (typeElement as InterfaceElement?)?.thisType,
-      qualifiedName: buildQualifiedName(recordName, (typeMirror.location?.sourceUri ?? Uri.parse(libraryUri)).toString()),
-      parentLibrary: libraryCache[libraryUri]!,
-      positionalFields: positionalFields,
-      namedFields: namedFields,
-      annotations: await extractAnnotations(typeMirror.metadata, package),
-      sourceLocation: typeMirror.location?.sourceUri,
-      isPublic: !isInternal(recordName),
-      isSynthetic: isSynthetic(recordName),
-    );
-    
-    for (var part in parts) {
-      part = part.trim();
-      if (part.startsWith('{')) {
-        inNamedSection = true;
-        part = part.substring(1);
-      }
-      if (part.endsWith('}')) {
-        part = part.substring(0, part.length - 1);
-      }
-      if (part.isEmpty) continue;
-
-      final typeAndName = part.split(' ');
-      String fieldTypeName;
-      String? fieldName;
-      
-      if (typeAndName.length > 1 && !inNamedSection) {
-        fieldTypeName = typeAndName.sublist(0, typeAndName.length - 1).join(' ');
-        fieldName = typeAndName.last;
-      } else if (typeAndName.length > 1 && inNamedSection) {
-        fieldTypeName = typeAndName.sublist(0, typeAndName.length - 1).join(' ');
-        fieldName = typeAndName.last;
-      } else {
-        fieldTypeName = typeAndName.first;
-      }
-
-      Type? resolvedType = resolvePublicDartType('dart:core', fieldTypeName);
-      
-      final actualType = resolvedType ?? Object;
-      final actualPackageUri = getPackageUriForType(fieldTypeName, actualType);
-
-      final fieldType = StandardLinkDeclaration(
-        name: fieldTypeName,
-        type: actualType,
-        pointerType: actualType,
-        qualifiedName: buildQualifiedName(fieldTypeName, actualPackageUri),
-        isPublic: !isInternal(fieldTypeName),
-        isSynthetic: isSynthetic(fieldTypeName),
-        canonicalUri: Uri.parse(actualPackageUri),
-        referenceUri: Uri.parse(actualPackageUri)
-      );
-
-      if (inNamedSection) {
-        final field = StandardRecordFieldDeclaration(
-          name: fieldName!,
-          typeDeclaration: fieldType,
-          sourceLocation: typeMirror.location?.sourceUri ?? Uri.parse(libraryUri),
-          type: actualType,
-          libraryDeclaration: libraryCache[libraryUri]!,
-          isPublic: !isInternal(fieldName),
-          isSynthetic: isSynthetic(fieldName),
-          isNullable: false
-        );
-        namedFields[fieldName] = field;
-      } else {
-        final name = fieldName ?? 'field_$positionalIndex';
-
-        final field = StandardRecordFieldDeclaration(
-          name: name,
-          position: positionalIndex,
-          typeDeclaration: fieldType,
-          sourceLocation: typeMirror.location?.sourceUri ?? Uri.parse(libraryUri),
-          type: actualType,
-          libraryDeclaration: libraryCache[libraryUri]!,
-          isPublic: !isInternal(name),
-          isSynthetic: isSynthetic(name),
-          isNullable: false
-        );
-        positionalFields.add(field);
-        positionalIndex++;
-      }
-    }
-
-    return record.copyWith(namedFields: namedFields, positionalFields: positionalFields);
   }
 }

@@ -49,7 +49,8 @@ abstract class AbstractEnumDeclarationSupport extends AbstractMixinDeclarationSu
 
     Type runtimeType = enumMirror.hasReflectedType ? enumMirror.reflectedType : enumMirror.runtimeType;
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Extract annotations and resolve type
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final annotations = await extractAnnotations(enumMirror.metadata, package);
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, enumName);
       if (resolvedType != null) {
@@ -120,7 +121,8 @@ abstract class AbstractEnumDeclarationSupport extends AbstractMixinDeclarationSu
 
     Type runtimeType = enumMirror.hasReflectedType ? enumMirror.reflectedType : enumMirror.runtimeType;
 
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    // Extract annotations and resolve type
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final annotations = await extractAnnotations(enumMirror.metadata, package);
       Type? resolvedType = await resolveTypeFromGenericAnnotation(annotations, enumName);
       resolvedType ??= resolvePublicDartType(libraryUri, enumName);
@@ -133,8 +135,8 @@ abstract class AbstractEnumDeclarationSupport extends AbstractMixinDeclarationSu
     StandardEnumDeclaration reflectedEnum = StandardEnumDeclaration(
       name: enumName,
       type: runtimeType,
-      element: null,
-      dartType: null,
+      element: null, // Built-in enums don't have analyzer elements
+      dartType: null, // Built-in enums don't have analyzer DartType
       qualifiedName: buildQualifiedName(enumName, (enumMirror.location?.sourceUri ?? Uri.parse(libraryUri)).toString()),
       parentLibrary: libraryCache[libraryUri]!,
       values: values,

@@ -39,21 +39,17 @@ abstract class AbstractMixinDeclarationSupport extends AbstractTypeDeclarationSu
 
   /// Generate mixin declaration with analyzer support
   @protected
-  Future<MixinDeclaration> generateMixin(
-    mirrors.ClassMirror mixinMirror, 
-    Package package, 
-    String libraryUri, 
-    Uri sourceUri
-  ) async {
-    final mixinName = mirrors.MirrorSystem.getName(mixinMirror.simpleName);
+  Future<MixinDeclaration> generateMixin(mirrors.ClassMirror mixinMirror, Package package, String libraryUri, Uri sourceUri) async {
+     final mixinName = mirrors.MirrorSystem.getName(mixinMirror.simpleName);
     
     Type runtimeType = mixinMirror.hasReflectedType ? mixinMirror.reflectedType : mixinMirror.runtimeType;
 
+    // Get analyzer element
     final mixinElement = await getMixinElement(mixinName, sourceUri);
     final dartType = mixinElement?.thisType;
 
     final annotations = await extractAnnotations(mixinMirror.metadata, package);
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
+    if(GenericTypeParser.shouldCheckGeneric(runtimeType)) {
       final resolvedType = await resolveTypeFromGenericAnnotation(annotations, mixinName);
       if (resolvedType != null) {
         runtimeType = resolvedType;
@@ -63,6 +59,7 @@ abstract class AbstractMixinDeclarationSupport extends AbstractTypeDeclarationSu
     final fields = <FieldDeclaration>[];
     final methods = <MethodDeclaration>[];
 
+    // Extract constraints and interfaces using LinkDeclarations
     final constraints = await extractMixinConstraintsAsLink(mixinMirror, mixinElement, package, libraryUri);
     final interfaces = await extractInterfacesAsLink(mixinMirror, mixinElement, package, libraryUri);
 
@@ -94,70 +91,6 @@ abstract class AbstractMixinDeclarationSupport extends AbstractTypeDeclarationSu
     for (final method in mixinMirror.declarations.values.whereType<mirrors.MethodMirror>()) {
       if (!method.isConstructor && !method.isAbstract) {
         methods.add(await generateMethod(method, mixinElement, package, libraryUri, sourceUri, mixinName, null));
-      }
-    }
-
-    reflectedMixin = reflectedMixin.copyWith(fields: fields, methods: methods);
-
-    typeCache[runtimeType] = reflectedMixin;
-    return reflectedMixin;
-  }
-
-  /// Generate built-in mixin declaration
-  @protected
-  Future<MixinDeclaration> generateBuiltInMixin(
-    mirrors.ClassMirror mixinMirror, 
-    Package package, 
-    String libraryUri, 
-    Uri sourceUri
-  ) async {
-    final mixinName = mirrors.MirrorSystem.getName(mixinMirror.simpleName);
-    
-    Type runtimeType = mixinMirror.hasReflectedType ? mixinMirror.reflectedType : mixinMirror.runtimeType;
-
-    final annotations = await extractAnnotations(mixinMirror.metadata, package);
-    if (GenericTypeParser.shouldCheckGeneric(runtimeType)) {
-      Type? resolvedType = await resolveTypeFromGenericAnnotation(annotations, mixinName);
-      resolvedType ??= resolvePublicDartType(libraryUri, mixinName);
-      if (resolvedType != null) {
-        runtimeType = resolvedType;
-      }
-    }
-
-    final fields = <FieldDeclaration>[];
-    final methods = <MethodDeclaration>[];
-
-    final constraints = await extractMixinConstraintsAsLink(mixinMirror, null, package, libraryUri);
-    final interfaces = await extractInterfacesAsLink(mixinMirror, null, package, libraryUri);
-
-    StandardMixinDeclaration reflectedMixin = StandardMixinDeclaration(
-      name: mixinName,
-      type: runtimeType,
-      element: null,
-      dartType: null,
-      qualifiedName: buildQualifiedName(mixinName, (mixinMirror.location?.sourceUri ?? Uri.parse(libraryUri)).toString()),
-      parentLibrary: libraryCache[libraryUri]!,
-      isNullable: false,
-      typeArguments: await extractTypeArgumentsAsLinks(mixinMirror.typeVariables, null, package, libraryUri),
-      annotations: annotations,
-      sourceLocation: sourceUri,
-      fields: fields,
-      methods: methods,
-      constraints: constraints,
-      interfaces: interfaces,
-      isPublic: !isInternal(mixinName),
-      isSynthetic: isSynthetic(mixinName),
-    );
-
-    // Process fields
-    for (final field in mixinMirror.declarations.values.whereType<mirrors.VariableMirror>()) {
-      fields.add(await generateBuiltInField(field, package, libraryUri, sourceUri, mixinName, null));
-    }
-
-    // Process methods
-    for (final method in mixinMirror.declarations.values.whereType<mirrors.MethodMirror>()) {
-      if (!method.isConstructor && !method.isAbstract) {
-        methods.add(await generateBuiltInMethod(method, package, libraryUri, sourceUri, mixinName, null));
       }
     }
 

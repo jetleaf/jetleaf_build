@@ -37,14 +37,17 @@ abstract class AbstractLibraryDeclarationSupport extends AbstractClassDeclaratio
   /// Generate library declaration with analyzer support
   @meta.protected
   Future<LibraryDeclaration> generateLibrary(mirrors.LibraryMirror libraryMirror) async {
+    // Clear processing caches for this library
     clearProcessingCaches();
     
     final uri = libraryMirror.uri.toString();
     final packageName = getPackageNameFromUri(uri);
     final package = packageCache[packageName] ?? createDefaultPackage(packageName ?? "unknown");
 
+    // Get analyzer library element
     final libraryElement = await getLibraryElement(libraryMirror.uri);
     
+    // Create library declaration with analyzer support
     final currentLibrary = StandardLibraryDeclaration(
       uri: uri,
       element: libraryElement,
@@ -68,7 +71,7 @@ abstract class AbstractLibraryDeclarationSupport extends AbstractClassDeclaratio
 
       Type typeToReflect = classMirror.hasReflectedType ? classMirror.reflectedType : classMirror.runtimeType;
 
-      if (GenericTypeParser.shouldCheckGeneric(typeToReflect)) {
+      if(GenericTypeParser.shouldCheckGeneric(typeToReflect)) {
         final annotations = await extractAnnotations(classMirror.metadata, package);
         final resolvedType = await resolveTypeFromGenericAnnotation(annotations, mirrors.MirrorSystem.getName(classMirror.simpleName));
         if (resolvedType != null) {
@@ -95,13 +98,15 @@ abstract class AbstractLibraryDeclarationSupport extends AbstractClassDeclaratio
         continue;
       }
 
-      if (classMirror.isEnum) {
-        declarations.add(await generateEnum(classMirror, package, uri, fileUri));
-      } else if (isMixinClass(fileContent, mirrors.MirrorSystem.getName(classMirror.simpleName))) {
-        declarations.add(await generateMixin(classMirror, package, uri, fileUri));
-      } else {
-        declarations.add(await generateClass(classMirror, package, uri, fileUri));
-      }
+      try {
+        if (classMirror.isEnum) {
+          declarations.add(await generateEnum(classMirror, package, uri, fileUri));
+        } else if (isMixinClass(fileContent, mirrors.MirrorSystem.getName(classMirror.simpleName))) {
+          declarations.add(await generateMixin(classMirror, package, uri, fileUri));
+        } else {
+          declarations.add(await generateClass(classMirror, package, uri, fileUri));
+        }
+      } catch (_) { }
     }
 
     // Process typedefs
@@ -125,7 +130,9 @@ abstract class AbstractLibraryDeclarationSupport extends AbstractClassDeclaratio
         continue;
       }
 
-      declarations.add(await generateTypedef(typedefMirror, package, uri, fileUri));
+      try {
+        declarations.add(await generateTypedef(typedefMirror, package, uri, fileUri));
+      } catch (_) { }
     }
 
     // Process top-level functions and variables
@@ -149,11 +156,13 @@ abstract class AbstractLibraryDeclarationSupport extends AbstractClassDeclaratio
         continue;
       }
 
-      if (declaration is mirrors.MethodMirror && !declaration.isConstructor && !declaration.isAbstract) {
-        declarations.add(await generateTopLevelMethod(declaration, package, uri, fileUri));
-      } else if (declaration is mirrors.VariableMirror) {
-        declarations.add(await generateTopLevelField(declaration, package, uri, fileUri));
-      }
+      try {
+        if (declaration is mirrors.MethodMirror && !declaration.isConstructor && !declaration.isAbstract) {
+          declarations.add(await generateTopLevelMethod(declaration, package, uri, fileUri));
+        } else if (declaration is mirrors.VariableMirror) {
+          declarations.add(await generateTopLevelField(declaration, package, uri, fileUri));
+        }
+      } catch (_) {}
     }
 
     return currentLibrary.copyWith(declarations: declarations);
@@ -162,6 +171,7 @@ abstract class AbstractLibraryDeclarationSupport extends AbstractClassDeclaratio
   /// Generate built-in library declaration
   @meta.protected
   Future<LibraryDeclaration> generateBuiltInLibrary(mirrors.LibraryMirror library) async {
+    // Clear processing caches for this library
     clearProcessingCaches();
     
     final uri = library.uri.toString();
@@ -169,10 +179,11 @@ abstract class AbstractLibraryDeclarationSupport extends AbstractClassDeclaratio
 
     onInfo('Processing built-in library: $uri');
 
+    // Create library declaration for built-in library
     final currentLibrary = StandardLibraryDeclaration(
       uri: uri,
-      dartType: null,
-      element: null,
+      dartType: null, // Built-in libraries don't have analyzer DartType
+      element: null,  // Built-in libraries don't have analyzer Element
       parentPackage: package,
       declarations: [],
       isPublic: !isInternal(uri),
@@ -186,25 +197,31 @@ abstract class AbstractLibraryDeclarationSupport extends AbstractClassDeclaratio
 
     // Process classes and mixins from built-in library
     for (final classMirror in library.declarations.values.whereType<mirrors.ClassMirror>()) {
-      if (classMirror.isEnum) {
-        declarations.add(await generateBuiltInEnum(classMirror, package, uri, library.uri));
-      } else {
-        declarations.add(await generateBuiltInClass(classMirror, package, uri, library.uri));
-      }
+      try {
+        if (classMirror.isEnum) {
+          declarations.add(await generateBuiltInEnum(classMirror, package, uri, library.uri));
+        } else {
+          declarations.add(await generateBuiltInClass(classMirror, package, uri, library.uri));
+        }
+      } catch (_) {}
     }
 
     // Process typedefs from built-in library
     for (final typedefMirror in library.declarations.values.whereType<mirrors.TypedefMirror>()) {
-      declarations.add(await generateBuiltInTypedef(typedefMirror, package, uri, library.uri));
+      try {
+        declarations.add(await generateBuiltInTypedef(typedefMirror, package, uri, library.uri));
+      } catch (_) {}
     }
 
     // Process top-level functions and variables from built-in library
     for (final declaration in library.declarations.values) {
-      if (declaration is mirrors.MethodMirror && !declaration.isConstructor && !declaration.isAbstract) {
-        declarations.add(await generateBuiltInTopLevelMethod(declaration, package, uri, library.uri));
-      } else if (declaration is mirrors.VariableMirror) {
-        declarations.add(await generateBuiltInTopLevelField(declaration, package, uri, library.uri));
-      }
+      try {
+        if (declaration is mirrors.MethodMirror && !declaration.isConstructor && !declaration.isAbstract) {
+          declarations.add(await generateBuiltInTopLevelMethod(declaration, package, uri, library.uri));
+        } else if (declaration is mirrors.VariableMirror) {
+          declarations.add(await generateBuiltInTopLevelField(declaration, package, uri, library.uri));
+        }
+      } catch (_) {}
     }
 
     return currentLibrary.copyWith(declarations: declarations);

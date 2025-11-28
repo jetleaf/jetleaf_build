@@ -37,13 +37,15 @@ abstract class AbstractAnnotationDeclarationSupport extends AbstractLinkDeclarat
     
     for (final annotation in metadata) {
       try {
+        // Create LinkDeclaration for the annotation type
         final annotationType = annotation.type;
         Type type = annotationType.hasReflectedType ? annotationType.reflectedType : annotationType.runtimeType;
         final annotationName = mirrors.MirrorSystem.getName(annotationType.simpleName);
 
-        if (GenericTypeParser.shouldCheckGeneric(type)) {
-          final innerAnnotations = await extractAnnotations(annotationType.metadata, package);
-          final resolvedType = await resolveTypeFromGenericAnnotation(innerAnnotations, annotationName);
+        // Extract annotations and resolve type
+        if(GenericTypeParser.shouldCheckGeneric(type)) {
+          final annotations = await extractAnnotations(annotationType.metadata, package);
+          final resolvedType = await resolveTypeFromGenericAnnotation(annotations, annotationName);
           if (resolvedType != null) {
             type = resolvedType;
           }
@@ -75,6 +77,7 @@ abstract class AbstractAnnotationDeclarationSupport extends AbstractLinkDeclarat
               final libraryUri = declaration.type.location?.sourceUri.toString() ?? 'dart:core';
               final fieldType = await getLinkDeclaration(declaration.type, package, libraryUri);
 
+              // Get user-provided value with improved safety check
               dynamic userValue;
               bool hasUserValue = false;
               try {
@@ -84,8 +87,11 @@ abstract class AbstractAnnotationDeclarationSupport extends AbstractLinkDeclarat
                   hasUserValue = true;
                   userProvidedValues[fieldName] = userValue;
                 }
-              } catch (_) {}
+              } catch (e) {
+                // Field access failed, continue without user value
+              }
 
+              // Get default value from constructor with improved handling
               dynamic defaultValue;
               bool hasDefaultValue = false;
               try {
@@ -102,7 +108,9 @@ abstract class AbstractAnnotationDeclarationSupport extends AbstractLinkDeclarat
                     if (hasDefaultValue) break;
                   }
                 }
-              } catch (_) {}
+              } catch (e) {
+                // Default value extraction failed, continue without default
+              }
               
               annotationFields[fieldName] = StandardAnnotationFieldDeclaration(
                 name: fieldName,
@@ -143,7 +151,9 @@ abstract class AbstractAnnotationDeclarationSupport extends AbstractLinkDeclarat
           isPublic: !isInternal(annotationName),
           isSynthetic: isSynthetic(annotationName),
         ));
-      } catch (_) {}
+      } catch (e) {
+        // onWarning('Failed to extract annotation: $e');
+      }
     }
     
     return annotations;

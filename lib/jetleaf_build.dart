@@ -118,10 +118,10 @@ export 'src/runner/run_scan.dart';
 export 'src/runner/test_scan.dart';
 
 export 'src/generators/default_library_generator.dart';
-export 'src/generators/declaration_file_writer.dart';
+export 'src/declaration_writer/declaration_file_writer.dart';
 export 'src/generators/library_generator.dart';
 export 'src/generators/mock_library_generator.dart';
-export 'src/generators/tree_shaker.dart';
+export 'src/tree_shaker/tree_shaker.dart';
 
 export 'src/runtime_hint/default_runtime_hint_descriptor.dart';
 export 'src/runtime_hint/runtime_hint.dart';
