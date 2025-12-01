@@ -12,8 +12,6 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
-import 'dart:io';
-
 import '../utils/constant.dart';
 import '../exceptions.dart';
 import 'runtime_provider.dart';
@@ -58,7 +56,6 @@ class _MetaRuntimeProvider extends RuntimeProvider {
   List<Package> _packages = [];
   List<Asset> _assets = [];
   List<TypeDeclaration> _specialTypes = [];
-  List<File> _nonDartFiles = [];
   List<LibraryDeclaration> _libraries = [];
 
   _MetaRuntimeProvider._();
@@ -140,7 +137,6 @@ class _MetaRuntimeProvider extends RuntimeProvider {
     _assets = registry.getAllAssets();
     _packages = registry.getAllPackages();
     _resolver = registry.getRuntimeResolver();
-    _nonDartFiles = registry.getNonDartFiles();
     _specialTypes = registry.getSpecialTypes();
     _libraries = registry.getAllLibraries();
   }
@@ -171,9 +167,6 @@ class _MetaRuntimeProvider extends RuntimeProvider {
   
   @override
   List<LibraryDeclaration> getAllLibraries() => List.unmodifiable(_libraries);
-  
-  @override
-  List<File> getNonDartFiles() => List.unmodifiable(_nonDartFiles);
   
   @override
   List<TypeDeclaration> getSpecialTypes() => List.unmodifiable(_specialTypes);

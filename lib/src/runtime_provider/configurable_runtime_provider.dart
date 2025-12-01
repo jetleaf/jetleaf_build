@@ -12,8 +12,6 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
-import 'dart:io' show File;
-
 import '../declaration/declaration.dart';
 import '../runtime_resolver/runtime_resolver.dart';
 import 'runtime_provider.dart';
@@ -89,17 +87,6 @@ abstract class ConfigurableRuntimeProvider extends RuntimeProvider {
 
   /// {@macro configurable_runtime_provider}
   ///
-  /// Registers a [File] as a non-dart file.
-  ///
-  /// These are typically files that does not end with `.dart`.
-  ///
-  /// ```dart
-  /// context.addNonDartFile(file);
-  /// ```
-  void addNonDartFile(File file);
-
-  /// {@macro configurable_runtime_provider}
-  ///
   /// Adds a list of [LibraryDeclaration]s to the context.
   ///
   /// If [replace] is `true`, the existing library list will be cleared first.
@@ -129,13 +116,6 @@ abstract class ConfigurableRuntimeProvider extends RuntimeProvider {
   ///
   /// If [replace] is `true`, all previous special types will be cleared first.
   void addSpecialTypes(List<TypeDeclaration> types, {bool replace = false});
-
-  /// {@macro configurable_runtime_provider}
-  ///
-  /// Adds a list of [File]s as non-dart files to the context.
-  ///
-  /// If [replace] is `true`, all previous non-dart files will be cleared first.
-  void addNonDartFiles(List<File> files, {bool replace = false});
 
   /// {@macro configurable_runtime_provider}
   ///

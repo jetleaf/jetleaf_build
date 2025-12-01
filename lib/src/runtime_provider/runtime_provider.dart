@@ -12,8 +12,6 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
-import 'dart:io';
-
 import '../declaration/declaration.dart';
 import '../runtime_resolver/runtime_resolver.dart';
 import 'runtime_metadata_provider.dart';
@@ -57,11 +55,6 @@ abstract class RuntimeProvider implements RuntimeMetadataProvider {
   ///
   /// Returns the runtime resolver used to resolve descriptors entities.
   RuntimeResolver getRuntimeResolver();
-
-  /// {@macro runtime_provider}
-  /// 
-  /// Returns a list of files that does not end with `.dart`
-  List<File> getNonDartFiles();
 
   @override
   String toString() => 'ReflectionContext(\n${getAllLibraries().length} libraries,\n${getAllPackages().length} packages,\n${getSpecialTypes().length} special types\n)';

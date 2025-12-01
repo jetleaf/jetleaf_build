@@ -12,8 +12,6 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
-import 'dart:io' show File;
-
 import '../declaration/declaration.dart';
 import '../exceptions.dart';
 import '../runtime_resolver/runtime_resolver.dart';
@@ -46,7 +44,6 @@ final class StandardRuntimeProvider extends ConfigurableRuntimeProvider {
   final List<Package> _packages = [];
   final List<Asset> _assets = [];
   final List<TypeDeclaration> _specialTypes = [];
-  final List<File> _nonDartFiles = [];
   RuntimeResolver? _runtimeResolver;
 
   /// {@macro standard_runtime_provider}
@@ -63,9 +60,6 @@ final class StandardRuntimeProvider extends ConfigurableRuntimeProvider {
   
   @override
   void addSpecialType(TypeDeclaration type) => _specialTypes.add(type);
-
-  @override
-  void addNonDartFile(File file) => _nonDartFiles.add(file);
 
   @override
   void addLibraries(List<LibraryDeclaration> libraries, {bool replace = false}) {
@@ -100,14 +94,6 @@ final class StandardRuntimeProvider extends ConfigurableRuntimeProvider {
   }
 
   @override
-  void addNonDartFiles(List<File> files, {bool replace = false}) {
-    if (replace) {
-      _nonDartFiles.clear();
-    }
-    _nonDartFiles.addAll(files);
-  }
-
-  @override
   void setRuntimeResolver(RuntimeResolver resolver) {
     _runtimeResolver = resolver;
   }
@@ -117,9 +103,6 @@ final class StandardRuntimeProvider extends ConfigurableRuntimeProvider {
 
   @override
   List<TypeDeclaration> getSpecialTypes() => _specialTypes;
-
-  @override
-  List<File> getNonDartFiles() => _nonDartFiles;
 
   @override
   RuntimeResolver getRuntimeResolver() => _runtimeResolver ?? (throw BuildException('Runtime resolver not set'));
