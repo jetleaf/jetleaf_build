@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. This projec
 
 - Deprecated the use of `getNonDartFiles()` method
 - Increased the number of search directories for project resources
+- Added release-on-merge.yml ci/cd
 
 ## [1.0.3] - 2025-11-28
 
