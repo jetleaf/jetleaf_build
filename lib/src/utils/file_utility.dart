@@ -654,6 +654,7 @@ class FileUtility {
       Directory(p.join(root, 'lib', Constant.RESOURCES_DIR_NAME)),
       Directory(p.join(root, Constant.PACKAGE_ASSET_DIR)),
       Directory(p.join(root, 'lib', Constant.PACKAGE_ASSET_DIR)),
+      Directory(root),
     ];
 
     // 1. User's project resources
@@ -693,8 +694,8 @@ class FileUtility {
   /// Scans a directory for resource files.
   Future<List<Asset>> _scanDirectoryForResources(Directory dir, String packageName, String packageRootPath) async {
     final List<Asset> resources = [];
-    await for (final entity in dir.list(recursive: true, followLinks: false)) {
-      if (entity is File) {
+    await for (final entity in dir.list(recursive: true, followLinks: true)) {
+      if (entity is File && !entity.path.endsWith(".dart")) {
         try {
           resources.add(AssetImplementation(
             filePath: entity.path,

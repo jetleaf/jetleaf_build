@@ -165,6 +165,7 @@ class MockRuntimeScanner implements RuntimeScanner {
     // 3. Force load specified files
     final dartFiles = await FileUtils.findDartFiles(directory);
     final resources = await FileUtils.discoverAllResources(_package!, access);
+    final packages = await FileUtils.readPackageGraphDependencies(directory, access);
     dartFiles.addAll(_forceLoadFiles);
 
     _logInfo('Loading dart files that are not present in the [currentMirrorSystem#(${access.isolate.debugName})]...');
@@ -200,7 +201,7 @@ class MockRuntimeScanner implements RuntimeScanner {
       onWarning: _logWarning,
       onError: _logError,
       configuration: configuration,
-      packages: [_createPackage(_package!)],
+      packages: [_createPackage(_package!), ...packages],
     );
     
     final libraryGenerator = _libraryGeneratorFactory?.call(params) ?? MockLibraryGenerator(

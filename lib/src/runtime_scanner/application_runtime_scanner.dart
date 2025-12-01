@@ -157,20 +157,17 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
 
     _logInfo("${refreshContext ? "Reloading" : "Scanning"} $_package application...");
     Set<File> dartFiles = {};
-    Set<File> nonDartFiles = {};
     List<Asset> resources = [];
     List<Package> packages = [];
 
     if(refreshContext) {
       dartFiles = await FileUtils.findDartFiles(directory);
-      nonDartFiles = await FileUtils.findNonDartFiles(directory);
       resources = await FileUtils.discoverAllResources(_package!, access);
       packages = await FileUtils.readPackageGraphDependencies(directory, access);
     } else {
       // For non-rebuilds, only process additions/removals if specified
       if(configuration.additions.isNotEmpty || configuration.removals.isNotEmpty || configuration.filesToScan.isNotEmpty) {
         dartFiles = (configuration.filesToScan + configuration.additions).where((file) => file.path.endsWith('.dart')).toSet();
-        nonDartFiles = (configuration.filesToScan + configuration.additions).where((file) => !file.path.endsWith('.dart')).toSet();
       }
 
       if(configuration.updateAssets) {
@@ -183,7 +180,6 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
     }
 
     _logInfo("Found ${dartFiles.length} dart files.");
-    _logInfo("Found ${nonDartFiles.length} non-dart files.");
     _logInfo("Found ${resources.length} resources.");
     _logInfo("Found ${packages.length} packages.");
 
@@ -274,10 +270,6 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
 
     if(specialTypes.isNotEmpty) {
       _context?.addSpecialTypes(specialTypes, replace: refreshContext);
-    }
-
-    if(nonDartFiles.isNotEmpty) {
-      (_context as StandardRuntimeProvider?)?.addNonDartFiles(nonDartFiles.toList(), replace: refreshContext);
     }
 
     stopwatch.stop();
