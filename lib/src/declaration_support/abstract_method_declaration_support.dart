@@ -62,6 +62,7 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
         }
       }
       final annotations = await extractAnnotations(mirrorParam.metadata, package);
+      // print("Is $paramName nullable ${analyzerParam?.getExtendedDisplayName()} - ${analyzerParam?.getExtendedDisplayName().endsWith("?") ?? mirrorParam.isOptional}");
       
       parameters.add(StandardParameterDeclaration(
         name: paramName,
@@ -70,7 +71,7 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
         type: runtimeType,
         libraryDeclaration: libraryCache[libraryUri]!,
         typeDeclaration: paramType,
-        isOptional: mirrorParam.isOptional,
+        isOptional: analyzerParam?.getExtendedDisplayName().endsWith("?") ?? mirrorParam.isOptional,
         isNamed: mirrorParam.isNamed,
         hasDefaultValue: mirrorParam.hasDefaultValue,
         defaultValue: defaultValue,
