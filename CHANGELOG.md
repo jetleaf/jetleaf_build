@@ -2,26 +2,31 @@
 
 All notable changes to this project will be documented in this file. This project adheres to a simple, human-readable changelog format.
 
-## [1.0.3] - 2025-12-1
+## [1.0.5]
+
+- Updated dependencies
+- Fixed `analyzer` issue
+
+## [1.0.4]
 
 - Deprecated the use of `getNonDartFiles()` method
 - Increased the number of search directories for project resources
 - Added release-on-merge.yml ci/cd
 
-## [1.0.3] - 2025-11-28
+## [1.0.3]
 
 - Fixed declaration issue
 
-## [1.0.2] - 2025-11-26
+## [1.0.2]
 
 - Fixed issues on production
 
-## [1.0.1] - 2025-11-25
+## [1.0.1]
 
 - Fixed JitRuntimeResolver
 - Added new checks in FileUtility
 
-## [1.0.0] - 2025-11-17
+## [1.0.0]
 
 Initial stable release.
 

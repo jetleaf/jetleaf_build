@@ -6,12 +6,12 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
+import 'package:path/path.dart' as p;
 
-import 'package:jetleaf_build/src/declaration/declaration.dart';
-import 'package:jetleaf_build/src/utils/constant.dart';
-
+import '../declaration/declaration.dart';
 import '../utils/generic_type_parser.dart';
 import '../utils/must_avoid.dart';
+import '../utils/constant.dart';
 import '../declaration_support/abstract_library_declaration_support.dart';
 
 base class DefaultLibraryGenerator extends AbstractLibraryDeclarationSupport {
@@ -130,7 +130,7 @@ These classes may need manual type resolution or have complex generic constraint
           includedPaths: dartFiles.map((f) => f.path).toList(),
           resourceProvider: resourceProvider,
         );
-        onInfo('Analyzer initialized with ${dartFiles.length} dart files');
+        onInfo('Analyzer $_analysisContextCollection initialized with ${dartFiles.length} dart files');
       } else {
         onWarning('No dart files found');
       }
@@ -151,9 +151,9 @@ These classes may need manual type resolution or have complex generic constraint
     }
 
     try {
-      final filePath = uri.toFilePath();
-      final context = _analysisContextCollection!.contextFor(filePath);
-      final result = await context.currentSession.getResolvedLibrary(filePath);
+      final path = getPath(uri);
+      final context = _analysisContextCollection!.contextFor(path);
+      final result = await context.currentSession.getResolvedLibrary(path);
       
       if (result is ResolvedLibraryResult) {
         final libraryElement = result.element;
@@ -165,6 +165,41 @@ These classes may need manual type resolution or have complex generic constraint
     }
 
     return null;
+  }
+
+  String getPath(Uri uri) {
+    final uriStr = uri.toString();
+
+    final packageName = getPackageNameFromUri(uri);
+    final package = isBuiltInDartLibrary(uri)
+        ? (packageCache[Constant.DART_PACKAGE_NAME] ?? createBuiltInPackage())
+        : (packageCache[packageName] ?? createDefaultPackage(packageName ?? "Unknown"));
+
+    /// 1. Compute base URI safely
+    Uri baseUri;
+    final pkgFilePath = package.getFilePath() ?? "";
+    final pkgUri = package.getRootUri() != null ? Uri.parse(package.getRootUri()!) : null;
+
+    if (package.getIsRootPackage()) {
+      baseUri = Uri.directory(pkgFilePath, windows: false);
+    } else {
+      baseUri = pkgUri ?? Uri.directory(pkgFilePath, windows: false);
+    }
+
+    /// 2. Compute the relative path inside the package
+    String relative;
+
+    if (isBuiltInDartLibrary(uri)) {
+      relative = uriStr.replaceFirst("dart:", "");
+    } else {
+      relative = uriStr.replaceFirst("package:${package.getName()}/", "");
+    }
+
+    /// 3. Combine correctly using URI.resolve()
+    final resolvedUri = baseUri.resolve(relative);
+
+    /// 4. Convert to a real filesystem path
+    return p.normalize(resolvedUri.toFilePath());
   }
 
   @override
