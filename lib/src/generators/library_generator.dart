@@ -138,4 +138,7 @@ abstract class LibraryGenerator {
   /// {@macro library_exclusion}
   @protected
   Future<bool> shouldNotIncludeLibrary(Uri uri, RuntimeScannerConfiguration configuration) => RuntimeUtils.shouldNotIncludeLibrary(uri, configuration);
+
+  /// List of library mirrors to process
+  List<mirrors.LibraryMirror> getLibraries();
 }

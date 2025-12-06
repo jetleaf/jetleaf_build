@@ -26,6 +26,7 @@ import 'must_avoid.dart';
 import '../runtime_scanner/runtime_scanner_configuration.dart';
 
 typedef OnLogged = void Function(String message);
+typedef TryOutsideIsolate = bool Function(File file, Uri uri);
 
 /// Utility class for file system operations related to Dart projects.
 class FileUtility {
@@ -35,7 +36,7 @@ class FileUtility {
   final OnLogged _onInfo;
   final OnLogged _onWarning;
   final OnLogged _onError;
-  final bool _tryOutsideIsolate;
+  final TryOutsideIsolate _tryOutsideIsolate;
   final RuntimeScannerConfiguration _configuration;
 
   /// File patterns that should be skipped
@@ -107,8 +108,7 @@ class FileUtility {
 
     // Skip test files only if user configured skipTests and it's not explicitly included
     if (_configuration.skipTests && _isTestFile(normalizedPath)) {
-      final explicitlyIncluded = _configuration.filesToScan
-          .any((f) => p.normalize(f.absolute.path) == normalizedPath);
+      final explicitlyIncluded = _configuration.filesToScan.any((f) => p.normalize(f.absolute.path) == normalizedPath);
       if (!explicitlyIncluded) {
         return true;
       }
@@ -204,7 +204,7 @@ class FileUtility {
       return await Isolate.run<mirrors.LibraryMirror?>(() => _loadLibrary(uri, file, mirrorSystem), debugName: 'lib_$uri');
     } catch (e) {
       try {
-        if(_tryOutsideIsolate) {
+        if(_tryOutsideIsolate(file, uri)) {
           return await _loadLibrary(uri, file, mirrorSystem);
         }
       } catch (e) {
@@ -513,7 +513,7 @@ class FileUtility {
   }
 
   /// Reads dependencies from .dart_tool/package_graph.json.
-  Future<List<Package>> readPackageGraphDependencies(Directory projectRoot, [mirrors.MirrorSystem? mirrorSystem]) async {
+  Future<List<Package>> readPackageGraphDependencies(Directory projectRoot, [mirrors.MirrorSystem? mirrorSystem, List<mirrors.LibraryMirror>? libraries]) async {
     final graphFile = File(p.join(projectRoot.path, '.dart_tool', 'package_graph.json'));
     final configFile = File(p.join(projectRoot.path, '.dart_tool', 'package_config.json'));
 
@@ -585,7 +585,7 @@ class FileUtility {
     }
 
     if (mirrorSystem != null) {
-      result.addAll(await _readMirrorGenerativePackages(mirrorSystem));
+      result.addAll(await _readMirrorGenerativePackages(mirrorSystem, libraries));
     }
 
     return result;
@@ -603,11 +603,11 @@ class FileUtility {
   /// - instantiating it does not throw
   ///
   /// Returns a list of instantiated [GenerativePackage] objects.
-  Future<List<GenerativePackage>> _readMirrorGenerativePackages(mirrors.MirrorSystem mirrorSystem) async {
+  Future<List<GenerativePackage>> _readMirrorGenerativePackages(mirrors.MirrorSystem mirrorSystem, List<mirrors.LibraryMirror>? libraries) async {
     final packages = <GenerativePackage>[];
     final gaClass = mirrors.reflectClass(GenerativePackage);
 
-    for (final lib in mirrorSystem.libraries.values) {
+    for (final lib in libraries ?? mirrorSystem.libraries.values) {
       for (final decl in lib.declarations.values) {
         // We only care about classes
         if (decl is! mirrors.ClassMirror) continue;
@@ -619,15 +619,15 @@ class FileUtility {
           continue;
         }
 
-        // Must have zero-arg constructor
-        final ctor = _findZeroArgsConstructor(classMirror);
-        if (ctor == null) {
+        // Must have zero-arg constructor symbol
+        final symbol = _findZeroArgsConstructorSymbol(classMirror);
+        if (symbol == null) {
           continue;
         }
 
         // Try to instantiate
         try {
-          final instanceMirror = classMirror.newInstance(ctor, const []);
+          final instanceMirror = classMirror.newInstance(symbol, const []);
           final instance = instanceMirror.reflectee;
 
           if (instance is GenerativePackage) {
@@ -641,7 +641,7 @@ class FileUtility {
   }
 
   /// Discovers all resource files in the current project and ALL dependencies.
-  Future<List<Asset>> discoverAllResources(String currentPackageName, [mirrors.MirrorSystem? mirrorSystem]) async {
+  Future<List<Asset>> discoverAllResources(String currentPackageName, [mirrors.MirrorSystem? mirrorSystem, List<mirrors.LibraryMirror>? libraries]) async {
     if (_packageConfig == null) {
       await _loadPackageConfig();
     }
@@ -685,7 +685,7 @@ class FileUtility {
     }
 
     if (mirrorSystem != null) {
-      allResources.addAll(await _scanMirrorForGenerativeAssets(mirrorSystem));
+      allResources.addAll(await _scanMirrorForGenerativeAssets(mirrorSystem, libraries));
     }
     
     return allResources;
@@ -719,11 +719,11 @@ class FileUtility {
   /// JetLeaf’s code generation (`GenerativeAsset` subclasses).
   ///
   /// Returns a list of instantiated [GenerativeAsset] objects.
-  Future<List<GenerativeAsset>> _scanMirrorForGenerativeAssets(mirrors.MirrorSystem mirrorSystem) async {
+  Future<List<GenerativeAsset>> _scanMirrorForGenerativeAssets(mirrors.MirrorSystem mirrorSystem, List<mirrors.LibraryMirror>? libraries) async {
     final assets = <GenerativeAsset>[];
     final gaClass = mirrors.reflectClass(GenerativeAsset);
 
-    for (final lib in mirrorSystem.libraries.values) {
+    for (final lib in libraries ?? mirrorSystem.libraries.values) {
       for (final decl in lib.declarations.values) {
         // We only care about classes
         if (decl is! mirrors.ClassMirror) continue;
@@ -735,21 +735,21 @@ class FileUtility {
           continue;
         }
 
-        // Must have zero-arg constructor
-        final ctor = _findZeroArgsConstructor(classMirror);
-        if (ctor == null) {
+        // Must have zero-arg constructor symbol
+        final symbol = _findZeroArgsConstructorSymbol(classMirror);
+        if (symbol == null) {
           continue;
         }
 
         // Try to instantiate
         try {
-          final instanceMirror = classMirror.newInstance(ctor, const []);
+          final instanceMirror = classMirror.newInstance(symbol, const []);
           final instance = instanceMirror.reflectee;
 
           if (instance is GenerativeAsset) {
             assets.add(instance);
           }
-        } catch (_) { }
+        } catch (_) {}
       }
     }
 
@@ -761,12 +761,20 @@ class FileUtility {
   /// This walks up the superclass chain (excluding mixins), returning
   /// `false` once the root `Object` is reached.
   bool _isSubclassOf(mirrors.ClassMirror classMirror, mirrors.ClassMirror target) {
-    var current = classMirror;
-    while (true) {
-      if (current == target) return true;
-      if (current.superclass == null) return false;
-      current = current.superclass!;
+    // 1. Check the class itself
+    if (classMirror == target) return true;
+
+    // 2. Check all interfaces implemented by this class
+    for (final interface in classMirror.superinterfaces) {
+      if (interface == target) return true;
+      if (_isSubclassOf(interface, target)) return true;
     }
+
+    // 3. Recurse into superclass (if exists)
+    final superClass = classMirror.superclass;
+    if (superClass == null) return false;
+
+    return _isSubclassOf(superClass, target);
   }
 
   /// Returns the symbol of a zero-argument constructor for [mirror],
@@ -774,12 +782,12 @@ class FileUtility {
   ///
   /// A valid generative asset/package must define:
   ///   ClassName();
-  Symbol? _findZeroArgsConstructor(mirrors.ClassMirror mirror) {
+  Symbol? _findZeroArgsConstructorSymbol(mirrors.ClassMirror mirror) {
     for (final entry in mirror.declarations.entries) {
       final decl = entry.value;
 
       if (decl is mirrors.MethodMirror && decl.isConstructor && decl.parameters.isEmpty) {
-        return entry.key; // constructor symbol
+        return Symbol(""); // constructor symbol
       }
     }
 

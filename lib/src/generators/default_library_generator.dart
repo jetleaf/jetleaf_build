@@ -47,7 +47,7 @@ base class DefaultLibraryGenerator extends AbstractLibraryDeclarationSupport {
     onInfo('Generating declaration metadata with analyzer integration...');
     final nonNecessaryPackages = getNonNecessaryPackages();
     
-    for (final libraryMirror in this.libraries) {
+    for (final libraryMirror in getLibraries()) {
       final fileUri = libraryMirror.uri;
       final filePath = libraryMirror.uri.toString();
 
@@ -203,5 +203,5 @@ These classes may need manual type resolution or have complex generic constraint
   }
 
   @override
-  List<LibraryMirror> get libraries => refresh ? [...mirrorSystem.libraries.values, ...forceLoadedMirrors] : [...forceLoadedMirrors];
+  List<LibraryMirror> getLibraries() => refresh ? [...mirrorSystem.libraries.values, ...forceLoadedMirrors] : [...forceLoadedMirrors];
 }

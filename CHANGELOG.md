@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. This project adheres to a simple, human-readable changelog format.
 
+## [1.0.6]
+
+- Fixed issues with `runTestScan`
+- Resolved the problem where `GenerativePackage` or `GenerativeAsset` is not discovered by the runtime design
+- Added new design api to `RuntimeScanConfiguration` with `TryOutsideIsolate`.
+- Updated dependencies
+
 ## [1.0.5]
 
 - Updated dependencies

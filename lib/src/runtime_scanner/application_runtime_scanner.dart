@@ -135,7 +135,7 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
   Future<RuntimeScannerSummary> scan(RuntimeScannerConfiguration configuration, {Directory? source}) async {
     bool refreshContext = _context == null || !configuration.reload;
     final stopwatch = Stopwatch()..start();
-    FileUtility FileUtils = FileUtility(_logInfo, _logWarning, _logError, configuration, true);
+    FileUtility FileUtils = FileUtility(_logInfo, _logWarning, _logError, configuration, configuration.tryOutsideIsolate ?? (file, uri) => true);
 
     // 1. Setup directory and verify its existence
     if(refreshContext) {
@@ -157,31 +157,17 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
 
     _logInfo("${refreshContext ? "Reloading" : "Scanning"} $_package application...");
     Set<File> dartFiles = {};
-    List<Asset> resources = [];
-    List<Package> packages = [];
 
     if(refreshContext) {
       dartFiles = await FileUtils.findDartFiles(directory);
-      resources = await FileUtils.discoverAllResources(_package!, access);
-      packages = await FileUtils.readPackageGraphDependencies(directory, access);
     } else {
       // For non-rebuilds, only process additions/removals if specified
       if(configuration.additions.isNotEmpty || configuration.removals.isNotEmpty || configuration.filesToScan.isNotEmpty) {
         dartFiles = (configuration.filesToScan + configuration.additions).where((file) => file.path.endsWith('.dart')).toSet();
       }
-
-      if(configuration.updateAssets) {
-        resources = await FileUtils.discoverAllResources(_package!, access);
-      }
-
-      if(configuration.updatePackages) {
-        packages = await FileUtils.readPackageGraphDependencies(directory, access);
-      }
     }
 
     _logInfo("Found ${dartFiles.length} dart files.");
-    _logInfo("Found ${resources.length} resources.");
-    _logInfo("Found ${packages.length} packages.");
 
     List<LibraryDeclaration> libraries = [];
     List<TypeDeclaration> specialTypes = [];
@@ -208,6 +194,26 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
         }
       }
     }
+
+    final mirrorLibraries = refreshContext ? [...access.libraries.values, ...forceLoadedMirrors] : [...forceLoadedMirrors];
+    List<Asset> resources = [];
+    List<Package> packages = [];
+
+    if(refreshContext) {
+      resources = await FileUtils.discoverAllResources(_package!, access, mirrorLibraries);
+      packages = await FileUtils.readPackageGraphDependencies(directory, access, mirrorLibraries);
+    } else {
+      if(configuration.updateAssets) {
+        resources = await FileUtils.discoverAllResources(_package!, access, mirrorLibraries);
+      }
+
+      if(configuration.updatePackages) {
+        packages = await FileUtils.readPackageGraphDependencies(directory, access, mirrorLibraries);
+      }
+    }
+
+    _logInfo("Found ${resources.length} resources.");
+    _logInfo("Found ${packages.length} packages.");
 
     // 5. Generate reflection metadata
     _logInfo('Resolving declaration metadata libraries...');

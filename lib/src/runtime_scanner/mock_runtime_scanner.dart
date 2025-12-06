@@ -152,7 +152,7 @@ class MockRuntimeScanner implements RuntimeScanner {
     final stopwatch = Stopwatch()..start();
     _logInfo("Starting mock runtime scan...");
 
-    FileUtility FileUtils = FileUtility(_logInfo, _logWarning, _logError, configuration, false);
+    FileUtility FileUtils = FileUtility(_logInfo, _logWarning, _logError, configuration, configuration.tryOutsideIsolate ?? (file, uri) => true);
 
     // 1. Setup directory and verify its existence
     Directory directory = source ?? Directory.current;
@@ -164,8 +164,6 @@ class MockRuntimeScanner implements RuntimeScanner {
     
     // 3. Force load specified files
     final dartFiles = await FileUtils.findDartFiles(directory);
-    final resources = await FileUtils.discoverAllResources(_package!, access);
-    final packages = await FileUtils.readPackageGraphDependencies(directory, access);
     dartFiles.addAll(_forceLoadFiles);
 
     _logInfo('Loading dart files that are not present in the [currentMirrorSystem#(${access.isolate.debugName})]...');
@@ -191,6 +189,14 @@ class MockRuntimeScanner implements RuntimeScanner {
     _logInfo('Loaded ${forceLoadedMirrors.length} dart files into the mirror system.');
 
     configuration = _addDefaultPackagesToScan(configuration, _package!);
+
+    final refreshContext = _context == null || configuration.reload;
+    final mirrorLibraries = refreshContext ? [...access.libraries.values, ...forceLoadedMirrors] : [...forceLoadedMirrors];
+    final resources = await FileUtils.discoverAllResources(_package!, access, mirrorLibraries);
+    final packages = await FileUtils.readPackageGraphDependencies(directory, access, mirrorLibraries);
+
+    _logInfo("Found ${resources.length} resources.");
+    _logInfo("Found ${packages.length} packages.");
 
     // 4. Generate reflection metadata
     _logInfo('Generating declaration metadata...');
@@ -219,7 +225,6 @@ class MockRuntimeScanner implements RuntimeScanner {
     _logInfo('Generated declaration metadata for ${libraries.length} libraries');
 
     // 5. Create or update context
-    final refreshContext = _context == null || configuration.reload;
     if (refreshContext) {
       _context = StandardRuntimeProvider();
     }
@@ -240,7 +245,13 @@ class MockRuntimeScanner implements RuntimeScanner {
       logWarning: _logWarning,
       logError: _logError,
     );
-    _context?.addAssets(resources);
+    if(resources.isNotEmpty) {
+      _context?.addAssets(resources, replace: refreshContext);
+    }
+
+    if(packages.isNotEmpty) {
+      _context?.addPackages(packages, replace: refreshContext);
+    }
     _context?.setRuntimeResolver(await resolving.resolve());
 
     stopwatch.stop();
