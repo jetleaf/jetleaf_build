@@ -35,7 +35,7 @@ Future<void> runTestScan({List<String> packagesToExclude = const [], List<String
       packages: params.packages
     )
   ).scan(config ?? RuntimeScannerConfiguration(
-    skipTests: true,
+    skipTests: false,
     packagesToExclude: [
       "test",
       "lints",

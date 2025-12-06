@@ -134,8 +134,9 @@ class _MetaRuntimeProvider extends RuntimeProvider {
     }
 
     _contents = sections;
-    _assets = registry.getAllAssets();
-    _packages = registry.getAllPackages();
+    _assets = dedupeByFilePath(registry.getAllAssets(), (asset) => asset.getFilePath());
+    _packages = dedupeByFilePath(registry.getAllPackages(), (pkg) => pkg.getFilePath() ?? pkg.getName());
+
     _resolver = registry.getRuntimeResolver();
     _specialTypes = registry.getSpecialTypes();
     _libraries = registry.getAllLibraries();
@@ -145,6 +146,20 @@ class _MetaRuntimeProvider extends RuntimeProvider {
     final sections = _contents!.entries.toList();
     sections.sort((a, b) => a.value.getHierarchy().compareTo(b.value.getHierarchy()));
     return sections.map((e) => e.value);
+  }
+
+  List<T> dedupeByFilePath<T>(Iterable<T> items, String? Function(T) getFilePath) {
+    final seen = <String?>{};
+    final result = <T>[];
+
+    for (final item in items) {
+      final path = getFilePath(item);
+      if (seen.contains(path)) continue;
+      seen.add(path);
+      result.add(item);
+    }
+
+    return result;
   }
 
   void _assertInitialized() {

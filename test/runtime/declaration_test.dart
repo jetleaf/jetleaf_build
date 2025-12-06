@@ -437,14 +437,50 @@ class AuditLogger {
 void main() async {
   print('Setting up comprehensive reflection test environment...');
   await runTestScan(filesToLoad: [
-    "/Users/mac/Documents/Hapnium/jetleaf/test/lang/reflect/declaration_test.dart",
-    "/Users/mac/Documents/Hapnium/jetleaf/test/lang/reflect/class_test.dart",
+    "test/generative_assets.dart"
   ]);
 
-  print(Runtime.getAllClasses().map((clazz) => clazz.getName()).join(", "));
-  
-  print('Test environment ready!');
-  print('Available libraries: ${Runtime.getAllLibraries().length}');
-  print('Available classes: ${Runtime.getAllClasses().length}');
-  print('Available enums: ${Runtime.getAllEnums().length}');
+  printRuntimeSummary();
+}
+
+void printRuntimeSummary() {
+  final classes = List.from(Runtime.getAllClasses());
+  final enums = List.from(Runtime.getAllEnums());
+  final libs = List.from(Runtime.getAllLibraries());
+  final assets = List.from(Runtime.getAllAssets());
+  final packages = List.from(Runtime.getAllPackages());
+
+  print("\n=== Jetleaf Runtime Environment ===");
+
+  print("\nLibraries (${libs.length}):");
+  libs.sort((a, b) => a.getName().compareTo(b.getName()));
+  for (final lib in libs) {
+    print("  - ${lib.getName()}");
+  }
+
+  print("\nClasses (${classes.length}):");
+  classes.sort((a, b) => a.getName().compareTo(b.getName()));
+  for (final c in classes) {
+    print("  - ${c.getName()} (${c.getQualifiedName()})");
+  }
+
+  print("\nEnums (${enums.length}):");
+  enums.sort((a, b) => a.getName().compareTo(b.getName()));
+  for (final e in enums) {
+    print("  - ${e.getName()}");
+  }
+
+  print("\nAssets (${assets.length}):");
+  assets.sort((a, b) => a.getFileName().compareTo(b.getFileName()));
+  for (final a in assets) {
+    print("  - ${a.getFileName()} (${a.getFilePath()})");
+  }
+
+  print("\nPackages (${packages.length}):");
+  packages.sort((a, b) => a.getName().compareTo(b.getName()));
+  for (final p in packages) {
+    print("  - ${p.getName()} ${p.getVersion()} (${p.getFilePath() ?? "no path"})");
+  }
+
+  print("\nEnvironment ready!\n");
 }

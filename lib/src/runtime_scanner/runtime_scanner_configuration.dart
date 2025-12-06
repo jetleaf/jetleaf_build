@@ -14,6 +14,8 @@
 
 import 'dart:io' show File;
 
+import '../utils/file_utility.dart';
+
 /// {@template runtime_scanner_configuration}
 /// Configuration controller for reflection scanning operations in JetLeaf.
 ///
@@ -150,6 +152,9 @@ class RuntimeScannerConfiguration {
   /// Whether to force load libraries - Mostly for dev env
   final bool forceLoadLibraries;
 
+  /// Whether to try loading the file or uri outside isolate.
+  final TryOutsideIsolate? tryOutsideIsolate;
+
   /// {@macro runtime_scanner_configuration}
   ///
   /// {@template scan_loader_constructor}
@@ -187,7 +192,8 @@ class RuntimeScannerConfiguration {
     this.enableTreeShaking = false,
     this.writeDeclarationsToFiles = false,
     this.outputPath = 'build/generated',
-    this.forceLoadLibraries = false
+    this.forceLoadLibraries = false,
+    this.tryOutsideIsolate
   });
 
   /// Returns a copy of this configuration with updated values.

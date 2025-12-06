@@ -425,7 +425,7 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
     }
 
     // Search through mirror system
-    for (final libraryMirror in libraries) {
+    for (final libraryMirror in getLibraries()) {
       for (final declaration in libraryMirror.declarations.values) {
         if (declaration is mirrors.ClassMirror) {
           final mirrorClassName = mirrors.MirrorSystem.getName(declaration.simpleName);
@@ -466,7 +466,7 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
     final candidates = <String>[];
     final nameToMatch = mirrors.MirrorSystem.getName(typeMirror.simpleName);
 
-    for (final lib in libraries) {
+    for (final lib in getLibraries()) {
       final decl = lib.declarations[typeMirror.simpleName];
       if (decl is mirrors.ClassMirror) {
         // quick direct declaration match
@@ -544,7 +544,7 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
     // Try to find the type in our mirror system
     if (elementName != null) {
       // Look through all libraries to find a matching class
-      for (final libraryMirror in libraries) {
+      for (final libraryMirror in getLibraries()) {
         for (final declaration in libraryMirror.declarations.values) {
           if (declaration is mirrors.ClassMirror) {
             final className = mirrors.MirrorSystem.getName(declaration.simpleName);
@@ -598,7 +598,7 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
     final elementName = dartType.element?.name;
     if (elementName != null) {
       // Look through all libraries to find the base class
-      for (final libraryMirror in libraries) {
+      for (final libraryMirror in getLibraries()) {
         for (final declaration in libraryMirror.declarations.values) {
           if (declaration is mirrors.ClassMirror) {
             final className = mirrors.MirrorSystem.getName(declaration.simpleName);
@@ -625,7 +625,4 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
   /// Get library element from analyzer - to be implemented by subclasses
   @protected
   Future<LibraryElement?> getLibraryElement(Uri uri);
-
-  /// List of library mirrors to process
-  List<mirrors.LibraryMirror> get libraries;
 }
