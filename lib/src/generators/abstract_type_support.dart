@@ -10,6 +10,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:mirrors' as mirrors;
 
+import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:analyzer/dart/ast/ast.dart' as ast;
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -616,6 +618,230 @@ abstract class AbstractTypeSupport extends LibraryGenerator {
 
     // Fallback to the actual runtime type
     return await findRuntimeTypeFromDartType(dartType, libraryUri, package);
+  }
+
+  /// Check if a parameter is nullable by parsing the source code AST
+  @protected
+  bool isNullableParameter({
+    required String sourceCode,
+    required String methodName,
+    required String paramName,
+    String? className,
+    bool isConstructor = false,
+    String? constructorName,
+    bool isStatic = false,
+  }) {
+    try {
+      final parseResult = parseString(content: sourceCode);
+      final ast = parseResult.unit;
+
+      if (isConstructor && className != null && constructorName != null) {
+        return _checkConstructorParameterAst(ast, className, paramName, constructorName);
+      } else {
+        return _checkMethodParameterAst(ast, methodName, paramName, className, isStatic);
+      }
+    } catch (e) {
+      // Fallback to simpler regex check if AST parsing fails
+      return _fallbackNullableCheck(sourceCode, methodName, paramName, className, isConstructor, constructorName);
+    }
+  }
+
+  /// Check constructor parameter nullability using AST
+  bool _checkConstructorParameterAst(ast.CompilationUnit unit, String className, String paramName, String constructorName) {
+    // Find the class
+    final classDecl = unit.declarations.whereType<ast.ClassDeclaration>().where((c) => c.name.toString() == className).firstOrNull;
+    if (classDecl == null) return false;
+    
+    // Find constructors
+    for (final member in classDecl.members) {
+      if (member is ast.ConstructorDeclaration) {
+        // Check named constructor or default constructor
+        if ((member.name?.toString() == constructorName) || member.name == null) {
+          // Check parameters
+          final param = _findParameterInList(member.parameters.parameters, paramName);
+          if (param != null) {
+            return _isParameterNullable(param);
+          }
+        }
+      }
+    }
+    
+    return false;
+  }
+
+  /// Check method parameter nullability using AST
+  bool _checkMethodParameterAst(ast.CompilationUnit unit, String methodName, String paramName, String? className, bool isStatic) {
+    if (className != null) {
+      // Instance or static class method
+      final classDecl = unit.declarations.whereType<ast.ClassDeclaration>().where((c) => c.name.toString() == className).firstOrNull;
+      
+      if (classDecl != null) {
+        for (final member in classDecl.members) {
+          if (member is ast.MethodDeclaration && member.name.toString() == methodName && member.isStatic == isStatic) {
+            final param = _findParameterInList(member.parameters?.parameters, paramName);
+            if (param != null) {
+              return _isParameterNullable(param);
+            }
+          }
+        }
+      }
+    } else {
+      // Top-level function
+      for (final declaration in unit.declarations) {
+        if (declaration is ast.FunctionDeclaration && declaration.name.toString() == methodName) {
+          final param = _findParameterInList(declaration.functionExpression.parameters?.parameters, paramName);
+          if (param != null) {
+            return _isParameterNullable(param);
+          }
+        }
+      }
+    }
+    
+    return false;
+  }
+
+  /// Find a specific parameter in a parameter list, handling all parameter types
+  ast.FormalParameter? _findParameterInList(ast.NodeList<ast.FormalParameter>? parameters, String paramName) {
+    if (parameters == null) return null;
+    
+    for (final param in parameters) {
+      // Check SimpleFormalParameter (regular parameters)
+      if (param is ast.SimpleFormalParameter && param.name?.lexeme == paramName) {
+        return param;
+      }
+      // Check FieldFormalParameter (this.fieldName parameters)
+      else if (param is ast.FieldFormalParameter && param.name.lexeme == paramName) {
+        return param;
+      }
+      // Check DefaultFormalParameter (parameters with default values)
+      else if (param is ast.DefaultFormalParameter) {
+        final innerParam = param.parameter;
+        
+        // Recursively check the inner parameter
+        if (innerParam is ast.SimpleFormalParameter && innerParam.name?.lexeme == paramName) {
+          return innerParam;
+        } 
+        else if (innerParam is ast.FieldFormalParameter && innerParam.name.lexeme == paramName) {
+          return innerParam;
+        }
+        // Also handle FunctionTypedFormalParameter if needed
+        else if (innerParam is ast.FunctionTypedFormalParameter && innerParam.name.lexeme == paramName) {
+          return innerParam;
+        }
+        // Handle SuperFormalParameter for mixins
+        else if (innerParam is ast.SuperFormalParameter && innerParam.name.lexeme == paramName) {
+          return innerParam;
+        }
+      }
+      // Check FunctionTypedFormalParameter directly
+      else if (param is ast.FunctionTypedFormalParameter && param.name.lexeme == paramName) {
+        return param;
+      }
+      // Check SuperFormalParameter directly (for mixins)
+      else if (param is ast.SuperFormalParameter && param.name.lexeme == paramName) {
+        return param;
+      }
+    }
+    
+    return null;
+  }
+
+  /// Check if a parameter is nullable from its AST node (handles all parameter types)
+  bool _isParameterNullable(ast.FormalParameter param) {
+    if (param is ast.SimpleFormalParameter) {
+      return _checkTypeForNullability(param.type);
+    }
+    else if (param is ast.FieldFormalParameter) {
+      // Field formal parameters like "this.fieldName" can have type annotations
+      return _checkTypeForNullability(param.type);
+    }
+    else if (param is ast.FunctionTypedFormalParameter) {
+      // Function-typed parameters: int Function(String) callback
+      return _checkTypeForNullability(param.returnType);
+    }
+    else if (param is ast.DefaultFormalParameter) {
+      // Recurse into the wrapped parameter
+      return _isParameterNullable(param.parameter);
+    }
+    else if (param is ast.SuperFormalParameter) {
+      // Super parameters in mixins
+      return _checkTypeForNullability(param.type);
+    }
+    
+    return false;
+  }
+
+  /// Helper to check any TypeAnnotation for nullability
+  bool _checkTypeForNullability(ast.TypeAnnotation? type) {
+    if (type == null) {
+      // No type annotation - could be dynamic or inferred
+      return false;
+    }
+    
+    if (type is ast.NamedType) {
+      // Check for explicit '?' suffix
+      return type.question != null;
+    }
+    else if (type is ast.GenericFunctionType) {
+      // For function types, check the return type
+      return type.returnType?.question != null;
+    }
+    
+    // Handle other type annotations as needed
+    return type.question != null;
+  }
+
+  /// Fallback method using simpler pattern matching
+  bool _fallbackNullableCheck(
+    String sourceCode, 
+    String methodName, 
+    String paramName, 
+    String? className, 
+    bool isConstructor,
+    String? constructorName
+  ) {
+    final code = RuntimeUtils.stripComments(sourceCode);
+    
+    // Look for method/constructor signature
+    String pattern;
+    
+    if (isConstructor && className != null) {
+      if (constructorName != null && constructorName.isNotEmpty) {
+        // Named constructor: ClassName.constructorName
+        pattern = RegExp.escape(className) + r'\s*\.\s*' + RegExp.escape(constructorName) + r'\s*\([^)]*';
+      } else {
+        // Default constructor: just ClassName
+        pattern = r'\b' + RegExp.escape(className) + r'\s*\([^)]*';
+      }
+    } else if (className != null) {
+      // Instance or static method in class
+      pattern = r'\b(?:static\s+)?' + RegExp.escape(methodName) + r'\s*\([^)]*';
+    } else {
+      // Top-level function
+      pattern = r'\b' + RegExp.escape(methodName) + r'\s*\([^)]*';
+    }
+    
+    final signatureMatch = RegExp(pattern, multiLine: true).firstMatch(code);
+    if (signatureMatch == null) return false;
+    
+    // Extract the parameter list
+    final paramSection = signatureMatch.group(0) ?? '';
+    
+    // Look for the specific parameter with nullable type
+    final paramPatterns = [
+      // Pattern for nullable type: Type? paramName
+      RegExp(r'\b[A-Za-z_][A-Za-z0-9_<>,\s]*\?\s+' + RegExp.escape(paramName) + r'\b'),
+      // Pattern for Null type: Null paramName
+      RegExp(r'\bNull\s+' + RegExp.escape(paramName) + r'\b'),
+      // Pattern in optional parameters: {Type? paramName}
+      RegExp(r'\{\s*[A-Za-z_][A-Za-z0-9_<>,\s]*\?\s+' + RegExp.escape(paramName) + r'\s*\}'),
+      // Pattern in positional parameters: [Type? paramName]
+      RegExp(r'\[\s*[A-Za-z_][A-Za-z0-9_<>,\s]*\?\s+' + RegExp.escape(paramName) + r'\s*\]'),
+      // Pattern for field formal parameters: this.paramName with nullable type
+      RegExp(r'\b[A-Za-z_][A-Za-z0-9_<>,\s]*\?\s+this\.' + RegExp.escape(paramName) + r'\b'),
+    ];
+    
+    return paramPatterns.any((pattern) => pattern.hasMatch(paramSection));
   }
 
   /// Extract annotations - to be implemented by subclasses

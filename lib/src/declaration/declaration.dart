@@ -1340,7 +1340,7 @@ abstract class ParameterDeclaration extends SourceDeclaration {
   MemberDeclaration getMemberDeclaration();
 
   /// Returns `true` if the parameter is optional (either named or positional).
-  bool getIsOptional();
+  bool getIsNullable();
 
   /// Returns `true` if the parameter is a named parameter.
   bool getIsNamed();

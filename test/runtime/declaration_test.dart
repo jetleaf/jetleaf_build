@@ -17,9 +17,7 @@
 // ============================================================================
 
 // Base interfaces and abstract classes
-import 'package:jetleaf_build/src/annotations.dart';
-import 'package:jetleaf_build/src/runner/test_scan.dart';
-import 'package:jetleaf_build/src/runtime_provider/meta_runtime_provider.dart';
+import 'package:jetleaf_build/jetleaf_build.dart';
 
 abstract class BaseInterface {
   void doSomething();
@@ -210,11 +208,19 @@ class Minor extends Major {
 }
 
 class Checking extends TestClass<Minor> {
+  static String NULL_NAME = "nullableMethod";
+  static String NULL_CONST = "nullable";
+
   final bool isActive;
+  final String? running;
   
-  Checking({this.isActive = true}) : super("checking", []);
+  Checking({this.isActive = true, this.running}) : super("checking", []);
   
-  Checking.inactive() : isActive = false, super("inactive", []);
+  Checking.inactive() : isActive = false, running = null, super("inactive", []);
+
+  Checking.nullable(String? nullable, String user, [String hey = "", String? none]) : isActive = false, running = null, super("inactive", []);
+
+  void nullableMethod(String? value, String user, [String hey = "", String? none]) {}
 }
 
 class TestedClass<T extends Object> implements BaseInterface {
@@ -351,84 +357,91 @@ class AuditLogger {
 ///
 /// This class is generated automatically by the JetLeaf reflection system
 /// for classes annotated with `@Resolved`.
-// class TestClassRuntimeHintProcessor implements RuntimeHintProcessor {
-//   /// {@macro runtime_hint_processor}
-//   const TestClassRuntimeHintProcessor();
+class TestClassRuntimeHintProcessor implements RuntimeHintProcessor {
+  /// {@macro runtime_hint_processor}
+  const TestClassRuntimeHintProcessor();
 
-//   @override
-//   void proceed(RuntimeHintDescriptor descriptor) {
-//     descriptor.addRuntimeHint(
-//       RuntimeHint(
-//         type: TestClass,
-//         newInstance: (name, args, namedArgs) {
-//           switch (name) {
-//         case '':
-//           return TestClass(args[0] as String, args[1] as List<Major>);
-//         case 'named':
-//           return TestClass.named(args[0] as String);
-//         case 'constant':
-//           return TestClass.constant(args[0] as String, args[1] as List<Major>);
-//         case 'create':
-//           return TestClass.create(args[0] as String, args[1] as List<Major>);
-//         default:
-//           throw UnImplementedResolverException(TestClass, 'Unknown constructor: $name');
-//       }
+  @override
+  void proceed(RuntimeHintDescriptor descriptor) {
+    descriptor.addRuntimeHint(
+      RuntimeHint(
+        type: TestClass,
+        newInstance: (name, args, namedArgs) {
+          switch (name) {
+            case '':
+              return TestClass(args[0] as String, args[1] as List<Major>);
+            case 'named':
+              return TestClass.named(args[0] as String);
+            case 'constant':
+              return TestClass.constant(args[0] as String, args[1] as List<Major>);
+            case 'create':
+              return TestClass.create(args[0] as String, args[1] as List<Major>);
+            default:
+              throw ConstructorNotFoundException(TestClass, 'Unknown constructor: $name');
+          }
+        },
+        invokeMethod: (instance, method, args, namedArgs) {
+          final test = instance as TestClass;
+          if (method case "createDefault") {
+            return TestClass.createDefault();
+          }
 
-//         },
-//         invokeMethod: (instance, method, args, namedArgs) {
-//           instance = instance as TestClass;
-//           switch (method) {
-//             case 'createDefault':
-//               return TestClass.createDefault() as TestClass<dynamic>;
-//             case 'transform':
-//               instance.transform(args[0] as dynamic Function(Major));
-//             case 'getUri':
-//               return instance.getUri();
-//             case 'getType':
-//               return instance.getType();
-//             case 'doSomething':
-//               instance.doSomething();
-//             case 'doSomethingElse':
-//               instance.doSomethingElse();
-//             default:
-//               throw UnImplementedResolverException(TestClass, 'Unknown method: $method');
-//           }
+          if (method case "transform") {
+            return test.transform(args[0] as dynamic Function(Major));
+          }
 
-//         },
-//         getValue: (instance, name) {
-//           instance = instance as TestClass;
-//           switch (name) {
-//             case 'id':
-//               return instance.id;
-//             case 'genericList':
-//               return instance.genericList;
-//             case 'instanceCount':
-//               return TestClass.instanceCount;
-//             case 'computedValue':
-//               return instance.computedValue;
-//             case 'sound':
-//               return instance.sound;
-//             case 'priority':
-//               return instance.priority;
-//             default:
-//               throw UnImplementedResolverException(TestClass, 'Unknown field or getter: $name');
-//           }
+          if (method case "doSomething") {
+            test.doSomething();
+            return null;
+          }
+          switch (method) {
+            case 'createDefault':
+              return TestClass.createDefault();
+            case 'transform':
+              
+            case '':
+               test.doSomething();
+            case 'doSomethingElse':
+               test.doSomethingElse();
+            default:
+              throw MethodNotFoundException(TestClass, 'Unknown method: $method');
+          }
 
-//         },
-//         setValue: (instance, name, value) {
-//           switch (name) {
-//             case 'instanceCount':
-//               TestClass.instanceCount = value as int;
-//               break;
-//             default:
-//               throw UnImplementedResolverException(TestClass, 'Unknown field or setter: $name');
-//           }
-//         },
-//       ),
-//     );
-//   }
-// }
+          return null;
+        },
+        getValue: (instance, name) {
+          instance = instance as TestClass;
+          switch (name) {
+            case 'id':
+              return instance.id;
+            case 'genericList':
+              return instance.genericList;
+            case 'instanceCount':
+              return TestClass.instanceCount;
+            case 'computedValue':
+              return instance.computedValue;
+            case 'sound':
+              return instance.sound;
+            case 'priority':
+              return instance.priority;
+            default:
+              throw FieldAccessException(TestClass, 'Unknown field or getter: $name');
+          }
 
+        },
+        setValue: (instance, name, value) {
+          switch (name) {
+            case 'instanceCount':
+              TestClass.instanceCount = value as int;
+              break;
+            default:
+              throw FieldMutationException(TestClass, 'Unknown field or setter: $name');
+          }
+        },
+      ),
+    );
+  }
+}
 
 // ============================================================================
 // TEST RUNNER
@@ -444,11 +457,11 @@ void main() async {
 }
 
 void printRuntimeSummary() {
-  final classes = List.from(Runtime.getAllClasses());
-  final enums = List.from(Runtime.getAllEnums());
-  final libs = List.from(Runtime.getAllLibraries());
-  final assets = List.from(Runtime.getAllAssets());
-  final packages = List.from(Runtime.getAllPackages());
+  final classes = List<ClassDeclaration>.from(Runtime.getAllClasses());
+  final enums = List<EnumDeclaration>.from(Runtime.getAllEnums());
+  final libs = List<LibraryDeclaration>.from(Runtime.getAllLibraries());
+  final assets = List<Asset>.from(Runtime.getAllAssets());
+  final packages = List<Package>.from(Runtime.getAllPackages());
 
   print("\n=== Jetleaf Runtime Environment ===");
 
@@ -481,6 +494,11 @@ void printRuntimeSummary() {
   for (final p in packages) {
     print("  - ${p.getName()} ${p.getVersion()} (${p.getFilePath() ?? "no path"})");
   }
+
+  final cls = classes.where((cls) => cls.getName() == "Checking" && cls.getQualifiedName().endsWith("Checking")).firstOrNull;
+  print(cls?.getMethods().where((me) => me.getName() == Checking.NULL_NAME).firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
+  print(cls?.getConstructors().where((me) => me.getName() == Checking.NULL_CONST).firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
+  print(cls?.getFields().where((pa) => pa.isNullable()).map((pa) => pa.getName()));
 
   print("\nEnvironment ready!\n");
 }

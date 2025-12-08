@@ -268,7 +268,7 @@ abstract class RuntimeResolverException extends RuntimeException {
 /// {@endtemplate}
 final class ConstructorNotFoundException extends RuntimeResolverException {
   /// {@macro jetleaf_constructor_not_found_exception}
-  ConstructorNotFoundException(String type, String ctorName, {Object? cause, StackTrace? stack}) : super(
+  ConstructorNotFoundException(Object type, String ctorName, {Object? cause, StackTrace? stack}) : super(
     'Constructor "$ctorName" not found for type $type.',
     cause: cause,
     stackTrace: stack,
@@ -318,7 +318,7 @@ final class ConstructorNotFoundException extends RuntimeResolverException {
 /// {@endtemplate}
 final class MethodNotFoundException extends RuntimeResolverException {
   /// {@macro jetleaf_method_not_found_exception}
-  MethodNotFoundException(String type, String methodName, {Object? cause, StackTrace? stack}) : super(
+  MethodNotFoundException(Object type, String methodName, {Object? cause, StackTrace? stack}) : super(
     'Method "$methodName" not found on type $type.',
     cause: cause,
     stackTrace: stack,
@@ -366,7 +366,7 @@ final class MethodNotFoundException extends RuntimeResolverException {
 /// {@endtemplate}
 final class FieldAccessException extends RuntimeResolverException {
   /// {@macro jetleaf_field_access_exception}
-  FieldAccessException(String type, String fieldName, {Object? cause, StackTrace? stack}) : super(
+  FieldAccessException(Object type, String fieldName, {Object? cause, StackTrace? stack}) : super(
     'Unable to read field/getter "$fieldName" on type $type.',
     cause: cause,
     stackTrace: stack,
@@ -414,7 +414,7 @@ final class FieldAccessException extends RuntimeResolverException {
 /// {@endtemplate}
 final class FieldMutationException extends RuntimeResolverException {
   /// {@macro jetleaf_field_mutation_exception}
-  FieldMutationException(String type, String fieldName, {Object? cause, StackTrace? stack}) : super(
+  FieldMutationException(Object type, String fieldName, {Object? cause, StackTrace? stack}) : super(
     'Unable to set field/setter "$fieldName" on type $type.',
     cause: cause,
     stackTrace: stack,

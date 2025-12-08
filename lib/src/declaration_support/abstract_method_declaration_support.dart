@@ -61,7 +61,21 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
           runtimeType = resolvedType;
         }
       }
+
       final annotations = await extractAnnotations(mirrorParam.metadata, package);
+      final isNullable = isNullableParameter(
+        sourceCode: sourceCache[libraryUri] ?? await readSourceCode(Uri.parse(libraryUri)),
+        methodName: parentMember.getName(),
+        paramName: paramName,
+        className: parentMember is MethodDeclaration 
+          ? parentMember.getParentClass()?.getName()
+          : parentMember is ConstructorDeclaration
+            ? parentMember.getParentClass()?.getName()
+            : parentMember.getName(),
+        isConstructor: parentMember is ConstructorDeclaration,
+        constructorName: parentMember is ConstructorDeclaration ? parentMember.getName() : null,
+        isStatic: parentMember.getIsStatic(),
+      );
       // print("Is $paramName nullable ${analyzerParam?.getExtendedDisplayName()} - ${analyzerParam?.getExtendedDisplayName().endsWith("?") ?? mirrorParam.isOptional}");
       
       parameters.add(StandardParameterDeclaration(
@@ -71,7 +85,8 @@ abstract class AbstractMethodDeclarationSupport extends AbstractFieldDeclaration
         type: runtimeType,
         libraryDeclaration: libraryCache[libraryUri]!,
         typeDeclaration: paramType,
-        isOptional: analyzerParam?.getExtendedDisplayName().endsWith("?") ?? mirrorParam.isOptional,
+        // isOptional: analyzerParam?.getExtendedDisplayName().endsWith("?") ?? mirrorParam.isOptional,
+        isNullable: isNullable,
         isNamed: mirrorParam.isNamed,
         hasDefaultValue: mirrorParam.hasDefaultValue,
         defaultValue: defaultValue,

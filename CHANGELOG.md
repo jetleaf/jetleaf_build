@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project adheres to a simple, human-readable changelog format.
 
+## [1.0.7]
+
+- Fixed issues with parameter nullability detection
+- Expanded `RuntimeHint` design
+
 ## [1.0.6]
 
 - Fixed issues with `runTestScan`

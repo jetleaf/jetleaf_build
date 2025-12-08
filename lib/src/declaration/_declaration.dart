@@ -2031,7 +2031,7 @@ final class StandardClassDeclaration extends StandardTypeDeclaration implements 
       constructor = _constructors.firstWhere(
         (c) => c.getName().isEmpty && c.getParameters().isEmpty,
         orElse: () => _constructors.firstWhere(
-          (c) => c.getParameters().every((p) => p.getIsOptional()),
+          (c) => c.getParameters().every((p) => p.getIsNullable()),
           orElse: () => throw BuildException('No suitable constructor found for $_name with no arguments'),
         ),
       );
@@ -2145,7 +2145,7 @@ bool _constructorMatches(ConstructorDeclaration constructor, Map<String, dynamic
   final params = constructor.getParameters();
   // Check if all required parameters are provided
   for (final param in params) {
-    if (!param.getIsOptional() && !arguments.containsKey(param.getName())) {
+    if (!param.getIsNullable() && !arguments.containsKey(param.getName())) {
       return false;
     }
   }
@@ -2182,7 +2182,7 @@ bool _constructorMatches(ConstructorDeclaration constructor, Map<String, dynamic
 /// {@endtemplate}
 final class StandardParameterDeclaration extends StandardSourceDeclaration implements ParameterDeclaration {
   final LinkDeclaration _typeDeclaration;
-  final bool _isOptional;
+  final bool _isNullable;
   final bool _isNamed;
   final bool _hasDefaultValue;
   final dynamic _defaultValue;
@@ -2197,7 +2197,7 @@ final class StandardParameterDeclaration extends StandardSourceDeclaration imple
     required super.type,
     required super.libraryDeclaration,
     required LinkDeclaration typeDeclaration,
-    bool isOptional = false,
+    bool isNullable = false,
     bool isNamed = false,
     required super.isPublic,
     required super.isSynthetic,
@@ -2208,7 +2208,7 @@ final class StandardParameterDeclaration extends StandardSourceDeclaration imple
     super.sourceLocation,
     super.annotations,
   })  : _typeDeclaration = typeDeclaration,
-        _isOptional = isOptional,
+        _isNullable = isNullable,
         _isNamed = isNamed,
         _memberDeclaration = memberDeclaration,
         _hasDefaultValue = hasDefaultValue,
@@ -2219,7 +2219,7 @@ final class StandardParameterDeclaration extends StandardSourceDeclaration imple
   LinkDeclaration getLinkDeclaration() => _typeDeclaration;
 
   @override
-  bool getIsOptional() => _isOptional;
+  bool getIsNullable() => _isNullable;
 
   @override
   bool getIsNamed() => _isNamed;
@@ -2246,7 +2246,7 @@ final class StandardParameterDeclaration extends StandardSourceDeclaration imple
     result['name'] = getName();
 
     result['index'] = getIndex();
-    result['isOptional'] = getIsOptional();
+    result['isOptional'] = getIsNullable();
     result['isNamed'] = getIsNamed();
     result['hasDefaultValue'] = getHasDefaultValue();
 
@@ -2280,7 +2280,7 @@ final class StandardParameterDeclaration extends StandardSourceDeclaration imple
       getAnnotations(),
       getSourceLocation(),
       getType(),
-      getIsOptional(),
+      getIsNullable(),
       getIsNamed(),
       getHasDefaultValue(),
       getDefaultValue(),
@@ -2487,7 +2487,7 @@ InstanceArgument _resolveArgument(Map<String, dynamic> arguments, List<Parameter
       // Named parameter
       if (arguments.containsKey(name)) {
         named[name] = arguments[name];
-      } else if (!param.getIsOptional()) {
+      } else if (!param.getIsNullable()) {
         // Required named parameter is missing
         throw BuildException('Missing required named parameter: $name in $location');
       }
@@ -2501,7 +2501,7 @@ InstanceArgument _resolveArgument(Map<String, dynamic> arguments, List<Parameter
 
         if(keyInt != null && keyInt == param.getIndex()) {
           positional.add(arguments[key]);
-        } else if(!param.getIsOptional()) {
+        } else if(!param.getIsNullable()) {
           // Required positional parameter is missing
           throw BuildException('Missing required positional parameter: $name in $location');
         }
@@ -2510,7 +2510,7 @@ InstanceArgument _resolveArgument(Map<String, dynamic> arguments, List<Parameter
   }
   
   // Check if we have the right number of positional arguments
-  final requiredPositionalCount = parameters.where((p) => !p.getIsNamed() && !p.getIsOptional()).length;
+  final requiredPositionalCount = parameters.where((p) => !p.getIsNamed() && !p.getIsNullable()).length;
   final totalPositionalCount = parameters.where((p) => !p.getIsNamed()).length;
       
   if (positional.length < requiredPositionalCount) {

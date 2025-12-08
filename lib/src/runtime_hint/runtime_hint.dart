@@ -12,6 +12,8 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
+import 'dart:async';
+
 /// {@template runtime_hint}
 /// A hint that defines how to interact with a specific type `Object` through reflection-like operations.
 ///
@@ -109,7 +111,7 @@ typedef NewInstanceCreator = Object Function(String name, List<Object?> args, Ma
 /// Returns the result of the method, or `null` if the method returns `void`.
 ///
 /// {@endtemplate}
-typedef InvokeMethodCreator = Object? Function(Object instance, String method, List<Object?> args, Map<String, Object?> namedArgs);
+typedef InvokeMethodCreator = FutureOr<Object?> Function(Object instance, String method, List<Object?> args, Map<String, Object?> namedArgs);
 
 /// {@template get_value_creator}
 /// Typedef for a function that gets the value of a field on an instance of type `Object`.
