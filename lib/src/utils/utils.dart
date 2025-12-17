@@ -19,7 +19,7 @@ import 'dart:isolate';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
-import '../runtime_scanner/runtime_scanner_configuration.dart';
+import '../runtime/scanner/runtime_scanner_configuration.dart';
 
 /// {@template reflect_utils}
 /// Utility class for reflection-related operations in JetLeaf.

@@ -12,6 +12,8 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'dart:collection';
 import 'dart:typed_data';
 

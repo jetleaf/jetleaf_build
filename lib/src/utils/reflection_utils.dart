@@ -71,10 +71,80 @@ final class ReflectionUtils {
     final className = mirrors.MirrorSystem.getName(classMirror.simpleName);
 
     // Library URI is taken from owner or type location
-    final libraryUri = classMirror.owner?.location?.sourceUri.toString() ??
-        (classMirror.location?.sourceUri.toString() ?? 'unknown');
+    final libraryUri = classMirror.location?.sourceUri.toString() ?? classMirror.owner?.location?.sourceUri.toString() ?? 'unknown';
 
     return buildQualifiedName(className, libraryUri);
+  }
+
+  /// Checks if the given [instance] or [mirrors.TypeMirror] represents a **record type**.
+  ///
+  /// {@template reflection_utils.is_this_a_record}
+  /// This method inspects the runtime type of the provided object or the
+  /// `TypeMirror` to determine whether it is a Dart 3 record type.
+  ///
+  /// ### Behavior
+  /// - If [instance] is a `TypeMirror`, it verifies:
+  ///   - The simple name is `"Record"`.
+  ///   - The reflected type matches the built-in Dart `Record` type.
+  /// - If [instance] is an actual object, it reflects its type and
+  ///   recursively applies the same checks.
+  ///
+  /// ### Example
+  /// ```dart
+  /// final r = (42, "hello");
+  /// print(ReflectionUtils.isThisARecord(r)); // → true (Dart 3+)
+  ///
+  /// final str = "not a record";
+  /// print(ReflectionUtils.isThisARecord(str)); // → false
+  /// ```
+  ///
+  /// ### Returns
+  /// - `true` if the object or type is a record.
+  /// - `false` otherwise.
+  /// {@endtemplate}
+  static bool isThisARecord(Object instance) {
+    if (instance case mirrors.TypeMirror instance) {
+      return mirrors.MirrorSystem.getName(instance.simpleName) == "Record" && instance.hasReflectedType && instance.reflectedType == Record;
+    }
+
+    return isThisARecord(mirrors.reflect(instance).type);
+  }
+
+  /// Checks if the given [instance] or [mirrors.TypeMirror] represents a **function type**.
+  ///
+  /// {@template reflection_utils.is_this_a_function}
+  /// This method inspects the runtime type of the provided object or the
+  /// `TypeMirror` to determine whether it represents a Dart function.
+  ///
+  /// ### Behavior
+  /// - If [instance] is a `TypeMirror`, it checks if it is a
+  ///   [mirrors.FunctionTypeMirror].
+  /// - If [instance] is an actual object, it reflects its type and
+  ///   recursively applies the same check.
+  ///
+  /// ### Example
+  /// ```dart
+  /// void myFunction(int x) {}
+  /// print(ReflectionUtils.isThisAFunction(myFunction)); // → true
+  ///
+  /// final str = "not a function";
+  /// print(ReflectionUtils.isThisAFunction(str)); // → false
+  /// ```
+  ///
+  /// ### Returns
+  /// - `true` if the object or type is a function.
+  /// - `false` otherwise.
+  ///
+  /// ### Notes
+  /// - This relies on `dart:mirrors` and may not work in all runtime environments.
+  /// - Covers top-level functions, static methods, closures, and function-typed variables.
+  /// {@endtemplate}
+  static bool isThisAFunction(Object instance) {
+    if (instance is mirrors.TypeMirror) {
+      return instance is mirrors.FunctionTypeMirror;
+    }
+
+    return isThisAFunction(mirrors.reflect(instance).type);
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -126,6 +196,6 @@ final class ReflectionUtils {
   /// {@endtemplate}
   static String buildQualifiedName(String typeName, String libraryUri) {
     // Ensures there’s only one dot between segments
-    return '$libraryUri.$typeName'.replaceAll('..', '.');
+    return '$libraryUri.$typeName'.replaceAll("..", '.');
   }
 }

@@ -153,12 +153,12 @@ void main() {
 
   group('TypeDiscovery - Name Resolution', () {
     test('should find by simple name', () {
-      final decl = TypeDiscovery.findByName('BaseStream');
+      final decl = TypeDiscovery.findByName('FileUtility');
       expect(decl, isNotNull);
     });
 
     test('should find by qualified name', () {
-      final decl = TypeDiscovery.findByQualifiedName('package:jetleaf_lang/src/io/closeable.dart.Closeable');
+      final decl = TypeDiscovery.findByQualifiedName(Void.getQualifiedName());
       expect(decl, isNotNull);
       expect(decl?.getIsPublic(), true)
 ;    });

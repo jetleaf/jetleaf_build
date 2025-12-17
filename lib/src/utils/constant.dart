@@ -152,6 +152,11 @@ class PackageNames {
   /// Value: `"jetleaf_core"`.
   static const String CORE = "${MAIN}_core";
 
+  /// The package name for the **build** module.
+  ///
+  /// Value: `"jetleaf_build"`.
+  static const String BUILD = "${MAIN}_build";
+
   /// The package name for the **type conversion** module.
   ///
   /// Value: `"jetleaf_convert"`.

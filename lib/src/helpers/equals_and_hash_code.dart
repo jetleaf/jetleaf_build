@@ -12,6 +12,8 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
+import 'package:meta/meta.dart';
+
 import 'base.dart' as equalizer;
 
 /// {@template equals_and_hash_code}
@@ -63,6 +65,7 @@ mixin EqualsAndHashCode {
   /// - Include all properties that define identity.  
   /// - Maintain a consistent order for [hashCode] stability.  
   /// - Include `null` explicitly if it affects equality.  
+  @protected
   List<Object?> equalizedProperties();
 
   @override

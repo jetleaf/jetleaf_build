@@ -58,7 +58,7 @@ class GenericTypeParser {
   /// print(result); // true
   /// ```
   /// {@endtemplate}
-  static const String _MIRROR_TYPE_TO_FORMAT_WITH_GENERIC = "_ClassMirror";
+  static const String MIRROR_TYPE_TO_FORMAT_WITH_GENERIC = "_ClassMirror";
 
   /// {@template should_check_generic}
   /// Checks if the given type should be checked for generic parameters.
@@ -94,7 +94,13 @@ class GenericTypeParser {
   /// print(result); // true
   /// ```
   /// {@endtemplate}
-  static bool isGenericMirror(String typeString) => typeString == _MIRROR_TYPE_TO_FORMAT_WITH_GENERIC;
+  static bool isGenericMirror(String typeString) {
+    if (typeString == "_SpecialTypeMirror") {
+      return true;
+    }
+
+    return typeString == MIRROR_TYPE_TO_FORMAT_WITH_GENERIC;
+  }
 
   /// {@template extract_generic_part}
   /// Extracts the inner generic type parameters from a type string.

@@ -1,85 +1,158 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. This project adheres to a simple, human-readable changelog format.
+All notable changes to this project will be documented in this file.  
+This project follows a simple, human-readable changelog format inspired by
+[Keep a Changelog](https://keepachangelog.com/) and adheres to semantic versioning.
+
+---
+
+## [1.0.8]
+
+### Added
+- `FunctionLinkDeclaration` class specialized for function parameters, fields, and other function designs _(functional)_.
+- Comprehensive test coverage for all declaration classes.
+- `Hint` abstraction for AOT runtime resolving.
+- `ExecutableArgument` to simplify argument access and design.
+- `RuntimeHintProvider` as a lazy provider for runtime hints.
+- Analyzer-awareness across all declarations.
+- Dedicated exception classes for clearer and more accurate error handling.
+- Command-line argument support for `runScan` and `runTestScan`, including configurable `RuntimeScanner` and logging.
+- `RuntimeBuilder` to expose logs generated during runtime scanning.
+- `LocatedFiles` as the recommended tree-shaking mechanism as of `1.0.8`.
+
+### Changed
+- Renamed `RuntimeHint` class to `TypedRuntimeHint` and introduced a new `RuntimeHint` interface.
+- Renamed `RuntimeResolver` to `RuntimeExecutor`.
+- Redesigned `RecordDeclaration` as `RecordLinkDeclaration` with a new API and access model.
+- `TypedefDeclaration` is now fully functional and no longer experimental.
+
+### Fixed
+- Parameter resolution issues for argument invocation in methods and constructors.
+
+### Removed
+- `ExtensionDeclaration`, as it is not fully supported at this time.
+
+### Notes
+- `TreeShaker` remains experimental; prefer `LocatedFiles` for production use.
+
+---
 
 ## [1.0.7]
 
-- Fixed issues with parameter nullability detection
-- Expanded `RuntimeHint` design
+### Fixed
+- Issues with parameter nullability detection.
+
+### Changed
+- Expanded the `RuntimeHint` design.
+
+---
 
 ## [1.0.6]
 
-- Fixed issues with `runTestScan`
-- Resolved the problem where `GenerativePackage` or `GenerativeAsset` is not discovered by the runtime design
-- Added new design api to `RuntimeScanConfiguration` with `TryOutsideIsolate`.
-- Updated dependencies
+### Added
+- New RuntimeScanConfiguration API with `TryOutsideIsolate`.
+
+### Fixed
+- Issues with `runTestScan`.
+- Discovery problems where `GenerativePackage` or `GenerativeAsset` were not detected by the runtime design.
+
+### Changed
+- Updated dependencies.
+
+---
 
 ## [1.0.5]
 
-- Updated dependencies
-- Fixed `analyzer` issue
+### Fixed
+- Analyzer-related issues.
+
+### Changed
+- Updated dependencies.
+
+---
 
 ## [1.0.4]
 
-- Deprecated the use of `getNonDartFiles()` method
-- Increased the number of search directories for project resources
-- Added release-on-merge.yml ci/cd
+### Added
+- `release-on-merge.yml` CI/CD workflow.
+- Increased search directories for project resources.
+
+### Deprecated
+- `getNonDartFiles()` method.
+
+---
 
 ## [1.0.3]
 
-- Fixed declaration issue
+### Fixed
+- Declaration-related issues.
+
+---
 
 ## [1.0.2]
 
-- Fixed issues on production
+### Fixed
+- Production issues.
+
+---
 
 ## [1.0.1]
 
-- Fixed JitRuntimeResolver
-- Added new checks in FileUtility
+### Added
+- Additional checks in `FileUtility`.
+
+### Fixed
+- `JitRuntimeResolver` issues.
+
+---
 
 ## [1.0.0]
 
 Initial stable release.
 
 ### Added
-
-- Runtime scanning infrastructure (ApplicationRuntimeScanner and `runScan`) to discover annotated types, pods and runtime metadata.
-- Generators for producing application libraries and declaration files, including:
-	- Application library generator
-	- Declaration file writer
-	- Library generator and mock library generator
-	- Tree shaker and resource generator helpers
+- Runtime scanning infrastructure (`ApplicationRuntimeScanner`, `runScan`) for discovering annotated types, pods, and runtime metadata.
+- Generators for application libraries and declaration files, including:
+  - Application library generator
+  - Declaration file writer
+  - Library and mock library generators
+  - Tree-shaker and resource generator helpers
 - Runtime provider implementations and resolvers (configurable, standard, meta providers; AOT/JIT/fallback resolvers).
-- Utility helpers for code generation and scanning (type resolution, file utilities, generic type parsing, reflection utilities).
-- Public API surface exports for annotations, constants, exceptions, helpers, runners and runtime generators (see `lib/jetleaf_build.dart`).
-- Documentation site and initial examples (see package `documentation` in `pubspec.yaml`).
-- Basic test coverage and linting setup (using `test` and `lints`).
+- Utility helpers for code generation and scanning:
+  - Type resolution
+  - File utilities
+  - Generic type parsing
+  - Reflection utilities
+- Public API exports for annotations, constants, exceptions, helpers, runners, and runtime generators  
+  (see `lib/jetleaf_build.dart`).
+- Documentation site and initial examples (see `documentation` package in `pubspec.yaml`).
+- Basic test coverage and linting setup using `test` and `lints`.
 
 ### Changed
-
 - N/A (initial release)
 
 ### Fixed
-
 - N/A (initial release)
 
 ### Removed
-
 - N/A (initial release)
 
 ### Security
-
 - No security advisories for this release.
 
 ### Notes
+- This release stabilizes the build and generation APIs used by JetLeaf tooling.
+  If you rely on internal or non-exported APIs, treat this version as the
+  compatibility baseline for future releases.
 
-- This release stabilizes the build/generation APIs used by JetLeaf tooling. If you rely on internal or non-exported internals, treat this release as the baseline for future compatibility notices.
+---
 
-### Links
+## Links
 
-- Documentation: https://jetleaf.hapnium.com/docs/build
-- Repository: https://github.com/jetleaf/jetleaf_build
-- Issues: https://github.com/jetleaf/jetleaf_build/issues
+- Documentation: https://jetleaf.hapnium.com/docs/build  
+- Repository: https://github.com/jetleaf/jetleaf_build  
+- Issues: https://github.com/jetleaf/jetleaf_build/issues  
 
-Contributors: Hapnium & JetLeaf contributors
+---
+
+**Contributors:** Hapnium & JetLeaf contributors
