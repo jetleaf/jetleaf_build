@@ -16,49 +16,188 @@ import 'dart:io';
 
 // Conditional import: use `reflection.dart` if dart:mirrors is available,
 // otherwise fall back to a stubbed scanner implementation.
-import '../runtime_provider/runtime_provider.dart';
-import '../runtime_scanner/application_runtime_scanner.dart';
-import '../runtime_scanner/runtime_scanner_configuration.dart';
+import '../builder/runtime_builder.dart';
+import '../runtime/provider/meta_runtime_provider.dart';
+import '../runtime/scanner/application_runtime_scanner.dart';
+import '../runtime/scanner/runtime_scanner.dart';
+import '../runtime/scanner/runtime_scanner_configuration.dart';
+import '../runtime/scanner/runtime_scanner_summary.dart';
 // import 'jet_runtime_stub_scanner.dart'
 //     if (dart.library.mirrors) '../runtime/runtime_scanner/application_runtime_scanner.dart';
 
-/// {@template run_scan}
-/// Executes a runtime scan using the [ApplicationRuntimeScanner].
+/// Executes a **full application runtime scan**, builds a runtime context,
+/// and registers it globally.
 ///
-/// This function initializes a scanner that inspects the runtime environment
-/// (classes, annotations, metadata) and collects a [RuntimeProvider] context
-/// for JetLeaf to use during application startup.
+/// This method is the **primary entry point** for initializing JetLeaf’s
+/// runtime model in real applications. It orchestrates:
+/// - Source discovery
+/// - Package scanning and exclusion
+/// - Declaration and link generation
+/// - Runtime context creation
 ///
-/// The scan is configured via [RuntimeScannerConfiguration], which allows
-/// customization such as skipping tests or forcing reloads.
+/// The resulting runtime context is automatically registered into
+/// [Runtime], making all scanned types, hints, and declarations immediately
+/// available for runtime execution.
 ///
-/// Logging integration:
-/// - **Info** messages are logged with [print], or printed to stderr
-///   if info-level logging is disabled.
-/// - **Warnings** are logged with [print], or printed to stderr
-///   if warn-level logging is disabled.
-/// - **Errors** are logged with [print], or printed to stderr
-///   if error-level logging is disabled.
+/// ---
 ///
-/// Example:
+/// ## Parameters
+///
+/// ### `source`
+/// Optional root [Directory] used as the base for scanning.
+///
+/// If omitted, the scanner will infer the source root using the current
+/// working directory and runtime environment.
+///
+/// This is commonly used when:
+/// - Running scans in monorepos
+/// - Testing alternate project layouts
+/// - Executing scans from tooling or build systems
+///
+/// ---
+///
+/// ### `config`
+/// Optional [RuntimeScannerConfiguration] used to customize scanning behavior.
+///
+/// When provided, this configuration is **merged** with JetLeaf’s
+/// default production-safe configuration:
+/// - Default exclusions are preserved
+/// - Provided values override defaults selectively
+///
+/// This prevents accidental scanning of:
+/// - Tests
+/// - Tooling
+/// - Build artifacts
+/// - Analyzer internals
+///
+/// ---
+///
+/// ### `forceLoadLibraries`
+/// Forces all discovered libraries to be loaded eagerly.
+///
+/// This flag is useful when:
+/// - Performing deep reflection analysis
+/// - Generating complete declaration graphs
+/// - Debugging missing type resolution
+///
+/// If [config.forceLoadLibraries] is set, it takes precedence over this value.
+///
+/// ---
+///
+/// ### `onInfo`, `onWarning`, `onError`
+/// Optional logging callbacks invoked during scanning.
+///
+/// If not provided, default handlers print messages to stdout using
+/// clearly distinguishable markers:
+/// - `(∞INFO∞)`
+/// - `(∞WARN∞)`
+/// - `(∞ERROR∞)`
+///
+/// These callbacks allow integration with structured loggers,
+/// CI pipelines, or developer tooling.
+///
+/// ---
+///
+/// ### `args`
+/// Command-line arguments forwarded to the scanner.
+///
+/// These arguments may influence:
+/// - Conditional compilation
+/// - Environment-specific scanning logic
+/// - Feature toggles used by generators
+///
+/// ---
+///
+/// ## Configuration Merging Strategy
+///
+/// The scanner builds a **derived configuration** that:
+/// - Uses JetLeaf-safe defaults
+/// - Applies user overrides selectively
+/// - Preserves exclusion rules critical to performance and correctness
+///
+/// Key defaults include:
+/// - Skipping test directories
+/// - Excluding analyzer and compiler internals
+/// - Preventing accidental scans of `.dart_tool` and `build` directories
+///
+/// ---
+///
+/// ## Execution Flow
+///
+/// 1. An [ApplicationRuntimeScanner] is instantiated with logging hooks.
+/// 2. A merged [RuntimeScannerConfiguration] is constructed.
+/// 3. The scanner performs a full runtime scan using:
+///    - The resolved configuration
+///    - Command-line arguments
+///    - Optional source directory
+/// 4. A [RuntimeScannerSummary] is produced.
+/// 5. The resulting runtime context is registered globally via
+///    [Runtime.register].
+///
+/// ---
+///
+/// ## Returns
+///
+/// A [RuntimeScannerSummary] containing:
+/// - Scan statistics
+/// - Discovered libraries and declarations
+/// - Generated runtime context
+///
+/// This object can be used for:
+/// - Diagnostics
+/// - Build tooling
+/// - Reporting and analysis
+///
+/// ---
+///
+/// ## Example
+///
 /// ```dart
-/// final logger = LogFactory.getLog('JetLeafScanner');
-/// final runtimeProvider = await runScan(logger);
+/// final summary = await runScan(
+///   source: Directory('lib'),
+///   config: RuntimeScannerConfiguration(
+///     enableTreeShaking: true,
+///   ),
+/// );
 ///
-/// // Access discovered pods, classes, or metadata
-/// print(runtimeProvider.getPods());
+/// print('Scanned ${summary.libraryCount} libraries');
 /// ```
 ///
-/// Returns a [Future] that resolves to the discovered [RuntimeProvider].
-/// {@endtemplate}
-Future<RuntimeProvider> runScan({Directory? source, RuntimeScannerConfiguration? config, bool forceLoadLibraries = false}) async {
-  final scanner = ApplicationRuntimeScanner(
-    onInfo: (msg) => print("(∞INFO∞) $msg"),
-    onWarning: (msg) => print("(∞WARN∞) $msg"),
-    onError: (msg) => print("(∞ERROR∞) $msg"),
+/// ---
+///
+/// ## Intended Use Cases
+///
+/// - Application startup initialization
+/// - Build-time runtime generation
+/// - Tooling and code generation pipelines
+/// - Production runtime bootstrapping
+///
+/// ---
+///
+/// ## See Also
+///
+/// - [ApplicationRuntimeScanner]
+/// - [RuntimeScannerConfiguration]
+/// - [RuntimeScannerSummary]
+/// - [Runtime]
+Future<RuntimeScannerSummary> runScan({
+  Directory? source,
+  RuntimeScannerConfiguration? config,
+  bool forceLoadLibraries = false,
+  OnLogged? onInfo,
+  OnLogged? onWarning,
+  OnLogged? onError,
+  List<String> args = const [],
+  RuntimeScanner? configuredScanner,
+  bool overrideConfig = false
+}) async {
+  final scanner = configuredScanner ?? ApplicationRuntimeScanner(
+    onInfo: onInfo ?? (msg, overwrite) => print("(∞INFO∞) ${overwrite ? '\r$msg' : msg}"),
+    onWarning: onWarning ?? (msg, overwrite) => print("(∞WARN∞) ${overwrite ? '\r$msg' : msg}"),
+    onError: onError ?? (msg, overwrite) => print("(∞ERROR∞) ${overwrite ? '\r$msg' : msg}"),
   );
 
-  final scan = await scanner.scan(RuntimeScannerConfiguration(
+  final defaultConfig = RuntimeScannerConfiguration(
     skipTests: config?.skipTests ?? true,
     reload: config?.reload ?? true,
     packagesToScan: config?.packagesToScan ?? [],
@@ -86,7 +225,10 @@ Future<RuntimeProvider> runScan({Directory? source, RuntimeScannerConfiguration?
     updatePackages: config?.updatePackages ?? false,
     removals: config?.removals ?? [],
     outputPath: config?.outputPath ?? "build/generated"
-  ), source: source);
+  );
 
-  return scan.getContext();
+  final scan = await scanner.scan(overrideConfig ? config ?? defaultConfig : defaultConfig, args, source: source);
+  Runtime.register(scan.getContext());
+
+  return scan;
 }

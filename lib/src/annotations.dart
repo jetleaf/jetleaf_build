@@ -123,13 +123,15 @@ abstract class ReflectableAnnotation {
 @Target({TargetKind.classType, TargetKind.mixinType})
 @Author("Evaristus Adimonyemma")
 class Generic extends ReflectableAnnotation {
+  static final String FIELD_NAME = "type";
+
   /// The runtime type representation of the generic parameter.
   ///
   /// Stores the actual type that will be used for reflection lookups,
   /// preserving the generic type information that would normally be erased.
   ///
   /// {@macro generic_annotation_example}
-  final Type _type;
+  final Type type;
 
   /// The source location URI where the generic type is defined.
   ///
@@ -150,11 +152,11 @@ class Generic extends ReflectableAnnotation {
   ///
   /// {@template generic_constructor}
   /// Parameters:
-  /// - [_type]: The base generic type (e.g., `List` for `List<T>`)
+  /// - [type]: The base generic type (e.g., `List` for `List<T>`)
   /// - [_uri]: Optional source URI for better debugging
   ///
   /// Throws:
-  /// - [InvalidArgumentException] if [_type] represents a non-generic type
+  /// - [InvalidArgumentException] if [type] represents a non-generic type
   ///
   /// Example:
   /// ```dart
@@ -164,7 +166,7 @@ class Generic extends ReflectableAnnotation {
   /// }
   /// ```
   /// {@endtemplate}
-  const Generic(this._type, [this._uri]);
+  const Generic(this.type, [this._uri]);
 
   /// Gets the preserved generic type information.
   ///
@@ -181,7 +183,7 @@ class Generic extends ReflectableAnnotation {
   ///
   /// Returns:
   /// The preserved generic [Type] for reflection lookups
-  Type getType() => _type;
+  Type getType() => type;
 
   /// Gets the source location URI if provided.
   ///
@@ -254,6 +256,7 @@ class Resolved extends ReflectableAnnotation {
 /// class MyAnnotatedClass {}
 /// ```
 /// {@endtemplate}
+@Target({})
 @Author("Evaristus Adimonyemma")
 class Author extends ReflectableAnnotation {
   /// The full name of the author.
@@ -283,7 +286,22 @@ class Author extends ReflectableAnnotation {
   const Author(this.name, {this.emailAddress, this.organization, this.website, this.comment});
 
   @override
-  String toString() => 'Author(name: $name, emailAddress: $emailAddress, organization: $organization, website: $website, comment: $comment)';
+  String toString() {
+    final fields = <String>['name: $name'];
+
+    void addIfPresent(String label, String? value) {
+      if (value != null && value.isNotEmpty) {
+        fields.add('$label: $value');
+      }
+    }
+
+    addIfPresent('emailAddress', emailAddress);
+    addIfPresent('organization', organization);
+    addIfPresent('website', website);
+    addIfPresent('comment', comment);
+
+    return 'Author(${fields.join(', ')})';
+  }
 
   @override
   Type get annotationType => Author;

@@ -357,90 +357,106 @@ class AuditLogger {
 ///
 /// This class is generated automatically by the JetLeaf reflection system
 /// for classes annotated with `@Resolved`.
-class TestClassRuntimeHintProcessor implements RuntimeHintProcessor {
-  /// {@macro runtime_hint_processor}
-  const TestClassRuntimeHintProcessor();
+// class TestClassRuntimeHintProcessor implements RuntimeHintProcessor {
+//   /// {@macro runtime_hint_processor}
+//   const TestClassRuntimeHintProcessor();
 
-  @override
-  void proceed(RuntimeHintDescriptor descriptor) {
-    descriptor.addRuntimeHint(
-      RuntimeHint(
-        type: TestClass,
-        newInstance: (name, args, namedArgs) {
-          switch (name) {
-            case '':
-              return TestClass(args[0] as String, args[1] as List<Major>);
-            case 'named':
-              return TestClass.named(args[0] as String);
-            case 'constant':
-              return TestClass.constant(args[0] as String, args[1] as List<Major>);
-            case 'create':
-              return TestClass.create(args[0] as String, args[1] as List<Major>);
-            default:
-              throw ConstructorNotFoundException(TestClass, 'Unknown constructor: $name');
-          }
-        },
-        invokeMethod: (instance, method, args, namedArgs) {
-          final test = instance as TestClass;
-          if (method case "createDefault") {
-            return TestClass.createDefault();
-          }
+//   @override
+//   void proceed(RuntimeHintDescriptor descriptor) {
+//     descriptor.addRuntimeHint(
+//       RuntimeHint(
+//         type: TestClass,
+//         newInstance: (name, args, namedArgs) {
+//           switch (name) {
+//             case '':
+//               return TestClass(args[0] as String, args[1] as List<Major>);
+//             case 'named':
+//               return TestClass.named(args[0] as String);
+//             case 'constant':
+//               return TestClass.constant(args[0] as String, args[1] as List<Major>);
+//             case 'create':
+//               return TestClass.create(args[0] as String, args[1] as List<Major>);
+//             default:
+//               throw ConstructorNotFoundException(TestClass, 'Unknown constructor: $name');
+//           }
+//         },
+//         invokeMethod: (instance, method, args, namedArgs) {
+//           final test = instance as TestClass;
+//           if (method case "createDefault") {
+//             return TestClass.createDefault();
+//           }
 
-          if (method case "transform") {
-            return test.transform(args[0] as dynamic Function(Major));
-          }
+//           if (method case "transform") {
+//             return test.transform(args[0] as dynamic Function(Major));
+//           }
 
-          if (method case "doSomething") {
-            test.doSomething();
-            return null;
-          }
-          switch (method) {
-            case 'createDefault':
-              return TestClass.createDefault();
-            case 'transform':
+//           if (method case "doSomething") {
+//             test.doSomething();
+//             return null;
+//           }
+//           switch (method) {
+//             case 'createDefault':
+//               return TestClass.createDefault();
+//             case 'transform':
               
-            case '':
-               test.doSomething();
-            case 'doSomethingElse':
-               test.doSomethingElse();
-            default:
-              throw MethodNotFoundException(TestClass, 'Unknown method: $method');
-          }
+//             case '':
+//                test.doSomething();
+//             case 'doSomethingElse':
+//                test.doSomethingElse();
+//             default:
+//               throw MethodNotFoundException(TestClass, 'Unknown method: $method');
+//           }
 
-          return null;
-        },
-        getValue: (instance, name) {
-          instance = instance as TestClass;
-          switch (name) {
-            case 'id':
-              return instance.id;
-            case 'genericList':
-              return instance.genericList;
-            case 'instanceCount':
-              return TestClass.instanceCount;
-            case 'computedValue':
-              return instance.computedValue;
-            case 'sound':
-              return instance.sound;
-            case 'priority':
-              return instance.priority;
-            default:
-              throw FieldAccessException(TestClass, 'Unknown field or getter: $name');
-          }
+//           return null;
+//         },
+//         getValue: (instance, name) {
+//           instance = instance as TestClass;
+//           switch (name) {
+//             case 'id':
+//               return instance.id;
+//             case 'genericList':
+//               return instance.genericList;
+//             case 'instanceCount':
+//               return TestClass.instanceCount;
+//             case 'computedValue':
+//               return instance.computedValue;
+//             case 'sound':
+//               return instance.sound;
+//             case 'priority':
+//               return instance.priority;
+//             default:
+//               throw FieldAccessException(TestClass, 'Unknown field or getter: $name');
+//           }
 
-        },
-        setValue: (instance, name, value) {
-          switch (name) {
-            case 'instanceCount':
-              TestClass.instanceCount = value as int;
-              break;
-            default:
-              throw FieldMutationException(TestClass, 'Unknown field or setter: $name');
-          }
-        },
-      ),
-    );
-  }
+//         },
+//         setValue: (instance, name, value) {
+//           switch (name) {
+//             case 'instanceCount':
+//               TestClass.instanceCount = value as int;
+//               break;
+//             default:
+//               throw FieldMutationException(TestClass, 'Unknown field or setter: $name');
+//           }
+//         },
+//       ),
+//     );
+//   }
+// }
+
+abstract interface class MessageSource {}
+
+abstract class AbstractMessageSource implements MessageSource {
+  final String locale;
+
+  AbstractMessageSource({required String? defaultLocale}) : locale = defaultLocale ?? "";
+}
+
+class ConfigurableMessageSource extends AbstractMessageSource {
+  ConfigurableMessageSource({super.defaultLocale});
+}
+
+class JustMessageSource extends AbstractMessageSource {
+  JustMessageSource() : super(defaultLocale: '');
 }
 
 // ============================================================================
@@ -495,10 +511,25 @@ void printRuntimeSummary() {
     print("  - ${p.getName()} ${p.getVersion()} (${p.getFilePath() ?? "no path"})");
   }
 
-  final cls = classes.where((cls) => cls.getName() == "Checking" && cls.getQualifiedName().endsWith("Checking")).firstOrNull;
-  print(cls?.getMethods().where((me) => me.getName() == Checking.NULL_NAME).firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
-  print(cls?.getConstructors().where((me) => me.getName() == Checking.NULL_CONST).firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
-  print(cls?.getFields().where((pa) => pa.isNullable()).map((pa) => pa.getName()));
+  print("****************************************** CHECKING CLASS ************************************************");
+  final check = classes.where((cls) => cls.getName() == "Checking" && cls.getQualifiedName().endsWith("Checking")).firstOrNull;
+  print(check?.getMethods().where((me) => me.getName() == Checking.NULL_NAME).firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
+  print(check?.getConstructors().where((me) => me.getName() == Checking.NULL_CONST).firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
+  print(check?.getFields().where((pa) => pa.isNullable()).map((pa) => pa.getName()));
+
+  print("********************************* CONFIGURABLE MESSAGE SOURCE CLASS **************************************");
+  final cms = classes.where((cls) => cls.getName() == "ConfigurableMessageSource" && cls.getQualifiedName().endsWith("ConfigurableMessageSource")).firstOrNull;
+  print(cms?.getConstructors().where((me) => me.getName() == "").firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
+  print(cms?.getConstructors().firstOrNull?.getParameters().map((pa) => pa.getName()));
+  print(cms?.getConstructors().firstOrNull?.getName());
+  print(cms?.getFields().where((pa) => pa.isNullable()).map((pa) => pa.getName()));
+
+  print("************************************** JUST MESSAGE SOURCE CLASS *****************************************");
+  final jms = classes.where((cls) => cls.getName() == "JustMessageSource" && cls.getQualifiedName().endsWith("JustMessageSource")).firstOrNull;
+  print(jms?.getConstructors().where((me) => me.getName() == "").firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
+  print(jms?.getConstructors().firstOrNull?.getParameters().map((pa) => pa.getName()));
+  print(jms?.getConstructors().firstOrNull?.getName());
+  print(jms?.getFields().where((pa) => pa.isNullable()).map((pa) => pa.getName()));
 
   print("\nEnvironment ready!\n");
 }

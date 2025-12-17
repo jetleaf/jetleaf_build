@@ -17,7 +17,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'constant.dart';
 import '../declaration/declaration.dart';
 import 'generic_type_parser.dart';
-import '../runtime_provider/meta_runtime_provider.dart';
+import '../runtime/provider/meta_runtime_provider.dart';
 
 /// {@template type_discovery}
 /// A powerful type discovery system that can find any declaration using various search criteria.
@@ -79,6 +79,8 @@ class TypeDiscovery {
   static final Map<Type, List<TypeDeclaration>> _implementerCache = {};
 
   /// Private constructor - this is a static utility class
+  /// 
+  /// {@macro type_discovery}
   TypeDiscovery._();
 
   /// Clears all internal caches. Useful for testing or when the type system changes.
@@ -155,12 +157,19 @@ class TypeDiscovery {
         referenceUri: Uri.parse(type.getPackageUri()),
         typeArguments: type.getTypeArguments(),
         isPublic: type.getIsPublic(),
+        dartType: type.getDartType(),
         isSynthetic: type.getIsSynthetic(),
       )
     ).toList();
 
-    if(baseDeclaration is ClassDeclaration) {
-      return StandardClassDeclaration(
+    if(baseDeclaration is MixinDeclaration) {
+      return _createGenericClassDeclaration(baseDeclaration, types, fullTypeName);
+    } else if(baseDeclaration is EnumDeclaration) {
+      return _createGenericClassDeclaration(baseDeclaration, types, fullTypeName);
+    } else if(baseDeclaration is ClassDeclaration) {
+      return _createGenericClassDeclaration(baseDeclaration, types, fullTypeName);
+    } else if(baseDeclaration is TypedefDeclaration) {
+      return StandardTypedefDeclaration(
         name: fullTypeName,
         parentLibrary: baseDeclaration.getParentLibrary(),
         isNullable: baseDeclaration.getIsNullable(),
@@ -169,25 +178,79 @@ class TypeDiscovery {
         type: baseDeclaration.getType(), // Keep base type for compatibility
         qualifiedName: baseDeclaration.getQualifiedName(),
         typeArguments: genericLinks,
-        isAbstract: baseDeclaration.getIsAbstract(),
-        isBase: baseDeclaration.getIsBase(),
-        isFinal: baseDeclaration.getIsFinal(),
-        isInterface: baseDeclaration.getIsInterface(),
-        isMixin: baseDeclaration.getIsMixin(),
-        isRecord: baseDeclaration.getIsRecord(),
-        superClass: baseDeclaration.getSuperClass(),
-        interfaces: baseDeclaration.getInterfaces(),
-        mixins: baseDeclaration.getMixins(),
-        constructors: baseDeclaration.getConstructors(),
-        methods: baseDeclaration.getMethods(),
-        fields: baseDeclaration.getFields(),
-        records: baseDeclaration.getRecords(),
+        aliasedType: baseDeclaration.getAliasedType(),
         annotations: baseDeclaration.getAnnotations(),
         sourceLocation: baseDeclaration.getSourceLocation(),
         isPublic: baseDeclaration.getIsPublic(),
         isSynthetic: baseDeclaration.getIsSynthetic(),
+        referent: baseDeclaration.getReferent()
       );
-    } else if(baseDeclaration is MixinDeclaration) {
+    }
+
+    return StandardTypeDeclaration(
+      name: fullTypeName,
+      isNullable: baseDeclaration.getIsNullable(),
+      kind: baseDeclaration.getKind(),
+      element: baseDeclaration.getElement(),
+      dartType: baseDeclaration.getDartType(),
+      type: baseDeclaration.getType(), // Keep base type for compatibility
+      qualifiedName: fullTypeName,
+      simpleName: baseDeclaration.getSimpleName(),
+      packageUri: baseDeclaration.getPackageUri(),
+      typeArguments: genericLinks,
+      superClass: baseDeclaration.getSuperClass(),
+      interfaces: baseDeclaration.getInterfaces(),
+      mixins: baseDeclaration.getMixins(),
+      isPublic: baseDeclaration.getIsPublic(),
+      isSynthetic: baseDeclaration.getIsSynthetic(),
+    );
+  }
+
+  /// Enhanced resolution for generic class at runtime
+  static ClassDeclaration? findGenericClass(String typeString, [String? package]) {
+   final parseResult = GenericTypeParser.resolveGenericType(typeString);
+
+    // Handle caveats for base name
+    String baseName = parseResult.base;
+    if(_caveats.any((c) => c == baseName)) {
+      baseName = baseName.replaceAll("_", "");
+    }
+
+    final baseDeclaration = findClassByName(baseName, package);
+    
+    if (baseDeclaration != null) {
+      // Convert GenericParsingResult types to TypeDeclarations
+      final genericTypes = _parseGenericTypes(parseResult);
+      
+      if (genericTypes.isNotEmpty) {
+        // Create enhanced declaration with generic information
+        return _createGenericClassDeclaration(baseDeclaration, genericTypes, typeString);
+      }
+      
+      return baseDeclaration;
+    }
+    
+    return null;
+  }
+
+  /// Create a generic class declaration with preserved type parameter information
+  static ClassDeclaration _createGenericClassDeclaration(ClassDeclaration baseDeclaration, List<TypeDeclaration> types, String fullTypeName) {
+    final genericLinks = types.map((type) => 
+      StandardLinkDeclaration(
+        name: type.getName(),
+        type: type.getType(),
+        pointerType: type.getType(),
+        qualifiedName: type.getQualifiedName(),
+        canonicalUri: Uri.parse(type.getPackageUri()),
+        referenceUri: Uri.parse(type.getPackageUri()),
+        typeArguments: type.getTypeArguments(),
+        isPublic: type.getIsPublic(),
+        isSynthetic: type.getIsSynthetic(),
+        dartType: type.getDartType()
+      )
+    ).toList();
+
+    if(baseDeclaration is MixinDeclaration) {
       return StandardMixinDeclaration(
         name: fullTypeName,
         parentLibrary: baseDeclaration.getParentLibrary(),
@@ -209,23 +272,7 @@ class TypeDiscovery {
       );
     } else if(baseDeclaration is EnumDeclaration) {
       return StandardEnumDeclaration(
-        name: fullTypeName,
-        parentLibrary: baseDeclaration.getParentLibrary(),
-        isNullable: baseDeclaration.getIsNullable(),
-        element: baseDeclaration.getElement(),
-        dartType: baseDeclaration.getDartType(),
-        type: baseDeclaration.getType(), // Keep base type for compatibility
-        qualifiedName: baseDeclaration.getQualifiedName(),
-        typeArguments: genericLinks,
         values: baseDeclaration.getValues(),
-        members: baseDeclaration.getMembers(),
-        annotations: baseDeclaration.getAnnotations(),
-        sourceLocation: baseDeclaration.getSourceLocation(),
-        isPublic: baseDeclaration.getIsPublic(),
-        isSynthetic: baseDeclaration.getIsSynthetic(),
-      );
-    } else if(baseDeclaration is TypedefDeclaration) {
-      return StandardTypedefDeclaration(
         name: fullTypeName,
         parentLibrary: baseDeclaration.getParentLibrary(),
         isNullable: baseDeclaration.getIsNullable(),
@@ -234,60 +281,48 @@ class TypeDiscovery {
         type: baseDeclaration.getType(), // Keep base type for compatibility
         qualifiedName: baseDeclaration.getQualifiedName(),
         typeArguments: genericLinks,
-        aliasedType: baseDeclaration.getAliasedType(),
+        isAbstract: baseDeclaration.getIsAbstract(),
+        isBase: baseDeclaration.getIsBase(),
+        isFinal: baseDeclaration.getIsFinal(),
+        isInterface: baseDeclaration.getIsInterface(),
+        isMixin: baseDeclaration.getIsMixin(),
+        isRecord: baseDeclaration.getIsRecord(),
+        superClass: baseDeclaration.getSuperClass(),
+        interfaces: baseDeclaration.getInterfaces(),
+        mixins: baseDeclaration.getMixins(),
+        constructors: baseDeclaration.getConstructors(),
+        methods: baseDeclaration.getMethods(),
+        fields: baseDeclaration.getFields(),
         annotations: baseDeclaration.getAnnotations(),
         sourceLocation: baseDeclaration.getSourceLocation(),
         isPublic: baseDeclaration.getIsPublic(),
         isSynthetic: baseDeclaration.getIsSynthetic(),
       );
-    } else if(baseDeclaration is RecordDeclaration) {
-      return StandardRecordDeclaration(
-        name: fullTypeName,
-        parentLibrary: baseDeclaration.getParentLibrary(),
-        isNullable: baseDeclaration.getIsNullable(),
-        element: baseDeclaration.getElement(),
-        dartType: baseDeclaration.getDartType(),
-        type: baseDeclaration.getType(), // Keep base type for compatibility
-        qualifiedName: baseDeclaration.getQualifiedName(),
-        typeArguments: genericLinks,
-        positionalFields: baseDeclaration.getPositionalFields(),
-        namedFields: baseDeclaration.getNamedFields(),
-        annotations: baseDeclaration.getAnnotations(),
-        sourceLocation: baseDeclaration.getSourceLocation(),
-        isPublic: baseDeclaration.getIsPublic(),
-        isSynthetic: baseDeclaration.getIsSynthetic(),
-      );
-    } else if(baseDeclaration is TypeVariableDeclaration) {
-      return StandardTypeVariableDeclaration(
-        name: fullTypeName,
-        parentLibrary: baseDeclaration.getParentLibrary(),
-        isNullable: baseDeclaration.getIsNullable(),
-        element: baseDeclaration.getElement(),
-        dartType: baseDeclaration.getDartType(),
-        type: baseDeclaration.getType(), // Keep base type for compatibility
-        qualifiedName: baseDeclaration.getQualifiedName(),
-        upperBound: baseDeclaration.getUpperBound(),
-        annotations: baseDeclaration.getAnnotations(),
-        sourceLocation: baseDeclaration.getSourceLocation(),
-        isPublic: baseDeclaration.getIsPublic(),
-        isSynthetic: baseDeclaration.getIsSynthetic(),
-      );
-    } 
+    }
 
-    return StandardTypeDeclaration(
+    return StandardClassDeclaration(
       name: fullTypeName,
+      parentLibrary: baseDeclaration.getParentLibrary(),
       isNullable: baseDeclaration.getIsNullable(),
-      kind: baseDeclaration.getKind(),
       element: baseDeclaration.getElement(),
       dartType: baseDeclaration.getDartType(),
       type: baseDeclaration.getType(), // Keep base type for compatibility
-      qualifiedName: fullTypeName,
-      simpleName: baseDeclaration.getSimpleName(),
-      packageUri: baseDeclaration.getPackageUri(),
+      qualifiedName: baseDeclaration.getQualifiedName(),
       typeArguments: genericLinks,
+      isAbstract: baseDeclaration.getIsAbstract(),
+      isBase: baseDeclaration.getIsBase(),
+      isFinal: baseDeclaration.getIsFinal(),
+      isInterface: baseDeclaration.getIsInterface(),
+      isMixin: baseDeclaration.getIsMixin(),
+      isRecord: baseDeclaration.getIsRecord(),
       superClass: baseDeclaration.getSuperClass(),
       interfaces: baseDeclaration.getInterfaces(),
       mixins: baseDeclaration.getMixins(),
+      constructors: baseDeclaration.getConstructors(),
+      methods: baseDeclaration.getMethods(),
+      fields: baseDeclaration.getFields(),
+      annotations: baseDeclaration.getAnnotations(),
+      sourceLocation: baseDeclaration.getSourceLocation(),
       isPublic: baseDeclaration.getIsPublic(),
       isSynthetic: baseDeclaration.getIsSynthetic(),
     );
@@ -304,9 +339,6 @@ class TypeDiscovery {
   /// ```
   /// {@endtemplate}
   static bool isSamePackage(String package, String packageUri) {
-    if(packageUri.contains("arraylist")) {
-      print("Package URI: $packageUri with $package");
-    }
     // 1. Dart core libraries
     if (package == PackageNames.DART) {
       return packageUri.startsWith("dart:");
@@ -374,26 +406,62 @@ class TypeDiscovery {
       result ??= findGeneric(type.toString(), package);
     }
 
-    // Method 1: Direct runtime type matching in special types
-    result ??= Runtime.getSpecialTypes().where((d) => GenericTypeParser.shouldCheckGeneric(d.getType())
-      ? d.getName().toString() == type.toString()
-      : d.getType() == type
-    ).firstOrNull;
-
-    // Method 2: Search in classes
+    // Method 1: Search in classes
     result ??= _searchInClasses(type, package);
 
-    // Method 3: Search in enums
+    // Method 2: Search in enums
     result ??= _searchInEnums(type, package);
 
-    // Method 4: Search in mixins
+    // Method 3: Search in mixins
     result ??= _searchInMixins(type, package);
 
-    // Method 5: Search in typedefs
+    // Method 4: Search in typedefs
     result ??= _searchInTypedefs(type, package);
 
-    // Method 6: Search in records
-    result ??= _searchInRecords(type, package);
+    // Cache the result (even if null)
+    _typeCache[type] = result;
+    
+    return result;
+  }
+
+  /// This is the primary entry point for class-based discovery.
+  /// Uses multiple search strategies with comprehensive caching.
+  /// 
+  /// Returns the most specific ClassDeclaration available, or null if not found.
+  /// 
+  /// ## Search Strategy
+  /// 1. Check cache first
+  /// 2. Search in special/primitive types
+  /// 3. Search in classes
+  /// 4. Search in enums  
+  /// 5. Search in mixins
+  /// 
+  /// ## Example
+  /// ```dart
+  /// final classDecl = TypeDiscovery.findClassByType(MyClass);
+  /// final enumDecl = TypeDiscovery.findClassByType(Status);
+  /// final listDecl = TypeDiscovery.findClassByType(List<String>);
+  /// ```
+  static ClassDeclaration? findClassByType(Type type, [String? package]) {
+    // Check cache first
+    final cached = _typeCache[type];
+    if (cached case ClassDeclaration cached) return cached;
+    
+    ClassDeclaration? result;
+
+    // Method 0: Enhanced generic type resolution for runtime instances
+    if(GenericTypeParser.isGeneric(type.toString())) {
+      result ??= findGenericClass(type.toString(), package);
+    }
+
+    // Method 1: Search in enums
+    result ??= _searchInEnums(type, package) ?? _searchInEnums(type);
+
+    // Method 2: Search in mixins
+    result ??= _searchInMixins(type, package) ?? _searchInMixins(type);
+
+    // Method 3: Search in classes
+    result ??= _searchInClasses(type, package) ?? _searchInClasses(type);
 
     // Cache the result (even if null)
     _typeCache[type] = result;
@@ -403,11 +471,6 @@ class TypeDiscovery {
 
   /// Search for type in class declarations
   static ClassDeclaration? _searchInClasses(Type type, [String? package]) {
-    if (type.toString().contains("ArrayList")) {
-      for (final cls in Runtime.getAllClasses()) {
-        print("Content: ${cls.getType()}");
-      }
-    }
     return Runtime.getAllClasses().where((d) {
       if(package != null) {
         return (isSamePackage(package, d.getPackageUri()) || isSamePackage(package, d.getQualifiedName()))
@@ -462,20 +525,6 @@ class TypeDiscovery {
     }).firstOrNull;
   }
 
-  /// Search for type in record declarations
-  static RecordDeclaration? _searchInRecords(Type type, [String? package]) {
-    return Runtime.getAllRecords().where((d) {
-      if(package != null) {
-        return (isSamePackage(package, d.getPackageUri()) || isSamePackage(package, d.getQualifiedName()))
-          && GenericTypeParser.shouldCheckGeneric(d.getType()) 
-            ? d.getName().toString() == type.toString() 
-            : d.getType() == type;
-      }
-
-      return GenericTypeParser.shouldCheckGeneric(d.getType()) ? d.getName().toString() == type.toString() : d.getType() == type;
-    }).firstOrNull;
-  }
-
   // ========================================= TYPE TO STRING SEARCH METHODS =======================================
 
   /// {@template find_by_name}
@@ -502,26 +551,57 @@ class TypeDiscovery {
       result ??= findGeneric(name);
     }
 
-    // Method 1: Direct runtime type matching in special types
-    result ??= Runtime.getSpecialTypes().where((d) => d.getName().toString() == name).firstOrNull;
-
-    // Method 2: Search in classes
+    // Method 1: Search in classes
     result ??= _findClassDeclarationByString(name, package);
 
-    // Method 3: Search in enums
+    // Method 2: Search in enums
     result ??= _findEnumDeclarationByString(name, package);
 
-    // Method 4: Search in mixins
+    // Method 3: Search in mixins
     result ??= _findMixinDeclarationByString(name, package);
 
-    // Method 5: Search in typedefs
+    // Method 4: Search in typedefs
     result ??= _findTypedefDeclarationByString(name, package);
-
-    // Method 6: Search in records
-    result ??= _findRecordDeclarationByString(name, package);
 
     // Search by type string representation
     result ??= _searchByTypeString(name, package);
+
+    // Cache the result
+    _nameCache[name] = result;
+    
+    return result;
+  }
+
+  /// Finds a class declaration by its name (simple or qualified).
+  /// 
+  /// Supports both simple names ("MyClass") and qualified names 
+  /// ("package:myapp/models.dart.MyClass").
+  /// 
+  /// ## Example
+  /// ```dart
+  /// final decl1 = TypeDiscovery.findClassByName('MyClass');
+  /// final decl2 = TypeDiscovery.findClassByName('package:myapp/models.dart.MyClass');
+  /// ```
+  static ClassDeclaration? findClassByName(String name, [String? package]) {
+    // Check cache first
+    final cached = _nameCache[name];
+    if (cached case ClassDeclaration cached) return cached;
+    
+    ClassDeclaration? result;
+
+    // Method 0: Enhanced generic type resolution for runtime instances
+    if(GenericTypeParser.isGeneric(name)) {
+      result ??= findGenericClass(name);
+    }
+
+    // Method 1: Search in enums
+    result ??= _findEnumDeclarationByString(name, package) ?? _findEnumDeclarationByString(name);
+
+    // Method 2: Search in mixins
+    result ??= _findMixinDeclarationByString(name, package) ?? _findMixinDeclarationByString(name);
+
+    // Method 3: Search in classes
+    result ??= _findClassDeclarationByString(name, package) ?? _findClassDeclarationByString(name);
 
     // Cache the result
     _nameCache[name] = result;
@@ -577,18 +657,6 @@ class TypeDiscovery {
     }).firstOrNull;
   }
 
-  /// Find record declaration by string name (simple or qualified)
-  static RecordDeclaration? _findRecordDeclarationByString(String name, [String? package]) {
-    return Runtime.getAllRecords().where((d) {
-      if(package != null) {
-        return (isSamePackage(package, d.getPackageUri()) || isSamePackage(package, d.getQualifiedName()))
-          && d.getName().toString() == name;
-      }
-
-      return d.getName().toString() == name;
-    }).firstOrNull;
-  }
-
   /// Search by type string representation
   static TypeDeclaration? _searchByTypeString(String typeString, [String? package]) {
     return Runtime.getAllTypes().where((d) {
@@ -604,15 +672,15 @@ class TypeDiscovery {
   // =========================================== QUALIFIED NAME SEARCH ========================================
 
   /// {@template find_by_name}
-  /// Finds a type declaration by its name (simple or qualified).
+  /// Finds a type declaration by its qualified name.
   /// 
-  /// Supports both simple names ("MyClass") and qualified names 
+  /// Supports only qualified names 
   /// ("package:myapp/models.dart.MyClass").
   /// 
   /// ## Example
   /// ```dart
-  /// final decl1 = TypeDiscovery.findByName('MyClass');
-  /// final decl2 = TypeDiscovery.findByName('package:myapp/models.dart.MyClass');
+  /// final decl1 = TypeDiscovery.findByQualifiedName('MyClass');
+  /// final decl2 = TypeDiscovery.findByQualifiedName('package:myapp/models.dart.MyClass');
   /// ```
   /// {@endtemplate}
   static TypeDeclaration? findByQualifiedName(String name) {
@@ -627,26 +695,57 @@ class TypeDiscovery {
       result ??= findGeneric(name);
     }
 
-    // Method 1: Direct runtime type matching in special types
-    result ??= Runtime.getSpecialTypes().where((t) => t.getQualifiedName() == name).firstOrNull;
-
-    // Method 2: Search in classes
+    // Method 1: Search in classes
     result ??= _findClassDeclarationByQualifiedName(name);
 
-    // Method 3: Search in enums
+    // Method 2: Search in enums
     result ??= _findEnumDeclarationByQualifiedName(name);
 
-    // Method 4: Search in mixins
+    // Method 3: Search in mixins
     result ??= _findMixinDeclarationByQualifiedName(name);
 
-    // Method 5: Search in typedefs
+    // Method 4: Search in typedefs
     result ??= _findTypedefDeclarationByQualifiedName(name);
-
-    // Method 6: Search in records
-    result ??= _findRecordDeclarationByQualifiedName(name);
     
     // Search by qualified name
     result ??= _searchByQualifiedName(name);
+
+    // Cache the result
+    _qualifiedNameCache[name] = result;
+    
+    return result;
+  }
+
+  /// Finds a class declaration by its qualified name.
+  /// 
+  /// Supports only qualified names 
+  /// ("package:myapp/models.dart.MyClass").
+  /// 
+  /// ## Example
+  /// ```dart
+  /// final decl1 = TypeDiscovery.findClassByQualifiedName('MyClass');
+  /// final decl2 = TypeDiscovery.findClassByQualifiedName('package:myapp/models.dart.MyClass');
+  /// ```
+  static ClassDeclaration? findClassByQualifiedName(String name) {
+    // Check cache first
+    final cached = _qualifiedNameCache[name];
+    if (cached case ClassDeclaration cached) return cached;
+    
+    ClassDeclaration? result;
+
+    // Method 0: Enhanced generic class resolution for runtime instances
+    if(GenericTypeParser.isGeneric(name)) {
+      result ??= findGenericClass(name);
+    }
+
+    // Method 1: Search in enums
+    result ??= _findEnumDeclarationByQualifiedName(name);
+
+    // Method 2: Search in mixins
+    result ??= _findMixinDeclarationByQualifiedName(name);
+
+    // Method 3: Search in classes
+    result ??= _findClassDeclarationByQualifiedName(name);
 
     // Cache the result
     _qualifiedNameCache[name] = result;
@@ -674,11 +773,6 @@ class TypeDiscovery {
     return Runtime.getAllTypedefs().where((t) => t.getQualifiedName() == name).firstOrNull;
   }
 
-  /// Find record declaration by string name (simple or qualified)
-  static RecordDeclaration? _findRecordDeclarationByQualifiedName(String name) {
-    return Runtime.getAllRecords().where((r) => r.getQualifiedName() == name).firstOrNull;
-  }
-
   /// Search by simple name across all declaration types
   static TypeDeclaration? _searchByQualifiedName(String name) {
     return Runtime.getAllTypes().where((d) => d.getQualifiedName() == name).firstOrNull;
@@ -689,12 +783,11 @@ class TypeDiscovery {
   /// {@template find_by_name}
   /// Finds a type declaration by its name (simple or qualified).
   /// 
-  /// Supports both simple names ("MyClass") and qualified names 
-  /// ("package:myapp/models.dart.MyClass").
+  /// Supports only simple names ("MyClass").
   /// 
   /// ## Example
   /// ```dart
-  /// final decl1 = TypeDiscovery.findByName('MyClass');
+  /// final decl1 = TypeDiscovery.findBySimpleName('MyClass');
   /// ```
   /// {@endtemplate}
   static TypeDeclaration? findBySimpleName(String name) {
@@ -709,26 +802,55 @@ class TypeDiscovery {
       result ??= findGeneric(name);
     }
 
-    // Method 1: Direct runtime type matching in special types
-    result ??= Runtime.getSpecialTypes().where((t) => t.getSimpleName() == name).firstOrNull;
-
-    // Method 2: Search in classes
+    // Method 1: Search in classes
     result ??= _findClassDeclarationBySimpleString(name);
 
-    // Method 3: Search in enums
+    // Method 2: Search in enums
     result ??= _findEnumDeclarationBySimpleString(name);
 
-    // Method 4: Search in mixins
+    // Method 3: Search in mixins
     result ??= _findMixinDeclarationBySimpleString(name);
 
-    // Method 5: Search in typedefs
+    // Method 4: Search in typedefs
     result ??= _findTypedefDeclarationBySimpleString(name);
-
-    // Method 6: Search in records
-    result ??= _findRecordDeclarationBySimpleString(name);
 
     // Search by simple name first
     result ??= _searchBySimpleName(name);
+
+    // Cache the result
+    _simpleNameCache[name] = result;
+    
+    return result;
+  }
+
+  /// Finds a class declaration by its name (simple or qualified).
+  /// 
+  /// Supports only simple names ("MyClass").
+  /// 
+  /// ## Example
+  /// ```dart
+  /// final decl1 = TypeDiscovery.findByName('MyClass');
+  /// ```
+  static ClassDeclaration? findClassBySimpleName(String name) {
+    // Check cache first
+    final cached = _simpleNameCache[name];
+    if (cached case ClassDeclaration cached) return cached;
+    
+    ClassDeclaration? result;
+
+    // Method 0: Enhanced generic class resolution for runtime instances
+    if(GenericTypeParser.isGeneric(name)) {
+      result ??= findGenericClass(name);
+    }
+
+    // Method 1: Search in enums
+    result ??= _findEnumDeclarationBySimpleString(name);
+
+    // Method 2: Search in mixins
+    result ??= _findMixinDeclarationBySimpleString(name);
+
+    // Method 3: Search in classes
+    result ??= _findClassDeclarationBySimpleString(name);
 
     // Cache the result
     _simpleNameCache[name] = result;
@@ -756,11 +878,6 @@ class TypeDiscovery {
     return Runtime.getAllTypedefs().where((t) => t.getSimpleName() == name).firstOrNull;
   }
 
-  /// Find record declaration by string name (simple or qualified)
-  static RecordDeclaration? _findRecordDeclarationBySimpleString(String name) {
-    return Runtime.getAllRecords().where((r) => r.getSimpleName() == name).firstOrNull;
-  }
-
   /// Search by type string representation
   static TypeDeclaration? _searchBySimpleName(String name) {
     return Runtime.getAllTypes().where((d) => d.getSimpleName() == name).firstOrNull;
@@ -785,26 +902,52 @@ class TypeDiscovery {
     
     TypeDeclaration? result;
 
-    // Method 1: Direct runtime type matching in special types
-    result ??= Runtime.getSpecialTypes().where((t) => t.getElement() == element).firstOrNull;
-
-    // Method 2: Search in classes
+    // Method 1: Search in classes
     result ??= _findClassDeclarationByElement(element);
 
-    // Method 3: Search in enums
+    // Method 2: Search in enums
     result ??= _findEnumDeclarationByElement(element);
 
-    // Method 4: Search in mixins
+    // Method 3: Search in mixins
     result ??= _findMixinDeclarationByElement(element);
 
-    // Method 5: Search in typedefs
+    // Method 4: Search in typedefs
     result ??= _findTypedefDeclarationByElement(element);
-
-    // Method 6: Search in records
-    result ??= _findRecordDeclarationByElement(element);
 
     // Search by element in all declaration types
     result ??= _searchByElement(element);
+
+    // Cache the result
+    _elementCache[element] = result;
+    
+    return result;
+  }
+
+  /// Finds a class declaration by its analyzer Element.
+  /// 
+  /// Useful when working with analyzer-based tools and needing to bridge
+  /// to the runtime reflection system.
+  /// 
+  /// ## Example
+  /// ```dart
+  /// final classElement = getClassElementFromAnalyzer();
+  /// final classDecl = TypeDiscovery.findClassByElement(classElement);
+  /// ```
+  static ClassDeclaration? findClassByElement(Element element) {
+    // Check cache first
+    final cached = _elementCache[element];
+    if (cached case ClassDeclaration cached) return cached;
+    
+    ClassDeclaration? result;
+
+    // Method 1: Search in enums
+    result ??= _findEnumDeclarationByElement(element);
+
+    // Method 2: Search in mixins
+    result ??= _findMixinDeclarationByElement(element);
+
+    // Method 3: Search in classes
+    result ??= _findClassDeclarationByElement(element);
 
     // Cache the result
     _elementCache[element] = result;
@@ -832,11 +975,6 @@ class TypeDiscovery {
   /// Find typedef declaration by analyzer Element
   static TypedefDeclaration? _findTypedefDeclarationByElement(Element element) {
     return Runtime.getAllTypedefs().where((t) => t.getElement() == element).firstOrNull;
-  }
-
-  /// Find record declaration by analyzer Element
-  static RecordDeclaration? _findRecordDeclarationByElement(Element element) {
-    return Runtime.getAllRecords().where((r) => r.getElement() == element).firstOrNull;
   }
 
   /// Search by analyzer element

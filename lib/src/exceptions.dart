@@ -98,7 +98,7 @@ class RuntimeException extends Error implements Throwable {
 
   @override
   String toString() {
-    final buffer = StringBuffer('RuntimeException: $message\n$stackTrace');
+    final buffer = StringBuffer('$runtimeType: $message\n$stackTrace');
     if (cause != null) {
       buffer.write('\nCaused by: $cause');
     }
@@ -343,7 +343,7 @@ final class MethodNotFoundException extends RuntimeResolverException {
 /// throw FieldAccessException(
 ///   "User",
 ///   "password",
-///   cause: NoSuchFieldError(),
+///   cause: NoSuchMethodError(),
 /// );
 /// ```
 ///
@@ -362,7 +362,7 @@ final class MethodNotFoundException extends RuntimeResolverException {
 /// ### See Also
 /// - [RuntimeResolverException]
 /// - [RuntimeException]
-/// - [NoSuchFieldError]
+/// - [NoSuchMethodError]
 /// {@endtemplate}
 final class FieldAccessException extends RuntimeResolverException {
   /// {@macro jetleaf_field_access_exception}
@@ -391,7 +391,7 @@ final class FieldAccessException extends RuntimeResolverException {
 /// throw FieldMutationException(
 ///   "User",
 ///   "email",
-///   cause: NoSuchFieldError(),
+///   cause: NoSuchMethodError(),
 /// );
 /// ```
 ///
@@ -410,7 +410,7 @@ final class FieldAccessException extends RuntimeResolverException {
 /// ### See Also
 /// - [RuntimeResolverException]
 /// - [RuntimeException]
-/// - [NoSuchFieldError]
+/// - [NoSuchMethodError]
 /// {@endtemplate}
 final class FieldMutationException extends RuntimeResolverException {
   /// {@macro jetleaf_field_mutation_exception}
@@ -465,50 +465,6 @@ final class GenericResolutionException extends RuntimeResolverException {
   GenericResolutionException(super.message, {super.cause, super.stackTrace});
 }
 
-/// {@template jetleaf_mirror_resolution_exception}
-/// Exception thrown for **mirror/reflection-related failures** within the
-/// Jetleaf framework.
-///
-/// This can occur when:
-/// - Reflection is not supported in the current runtime environment
-/// - The mirror API encounters an unexpected or unsupported type
-/// - Accessing metadata, methods, or fields via mirrors fails
-///
-/// Extends [RuntimeResolverException], inheriting support for:
-/// - `message` — human-readable description of the error  
-/// - `cause` — optional underlying exception  
-/// - `stackTrace` — optional diagnostic stack trace  
-///
-/// ### Usage Example
-/// ```dart
-/// throw MirrorResolutionException(
-///   "Cannot access private field via reflection",
-///   cause: UnsupportedError(),
-/// );
-/// ```
-///
-/// ### Design Notes
-/// - Signals terminal reflection-related errors during dynamic resolution.
-/// - Provides detailed diagnostics via `message` and optional `cause`.
-/// - Helps distinguish mirror failures from other resolver exceptions.
-///
-/// ### Example Behavior
-/// | Context | Result |
-/// |---------|--------|
-/// | Unsupported runtime | ❌ Throws `MirrorResolutionException` |
-/// | Attempting to reflect private field | ❌ Throws |
-/// | Metadata access fails | ❌ Throws |
-///
-/// ### See Also
-/// - [RuntimeResolverException]
-/// - [RuntimeException]
-/// - [UnsupportedError]
-/// {@endtemplate}
-final class MirrorResolutionException extends RuntimeResolverException {
-  /// {@macro jetleaf_mirror_resolution_exception}
-  MirrorResolutionException(super.message, {super.cause, super.stackTrace});
-}
-
 /// {@template jetleaf_unsupported_runtime_operation_exception}
 /// Exception thrown when an **operation cannot be performed due to runtime
 /// environment limitations**.
@@ -557,4 +513,364 @@ final class UnsupportedRuntimeOperationException extends RuntimeResolverExceptio
     cause: cause,
     stackTrace: stack,
   );
+}
+
+/// {@template jetleaf_private_method_invocation_exception}
+/// Exception thrown when a developer attempts to invoke a **private method**
+/// dynamically, which is not allowed by JetLeaf.
+///
+/// This occurs when:
+/// - The method name starts with `_`
+/// - The framework or runtime prohibits direct invocation of private members
+///
+/// Extends [RuntimeResolverException], preserving message, cause, and stack trace.
+///
+/// ### Usage Example
+/// ```dart
+/// throw PrivateMethodInvocationException(MyService, "_secretMethod");
+/// ```
+///
+/// ### Design Notes
+/// - Clearly distinguishes private method invocation errors from missing methods
+/// - Provides the type and method name for easy debugging
+/// {@endtemplate}
+final class PrivateMethodInvocationException extends RuntimeResolverException {
+  /// The type on which the private method was attempted to be invoked
+  final Object type;
+
+  /// The private method name
+  final String methodName;
+
+  /// Creates a new [PrivateMethodInvocationException]
+  /// 
+  /// {@macro jetleaf_private_method_invocation_exception}
+  PrivateMethodInvocationException(this.type, this.methodName, {Object? cause, StackTrace? stack})
+      : super(
+          'Cannot invoke private method "$methodName" on type $type. Private methods are not accessible.',
+          cause: cause,
+          stackTrace: stack,
+        );
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('PrivateMethodInvocationException: Cannot invoke private method "$methodName" on type $type.');
+    if (cause != null) buffer.write('\nCaused by: $cause');
+    buffer.write('\n$stackTrace');
+    return buffer.toString();
+  }
+}
+
+/// {@template jetleaf_private_constructor_invocation_exception}
+/// Exception thrown when a developer attempts to invoke a **private constructor**
+/// dynamically, which is not allowed by JetLeaf.
+///
+/// This occurs when:
+/// - The constructor name starts with `_`
+/// - The framework or runtime prohibits direct instantiation of private constructors
+///
+/// Extends [RuntimeResolverException], preserving message, cause, and stack trace.
+///
+/// ### Usage Example
+/// ```dart
+/// throw PrivateConstructorInvocationException(MyService, "_internal");
+/// ```
+///
+/// ### Design Notes
+/// - Clearly distinguishes private constructor invocation errors from missing constructors
+/// - Provides the type and constructor name for easy debugging
+/// {@endtemplate}
+final class PrivateConstructorInvocationException extends RuntimeResolverException {
+  /// The type whose private constructor was attempted to be invoked
+  final Object type;
+
+  /// The private constructor name
+  final String constructorName;
+
+  /// Creates a new [PrivateConstructorInvocationException]
+  /// 
+  /// {@macro jetleaf_private_constructor_invocation_exception}
+  PrivateConstructorInvocationException(this.type, this.constructorName, {Object? cause, StackTrace? stack})
+      : super(
+          'Cannot invoke private constructor "$constructorName" on type $type. Private constructors are not accessible.',
+          cause: cause,
+          stackTrace: stack,
+        );
+
+  @override
+  String toString() {
+    final buffer = StringBuffer(
+      'PrivateConstructorInvocationException: Cannot invoke private constructor "$constructorName" on type $type.',
+    );
+    if (cause != null) buffer.write('\nCaused by: $cause');
+    buffer.write('\n$stackTrace');
+    return buffer.toString();
+  }
+}
+
+/// {@template jetleaf_private_field_access_exception}
+/// Exception thrown when attempting to **access a private field or getter/setter**
+/// on a type during runtime resolution.
+///
+/// This includes:
+/// - Attempting to read a private getter
+/// - Attempting to write to a private field or setter
+/// - Attempting to reflectively access any identifier beginning with `_`
+///
+/// Since private members are library-scoped in Dart, JetLeaf does not allow
+/// invoking or accessing them through its reflection/runtime layer.
+///
+/// ### Example
+/// ```dart
+/// throw PrivateFieldAccessException(User, '_password');
+/// ```
+///
+/// ### See Also
+/// - [FieldAccessException]
+/// - [FieldMutationException]
+/// {@endtemplate}
+final class PrivateFieldAccessException extends RuntimeResolverException {
+  /// {@macro jetleaf_private_field_access_exception}
+  PrivateFieldAccessException(Object type, String fieldName, {Object? cause, StackTrace? stack})
+      : super(
+          'Cannot access private field or getter "$fieldName" on type $type. '
+          'Private members cannot be accessed through JetLeaf runtime.',
+          cause: cause,
+          stackTrace: stack,
+        );
+}
+
+/// {@template jetleaf_unresolved_type_instantiation_exception}
+/// Exception thrown when JetLeaf is unable to instantiate a class or resolve a
+/// constructor because the **runtime type is unresolved**.
+///
+/// This typically occurs with:
+/// - Generic type parameters (e.g., `T`, `U`, `E`) that have no concrete type
+/// - Types that cannot be determined through mirrors
+/// - Missing or incomplete [RuntimeHint] registrations
+/// - AOT scenarios where type metadata is erased
+///
+/// ### Example:
+/// ```dart
+/// throw UnresolvedTypeInstantiationException(T);
+/// ```
+///
+/// ### See Also
+/// - [ConstructorNotFoundException]
+/// - [GenericResolutionException]
+/// - [RuntimeResolverException]
+/// {@endtemplate}
+final class UnresolvedTypeInstantiationException extends RuntimeResolverException {
+  /// {@macro jetleaf_unresolved_type_instantiation_exception}
+  UnresolvedTypeInstantiationException(Object type, {Object? cause, StackTrace? stack})
+      : super(
+          'Unable to instantiate type "$type": runtime type is unresolved or '
+          'cannot be constructed. This often occurs with generic type '
+          'parameters or when no RuntimeHint is registered.',
+          cause: cause,
+          stackTrace: stack,
+        );
+}
+
+/// {@template argument_resolution_exception}
+/// Base class for exceptions thrown during **argument resolution**.
+///
+/// These errors are raised when preparing arguments for method or constructor
+/// invocation—typically during reflective calls, dependency injection,
+/// runtime resolvers, or invocation pipelines.
+///
+/// This exception includes:
+/// - A human-readable message
+/// - The underlying cause (if any)
+/// - The call-site or resolver location where the failure occurred
+///
+/// Subclasses represent specific resolution failures such as missing required
+/// parameters, invalid argument types, or constraint violations.
+/// {@endtemplate}
+abstract class ArgumentResolutionException extends RuntimeResolverException {
+  /// The logical or physical location where the argument resolution failed.
+  ///
+  /// This may refer to:
+  /// - A method name
+  /// - A constructor signature
+  /// - A reflection site
+  /// - A file or URI associated with the call
+  ///
+  /// Used for producing more contextual diagnostic messages.
+  final String location;
+
+  /// {@macro argument_resolution_exception}
+  ///
+  /// - [message] describes the failure.
+  /// - [cause] is the underlying root cause, if any.
+  /// - [stackTrace] optionally provides additional debugging information.
+  /// - [location] identifies the call-site or point of failure.
+  ArgumentResolutionException(
+    super.message, {
+    Object? cause,
+    super.stackTrace,
+    required this.location,
+  }) : super(cause: cause ?? location);
+}
+
+/// {@template missing_required_named_parameter}
+/// Thrown when a **required named parameter** is missing during runtime method
+/// or constructor invocation.
+///
+/// This error typically occurs when:
+/// - Invoking a method reflectively using incomplete argument maps
+/// - Auto-binding or dependency injection fails to supply a required value
+/// - Runtime resolvers attempt to call APIs without fulfilling required
+///   named-parameter contracts
+///
+/// Example:
+/// ```dart
+/// void method({required int count}) {}
+///
+/// // Missing 'count' → throws MissingRequiredNamedParameter
+/// resolver.invoke(method, {});
+/// ```
+/// {@endtemplate}
+class MissingRequiredNamedParameterException extends ArgumentResolutionException {
+  /// The name of the missing required named parameter.
+  final String name;
+
+  /// {@macro missing_required_named_parameter}
+  ///
+  /// - [name] is the missing parameter.
+  /// - [location] identifies where the resolution was attempted.
+  MissingRequiredNamedParameterException(
+    this.name, {
+    required String location,
+  }) : super('Missing required named parameter: $name', location: location);
+}
+
+/// {@template missing_required_positional_parameter}
+/// Thrown when a **required positional parameter** is missing during
+/// runtime method or constructor invocation.
+///
+/// This typically occurs when:
+/// - A reflective call omits a required positional argument
+/// - An invocation pipeline provides fewer arguments than the method's
+///   positional parameter count
+/// - Dependency injection or auto-binding fails to supply required values
+///
+/// Example:
+/// ```dart
+/// void f(int a, int b) {}
+///
+/// // Missing 'b' → throws MissingRequiredPositionalParameter
+/// resolver.invoke(f, [1]);
+/// ```
+/// {@endtemplate}
+class MissingRequiredPositionalParameterException extends ArgumentResolutionException {
+  /// The name of the missing positional parameter.
+  final String name;
+
+  /// {@macro missing_required_positional_parameter}
+  ///
+  /// - [name] is the missing parameter.
+  /// - [location] identifies where the resolution attempt occurred.
+  MissingRequiredPositionalParameterException(
+    this.name, {
+    required String location,
+  }) : super('Missing required positional parameter: $name', location: location);
+}
+
+/// {@template too_few_positional_arguments}
+/// Thrown when a runtime invocation receives **fewer positional arguments**
+/// than the target function or constructor requires.
+///
+/// This error is raised before invocation occurs, during argument-shape
+/// validation, and typically represents incorrect caller behavior or a failed
+/// binding/resolution process.
+///
+/// Example:
+/// ```dart
+/// void g(int a, int b, int c) {}
+///
+/// // Expected 3 positional args but got 1
+/// resolver.invoke(g, [7]);
+/// ```
+/// {@endtemplate}
+class TooFewPositionalArgumentException extends ArgumentResolutionException {
+  /// The number of required positional arguments expected by the target.
+  final int expected;
+
+  /// The number of positional arguments actually supplied by the caller.
+  final int actual;
+
+  /// {@macro too_few_positional_arguments}
+  ///
+  /// - [expected] is the required minimum positional count.
+  /// - [actual] is the number of provided arguments.
+  /// - [location] identifies where resolution/validation failed.
+  TooFewPositionalArgumentException(
+    this.expected,
+    this.actual, {
+    required String location,
+  }) : super('Expected at least $expected positional arguments, got $actual', location: location);
+}
+
+/// {@template too_many_positional_arguments}
+/// Thrown when a runtime invocation receives **more positional arguments**
+/// than the target function or constructor accepts.
+///
+/// This error occurs during argument-shape validation before invocation
+/// and indicates that the caller supplied excess positional values.
+///
+/// Example:
+/// ```dart
+/// void f(int a, int b) {}
+///
+/// // Provided 3 args, but function accepts only 2
+/// resolver.invoke(f, [1, 2, 3]);
+/// ```
+/// {@endtemplate}
+class TooManyPositionalArgumentException extends ArgumentResolutionException {
+  /// The maximum number of positional arguments allowed by the target.
+  final int expected;
+
+  /// The number of positional arguments actually supplied.
+  final int actual;
+
+  /// {@macro too_many_positional_arguments}
+  ///
+  /// - [expected] is the allowed maximum positional count.
+  /// - [actual] is the number provided by the caller.
+  /// - [location] identifies where the resolution failed.
+  TooManyPositionalArgumentException(
+    this.expected,
+    this.actual, {
+    required String location,
+  }) : super('Expected at most $expected positional arguments, got $actual', location: location);
+}
+
+/// {@template unexpected_argument}
+/// Thrown when an invocation receives an argument that **does not correspond
+/// to any declared parameter**, usually a named parameter that the target
+/// method or constructor does not define.
+///
+/// This is commonly caused by:
+/// - Typos in argument names
+/// - Passing named arguments not supported by the target
+/// - Mismatched signatures between caller and callee
+///
+/// Example:
+/// ```dart
+/// void f({int x = 0}) {}
+///
+/// // 'y' is not a declared named parameter → throws UnexpectedArgument
+/// resolver.invoke(f, [], named: {'y': 1});
+/// ```
+/// {@endtemplate}
+class UnexpectedArgumentException extends ArgumentResolutionException {
+  /// The name of the unexpected or undeclared argument.
+  final String argumentName;
+
+  /// {@macro unexpected_argument}
+  ///
+  /// - [argumentName] is the illegal argument encountered.
+  /// - [location] indicates where the resolution occurred.
+  UnexpectedArgumentException(this.argumentName, {required String location})
+      : super('Unexpected argument: $argumentName', location: location);
 }

@@ -1,6 +1,6 @@
 name: jetleaf_build
 description: Build module for JetLeaf — generates application libraries and runtime declarations.
-version: 1.0.7
+version: 1.0.8
 
 homepage: https://jetleaf.hapnium.com
 repository: https://github.com/jetleaf/jetleaf_build
