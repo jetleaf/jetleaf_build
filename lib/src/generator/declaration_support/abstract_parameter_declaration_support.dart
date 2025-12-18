@@ -10,11 +10,8 @@ import 'dart:async';
 import 'dart:mirrors' as mirrors;
 
 import 'package:analyzer/dart/analysis/utilities.dart';
-import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/ast/ast.dart' as ast;
 import 'package:analyzer/dart/ast/token.dart' as tok;
-import 'package:analyzer/dart/element/nullability_suffix.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
 import '../../builder/runtime_builder.dart';
@@ -22,6 +19,7 @@ import '../../declaration/declaration.dart';
 import '../../utils/dart_type_resolver.dart';
 import '../../utils/generic_type_parser.dart';
 import '../../utils/utils.dart';
+import '../abstract_element_support.dart';
 import 'abstract_field_declaration_support.dart';
 
 /// {@template abstract_parameter_declaration_support}
@@ -92,29 +90,6 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
     required super.packages,
   });
 
-  /// Retrieves a [FormalParameterElement] by name or index from a list of analyzer parameters.
-  ///
-  /// This method attempts to find the parameter at the specified [index] in the [parameters]
-  /// list. If the index is out of bounds, it falls back to searching for a parameter whose
-  /// display name matches [paramName].
-  ///
-  /// Returns `null` if no matching parameter is found.
-  ///
-  /// # Parameters
-  /// - [paramName]: The name of the parameter to retrieve.
-  /// - [index]: The positional index of the parameter in the list.
-  /// - [parameters]: The list of [FormalParameterElement]s, possibly `null`.
-  ///
-  /// # Returns
-  /// A [FormalParameterElement] if found, otherwise `null`.
-  FormalParameterElement? _getParameter(String paramName, int index, List<FormalParameterElement>? parameters) {
-    if (parameters != null && index < parameters.length) {
-      return parameters[index];
-    }
-
-    return parameters?.where((a) => a.displayName == paramName).firstOrNull;
-  }
-
   /// Extracts a list of parameter declarations from mirrors and analyzer elements.
   ///
   /// This method produces a list of [ParameterDeclaration]s for a given method,
@@ -138,7 +113,7 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
   /// A [Future] that completes with a list of [ParameterDeclaration]s representing
   /// all parameters for the specified member.
   @protected
-  Future<List<ParameterDeclaration>> extractParameters(List<mirrors.ParameterMirror> mirrorParams, List<FormalParameterElement>? analyzerParams, Package package, String libraryUri, MemberDeclaration parentMember) async {
+  Future<List<ParameterDeclaration>> extractParameters(List<mirrors.ParameterMirror> mirrorParams, AnalyzedFormalParameterList? analyzerParams, Package package, String libraryUri, MemberDeclaration parentMember) async {
     final isMethod = parentMember is MethodDeclaration;
     final className = parentMember is MethodDeclaration 
       ? parentMember.getParentClass()?.getName()
@@ -155,7 +130,7 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
       for (int i = 0; i < mirrorParams.length; i++) {
         final mirrorParam = mirrorParams[i];
         final paramName = mirrors.MirrorSystem.getName(mirrorParam.simpleName);
-        final analyzerParam = _getParameter(paramName, i, analyzerParams);
+        final analyzedParam = _findParameterInList(analyzerParams?.parameters, paramName);
         Uri sourceUri;
 
         try {
@@ -166,7 +141,7 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
 
         try {
           final paramCheck = _checkParameter(
-            sourceCode: sourceCache[libraryUri] ?? await readSourceCode(Uri.parse(libraryUri)),
+            sourceCode: await readSourceCode(Uri.parse(libraryUri)),
             methodName: parentMember.getName(),
             paramName: paramName,
             className: className,
@@ -175,9 +150,9 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
             isStatic: parentMember.getIsStatic(),
           );
           
-          final dartType = analyzerParam != null ? _getDartTypeFromFormalParameterElement(analyzerParam) : getParameterDartType(paramCheck.param);
+          final dartType = getAnalyzedTypeAnnotationFromParameter(analyzedParam);
           final paramType = await getLinkDeclaration(mirrorParam.type, package, libraryUri, dartType);
-          final annotations = await extractAnnotations(mirrorParam.metadata, libraryUri, sourceUri, package, analyzerParam?.metadata.annotations);
+          final annotations = await extractAnnotations(mirrorParam.metadata, libraryUri, sourceUri, package, analyzedParam?.metadata);
 
           // Safe access to default value
           dynamic defaultValue;
@@ -192,20 +167,18 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
           
           parameters.add(StandardParameterDeclaration(
             name: paramName,
-            element: analyzerParam,
-            dartType: dartType,
             type: type,
             libraryDeclaration: await getLibrary(libraryUri),
             typeDeclaration: paramType,
-            isNullable: dartType != null ? dartType.nullabilitySuffix == NullabilitySuffix.question : paramCheck.isNullable,
-            isOptional: analyzerParam?.isOptional ?? mirrorParam.isOptional || mirrorParam.hasDefaultValue,
-            isRequired: analyzerParam?.isRequired ?? paramCheck.param?.isRequired ?? !mirrorParam.isOptional,
+            isNullable: checkTypeAnnotationNullable(dartType) || paramCheck.isNullable,
+            isOptional: analyzedParam?.isOptional ?? mirrorParam.isOptional || mirrorParam.hasDefaultValue || (paramCheck.param?.isOptional ?? mirrorParam.isOptional),
+            isRequired: analyzedParam?.isRequired ?? paramCheck.param?.isRequired ?? !mirrorParam.isOptional,
             isNamed: mirrorParam.isNamed,
             hasDefaultValue: mirrorParam.hasDefaultValue,
             defaultValue: defaultValue,
             index: i,
-            isPublic: analyzerParam?.isPublic ?? !mirrorParam.isPrivate,
-            isSynthetic: analyzerParam?.isSynthetic ?? isSynthetic(paramName),
+            isPublic: !isInternal(paramName) || !mirrorParam.isPrivate,
+            isSynthetic: analyzedParam?.isSynthetic ?? isSynthetic(paramName),
             sourceLocation: Uri.parse(libraryUri),
             annotations: annotations,
           ));
@@ -217,28 +190,6 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
 
     RuntimeBuilder.logFullyVerboseInfo("Completed ${logMessage.toLowerCase()} within ${result.getFormatted()}", trackWith: logMessage, level: 4);
     return result.result;
-  }
-
-  /// Determines the [DartType] of a parameter from its [FormalParameterElement].
-  ///
-  /// Handles special parameter types:
-  /// - [FieldFormalParameterElement]: resolves to the associated field's type if available.
-  /// - [SuperFormalParameterElement]: resolves to the super constructor parameter's type if available.
-  /// - Other elements: uses the element's declared type directly.
-  ///
-  /// # Parameters
-  /// - [element]: The analyzer [FormalParameterElement] to extract the type from.
-  ///
-  /// # Returns
-  /// The corresponding [DartType] for the parameter.
-  DartType _getDartTypeFromFormalParameterElement(FormalParameterElement element) {
-    if (element is FieldFormalParameterElement) {
-      return element.field?.type ?? element.type;
-    } else if (element is SuperFormalParameterElement) {
-      return element.superConstructorParameter?.type ?? element.type;
-    } else {
-      return element.type;
-    }
   }
 
   /// Checks if a parameter is nullable by parsing the source code AST.
@@ -309,7 +260,7 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
         // Check named constructor or default constructor
         if ((member.name?.toString() == constructorName) || member.name == null) {
           // Check parameters
-          final param = _findParameterInList(member.parameters.parameters, paramName, className);
+          final param = _findParameterInList(member.parameters.parameters, paramName);
           if (param != null) {
             return _Param(_isParameterNullable(param, paramName, classDecl), param);
           }
@@ -342,7 +293,7 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
       if (classDecl != null) {
         for (final member in classDecl.members) {
           if (member is ast.MethodDeclaration && member.name.toString() == methodName && member.isStatic == isStatic) {
-            final param = _findParameterInList(member.parameters?.parameters, paramName, className);
+            final param = _findParameterInList(member.parameters?.parameters, paramName);
             if (param != null) {
               return _Param(_isParameterNullable(param, paramName, classDecl), param);
             }
@@ -353,7 +304,7 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
       // Top-level function
       for (final declaration in unit.declarations) {
         if (declaration is ast.FunctionDeclaration && declaration.name.toString() == methodName) {
-          final param = _findParameterInList(declaration.functionExpression.parameters?.parameters, paramName, className);
+          final param = _findParameterInList(declaration.functionExpression.parameters?.parameters, paramName);
           if (param != null) {
             return _Param(_isParameterNullable(param, paramName, null), param);
           }
@@ -369,11 +320,10 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
   /// # Parameters
   /// - [parameters]: List of [ast.FormalParameter] nodes.
   /// - [paramName]: The name of the parameter to find.
-  /// - [className]: Optional class name context.
   ///
   /// # Returns
   /// The [ast.FormalParameter] if found, otherwise `null`.
-  ast.FormalParameter? _findParameterInList(List<ast.FormalParameter>? parameters, String paramName, String? className) {
+  ast.FormalParameter? _findParameterInList(List<ast.FormalParameter>? parameters, String paramName) {
     if (parameters == null) return null;
 
     for (final param in parameters) {
@@ -429,10 +379,8 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
   /// # Returns
   /// `true` if the parameter is nullable, `false` otherwise.
   bool _checkSimpleParameterNullable(ast.SimpleFormalParameter param) {
-    if (param.type?.type?.nullabilitySuffix == NullabilitySuffix.question) return true;
     final type = param.type;
-    if (type.toString().endsWith("?")) return true;
-    if (type != null) return _checkTypeAnnotationNullable(type);
+    if (type != null) return checkTypeAnnotationNullable(type);
     return param.isOptional && type == null;
   }
 
@@ -449,10 +397,8 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
   /// # Returns
   /// `true` if the parameter is nullable, `false` otherwise.
   bool _checkFieldParameterNullable(ast.FieldFormalParameter param, ast.ClassDeclaration? classDecl) {
-    if (param.type?.type?.nullabilitySuffix == NullabilitySuffix.question || param.question != null) return true;
     final type = param.type;
-    if (type.toString().endsWith("?")) return true;
-    if (type != null) return _checkTypeAnnotationNullable(type);
+    if (type != null) return checkTypeAnnotationNullable(type);
 
     if (classDecl != null) {
       final fieldName = param.name.lexeme;
@@ -461,7 +407,7 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
           for (final variable in member.fields.variables) {
             if (variable.name.lexeme == fieldName) {
               final fieldType = member.fields.type;
-              if (fieldType != null) return _checkTypeAnnotationNullable(fieldType);
+              if (fieldType != null) return checkTypeAnnotationNullable(fieldType);
             }
           }
         }
@@ -482,10 +428,8 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
   /// # Returns
   /// `true` if the parameter is nullable, `false` otherwise.
   bool _checkFunctionTypedParameterNullable(ast.FunctionTypedFormalParameter param) {
-    if (param.returnType?.type?.nullabilitySuffix == NullabilitySuffix.question || param.question != null) return true;
     final type = param.returnType;
-    if (type.toString().endsWith("?")) return true;
-    if (type != null) return _checkTypeAnnotationNullable(type);
+    if (type != null) return checkTypeAnnotationNullable(type);
     return false;
   }
 
@@ -499,36 +443,9 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
   /// # Returns
   /// `true` if the parameter is nullable, `false` otherwise.
   bool _checkSuperParameterNullable(ast.SuperFormalParameter param) {
-    if (param.type?.type?.nullabilitySuffix == NullabilitySuffix.question || param.question != null) return true;
     final type = param.type;
-    if (type.toString().endsWith("?")) return true;
-    if (type != null) return _checkTypeAnnotationNullable(type);
+    if (type != null) return checkTypeAnnotationNullable(type);
     return false;
-  }
-
-  /// Recursively checks any [TypeAnnotation] for nullability, including generics,
-  /// function types, and record types.
-  ///
-  /// # Parameters
-  /// - [type]: The [ast.TypeAnnotation] to check.
-  ///
-  /// # Returns
-  /// `true` if the type is nullable, `false` otherwise.
-  bool _checkTypeAnnotationNullable(ast.TypeAnnotation type) {
-    if (type is ast.NamedType) {
-      if (type.type?.nullabilitySuffix == NullabilitySuffix.question || type.question != null) return true;
-      if (type.typeArguments != null) {
-        for (final arg in type.typeArguments!.arguments) {
-          if (arg is ast.NamedType && _checkTypeAnnotationNullable(arg)) return true;
-        }
-      }
-      return false;
-    } else if (type is ast.GenericFunctionType) {
-      final annType = type.returnType;
-      if (annType?.type?.nullabilitySuffix == NullabilitySuffix.question || annType?.question != null) return true;
-      if (type.toString().endsWith("?")) return true;
-    }
-    return type.type?.nullabilitySuffix == NullabilitySuffix.question || type.question != null;
   }
 
   /// Fallback method to check parameter nullability using simple pattern matching.
@@ -582,25 +499,6 @@ abstract class AbstractParameterDeclarationSupport extends AbstractFieldDeclarat
     ];
 
     return paramPatterns.any((pattern) => pattern.hasMatch(paramSection));
-  }
-
-  /// Retrieves the Dart type of a parameter from its AST node.
-  ///
-  /// Supports all parameter types including simple, field, function-typed,
-  /// default, and super formal parameters.
-  ///
-  /// # Parameters
-  /// - [param]: The AST parameter node.
-  ///
-  /// # Returns
-  /// The [DartType] of the parameter, or `null` if it cannot be determined.
-  DartType? getParameterDartType(ast.FormalParameter? param) {
-    if (param is ast.SimpleFormalParameter) return param.type?.type;
-    if (param is ast.FieldFormalParameter) return param.type?.type;
-    if (param is ast.FunctionTypedFormalParameter) return param.returnType?.type;
-    if (param is ast.DefaultFormalParameter) return getParameterDartType(param.parameter);
-    if (param is ast.SuperFormalParameter) return param.type?.type;
-    return null;
   }
 }
 

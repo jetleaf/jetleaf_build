@@ -1,9 +1,7 @@
 import 'dart:mirrors' as mirrors;
 
-import 'package:analyzer/dart/element/nullability_suffix.dart';
-import 'package:analyzer/dart/element/type.dart';
-
 import '../../declaration/declaration.dart';
+import '../abstract_element_support.dart';
 import 'abstract_function_link_declaration_support.dart';
 
 /// {@template abstract_record_link_declaration_support}
@@ -18,7 +16,7 @@ import 'abstract_function_link_declaration_support.dart';
 /// ## Responsibilities
 /// This class is responsible for:
 /// - Detecting whether a given type truly represents a Dart record.
-/// - Translating analyzer [RecordType] instances into canonical
+/// - Translating analyzer [AnalyzedRecordTypeAnnotation] instances into canonical
 ///   [RecordLinkDeclaration] objects.
 /// - Decomposing records into **named** and **positional** fields while
 ///   preserving declaration order.
@@ -28,7 +26,7 @@ import 'abstract_function_link_declaration_support.dart';
 ///
 /// ## Analyzer-Driven Resolution
 /// Record link generation is primarily **analyzer-based**, relying on:
-/// - [RecordType], [RecordTypeField], and related analyzer structures
+/// - [AnalyzedRecordTypeAnnotation], [RecordTypeField], and related analyzer structures
 /// - Analyzer nullability metadata for both records and individual fields
 ///
 /// Runtime mirrors are used opportunistically for:
@@ -52,7 +50,7 @@ abstract class AbstractRecordLinkDeclarationSupport extends AbstractFunctionLink
   AbstractRecordLinkDeclarationSupport({required super.mirrorSystem, required super.forceLoadedMirrors, required super.configuration, required super.packages});
 
   @override
-  Future<RecordLinkDeclaration?> generateRecordLinkDeclaration(mirrors.TypeMirror mirror, Package package, String libraryUri, DartType dartType) async {
+  Future<RecordLinkDeclaration?> generateRecordLinkDeclaration(mirrors.TypeMirror mirror, Package package, String libraryUri, AnalyzedTypeAnnotation dartType) async {
     if (_determineAndReturnRecordType(dartType) case final recordDartType?) {
       final recordName = mirrors.MirrorSystem.getName(mirror.simpleName);
       final type = mirror.reflectedType; // We can do this because isReallyARecord makes sure that this function is only called when there is a reflected type - Record
@@ -61,7 +59,7 @@ abstract class AbstractRecordLinkDeclarationSupport extends AbstractFunctionLink
 
       final fields = <RecordFieldDeclaration>[];
 
-      for (final field in namedFields) {
+      for (final field in namedFields?.fields ?? []) {
         fields.add(await _generateField(field, package, libraryUri));
       }
 
@@ -71,14 +69,13 @@ abstract class AbstractRecordLinkDeclarationSupport extends AbstractFunctionLink
       }
 
       return StandardRecordLinkDeclaration(
-        name: recordDartType.getDisplayString(),
+        name: recordDartType.toString(),
         type: type,
         pointerType: type,
         qualifiedName: buildQualifiedName(recordName, libraryUri),
         isPublic: !mirror.isPrivate,
         isSynthetic: false,
-        dartType: recordDartType,
-        isNullable: recordDartType.nullabilitySuffix == NullabilitySuffix.question,
+        isNullable: checkTypeAnnotationNullable(recordDartType),
         canonicalUri: mirror.location?.sourceUri ?? Uri.parse(libraryUri),
         referenceUri: mirror.location?.sourceUri ?? Uri.parse(libraryUri),
         fields: fields,
@@ -88,12 +85,12 @@ abstract class AbstractRecordLinkDeclarationSupport extends AbstractFunctionLink
     }
   }
 
-  /// Determines whether the provided [DartType] represents a **record type**
-  /// and returns the corresponding analyzer [RecordType] if found.
+  /// Determines whether the provided [AnalyzedTypeAnnotation] represents a **record type**
+  /// and returns the corresponding analyzer [AnalyzedRecordTypeAnnotation] if found.
   ///
   /// This method performs a **recursive unwrapping strategy** to handle cases
   /// where records are nested inside function return types. In particular:
-  /// - If [type] is a [RecordType], it is returned directly.
+  /// - If [type] is a [AnalyzedRecordTypeAnnotation], it is returned directly.
   /// - If [type] is a [FunctionType], its return type is inspected recursively.
   /// - All other types are treated as non-records.
   ///
@@ -101,17 +98,17 @@ abstract class AbstractRecordLinkDeclarationSupport extends AbstractFunctionLink
   /// higher-order functions that return records without duplicating logic.
   ///
   /// ### Parameters
-  /// - [type] — The analyzer [DartType] to inspect.
+  /// - [type] — The analyzer [AnalyzedTypeAnnotation] to inspect.
   ///
   /// ### Returns
-  /// The resolved [RecordType] if the type (or its return type) is a record;
+  /// The resolved [AnalyzedRecordTypeAnnotation] if the type (or its return type) is a record;
   /// otherwise, `null`.
-  RecordType? _determineAndReturnRecordType(DartType type) {
-    if (type case RecordType type) {
+  AnalyzedRecordTypeAnnotation? _determineAndReturnRecordType(AnalyzedTypeAnnotation? type) {
+    if (type case AnalyzedRecordTypeAnnotation type?) {
       return type;
     }
 
-    if (type case FunctionType type) {
+    if (type case AnalyzedGenericFunctionTypeAnnotation type) {
       return _determineAndReturnRecordType(type.returnType);
     }
 
@@ -141,7 +138,7 @@ abstract class AbstractRecordLinkDeclarationSupport extends AbstractFunctionLink
   /// ### Returns
   /// A [Future] that completes with a fully populated
   /// [RecordFieldDeclaration] describing the record field.
-  Future<RecordFieldDeclaration> _generateField(RecordTypeField field, Package package, String libraryUri, [int? position]) async {
+  Future<RecordFieldDeclaration> _generateField(AnalyzedRecordTypeAnnotationField field, Package package, String libraryUri, [int? position]) async {
     final fieldType = await findRuntimeTypeFromDartType(field.type, libraryUri, package);
     final fieldMirror = mirrors.reflectType(fieldType);
     final fieldClassName = mirrors.MirrorSystem.getName(fieldMirror.simpleName);
@@ -150,28 +147,27 @@ abstract class AbstractRecordLinkDeclarationSupport extends AbstractFunctionLink
     final link = await getLinkDeclaration(fieldMirror, package, uri, field.type);
     List<LinkDeclaration> arguments = [];
 
-    if (field.type case InterfaceType dartType) {
-      final typeArgs = dartType.typeArguments;
+    if (field.type case AnalyzedNamedType dartType) {
+      final typeArgs = dartType.typeArguments?.arguments ?? <AnalyzedTypeAnnotation>[];
       List<mirrors.TypeMirror> typeArguments = [];
 
       for (final arg in typeArgs) {
-        typeArguments.add(await _getMirror(arg, package, libraryUri));
+        typeArguments.add(await getMirroredTypeAnnotation(arg, package, libraryUri));
       }
 
       arguments = await extractTypeArgumentAsLinks(typeArguments, typeArgs, package, libraryUri);
     }
 
     return StandardRecordFieldDeclaration(
-      name: field is RecordTypeNamedField ? field.name : "Unnamed",
+      name: field is AnalyzedRecordTypeAnnotationNamedField ? field.name.toString() : field.name?.toString() ?? "Unnamed",
       isPublic: true,
       isSynthetic: false,
       type: fieldType,
       position: position ?? -1,
-      isNullable: field.type.nullabilitySuffix == NullabilitySuffix.question,
+      isNullable: checkTypeAnnotationNullable(field.type),
       pointerType: fieldType,
       qualifiedName: buildQualifiedName(fieldClassName, uri),
-      dartType: field.type,
-      fieldType: field,
+      isNamed: field is AnalyzedRecordTypeAnnotationNamedField,
       fieldLink: StandardLinkDeclaration(
         name: link.getName(),
         type: link.getType(),
@@ -180,34 +176,9 @@ abstract class AbstractRecordLinkDeclarationSupport extends AbstractFunctionLink
         qualifiedName: link.getPointerQualifiedName(),
         canonicalUri: link.getCanonicalUri(),
         referenceUri: link.getReferenceUri(),
-        variance: link.getVariance(),
-        upperBound: link.getUpperBound(),
-        dartType: link.getDartType(),
         isPublic: link.getIsPublic(),
         isSynthetic: link.getIsSynthetic(),
       )
     );
-  }
-
-  /// Resolves a runtime [mirrors.TypeMirror] from an analyzer [DartType].
-  ///
-  /// This helper bridges the analyzer and reflection worlds by:
-  /// - Resolving the concrete runtime [Type] associated with [dartType]
-  /// - Reflecting that runtime type into a [mirrors.TypeMirror]
-  ///
-  /// It is primarily used during record-field processing to enable
-  /// reflection-based extraction of type metadata that is not available
-  /// directly from analyzer structures.
-  ///
-  /// ### Parameters
-  /// - [dartType] — The analyzer type to resolve.
-  /// - [package] — The package context used for lookup.
-  /// - [libraryUri] — The URI of the declaring library.
-  ///
-  /// ### Returns
-  /// A [Future] that completes with the corresponding [mirrors.TypeMirror].
-  Future<mirrors.TypeMirror> _getMirror(DartType dartType, Package package, String libraryUri) async {
-    final type = await findRuntimeTypeFromDartType(dartType, libraryUri, package);
-    return mirrors.reflectType(type);
   }
 }

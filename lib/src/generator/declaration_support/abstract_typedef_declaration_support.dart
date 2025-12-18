@@ -10,9 +10,6 @@ import 'dart:async';
 import 'dart:ffi';
 import 'dart:mirrors' as mirrors;
 
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
 import '../../declaration/declaration.dart';
@@ -124,31 +121,26 @@ abstract class AbstractTypedefDeclarationSupport extends AbstractConstructorDecl
   @protected
   Future<TypedefDeclaration> generateTypedef(mirrors.TypedefMirror typedefMirror, Package package, String libraryUri, Uri sourceUri) async {
     final typedefName = mirrors.MirrorSystem.getName(typedefMirror.simpleName);
-    final typedefElement = await getTypedefElement(typedefName, sourceUri);
-    final dartType = typedefElement?.aliasedType;
+    final typedefElement = await getAnalyzedTypeAliasDeclaration(typedefName, sourceUri);
+    final dartType = typedefElement?.returnType;
 
     Type type = typedefMirror.hasReflectedType ? typedefMirror.reflectedType : typedefMirror.runtimeType;
-    final annotations = await extractAnnotations(typedefMirror.metadata, libraryUri, sourceUri, package, typedefElement?.metadata.annotations);
+    final annotations = await extractAnnotations(typedefMirror.metadata, libraryUri, sourceUri, package, typedefElement?.metadata);
     type = await resolveGenericAnnotationIfNeeded(type, typedefMirror, package, libraryUri, sourceUri, typedefName);
 
-    StandardTypedefDeclaration reflectedTypedef = StandardTypedefDeclaration(
+    return StandardTypedefDeclaration(
       name: typedefName,
       type: type,
-      element: typedefElement,
-      dartType: dartType,
       qualifiedName: buildQualifiedName(typedefName, (typedefMirror.location?.sourceUri ?? Uri.parse(libraryUri)).toString()),
       parentLibrary: await getLibrary(libraryUri),
       aliasedType: await getLinkDeclaration(typedefMirror.referent, package, libraryUri, dartType),
       isNullable: false,
-      isPublic: typedefElement?.isPublic ?? !isInternal(typedefName),
+      isPublic: !isInternal(typedefName),
       isSynthetic: typedefElement?.isSynthetic ?? isSynthetic(typedefName),
       typeArguments: await extractTypeVariableAsLinks(typedefMirror.typeVariables, typedefElement?.typeParameters, package, libraryUri),
       annotations: annotations,
       sourceLocation: sourceUri,
       referent: await generateFunctionLinkDeclarationFromMirror(typedefMirror.referent, null, package, libraryUri)
     );
-
-    typeCache[type] = reflectedTypedef;
-    return reflectedTypedef;
   }
 }

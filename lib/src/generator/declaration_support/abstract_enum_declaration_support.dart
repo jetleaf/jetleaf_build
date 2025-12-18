@@ -9,8 +9,6 @@
 import 'dart:async';
 import 'dart:mirrors' as mirrors;
 
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
 import '../../builder/runtime_builder.dart';
@@ -181,28 +179,26 @@ abstract class AbstractEnumDeclarationSupport extends AbstractMixinDeclarationSu
     RuntimeBuilder.logFullyVerboseInfo(logMessage, level: 1);
 
     final result = await RuntimeBuilder.timeExecution(() async {
-      final sourceCode = sourceCache[sourceUri.toString()] ?? await readSourceCode(sourceUri);
-      final enumElement = await getEnumElement(enumName, sourceUri);
-      final dartType = enumElement?.thisType;
+      final sourceCode = await readSourceCode(sourceUri);
+      final analyzedEnum = await getAnalyzedEnumDeclaration(enumName, sourceUri);
+      // final dartType = analyzedEnum?.thisType;
       type = await resolveGenericAnnotationIfNeeded(type, enumMirror, package, libraryUri, sourceUri, enumName);
 
       StandardEnumDeclaration reflectedEnum = StandardEnumDeclaration(
         name: enumName,
         type: type,
-        element: enumElement,
-        dartType: dartType,
-        isPublic: enumElement?.isPublic ?? !isInternal(enumName),
-        isSynthetic: enumElement?.isSynthetic ?? isSynthetic(enumName),
+        isPublic: !isInternal(enumName),
+        isSynthetic: analyzedEnum?.isSynthetic ?? isSynthetic(enumName),
         qualifiedName: buildQualifiedName(enumName, (enumMirror.location?.sourceUri ?? Uri.parse(libraryUri)).toString()),
         parentLibrary: await getLibrary(libraryUri),
         values: [],
         isNullable: false,
-        typeArguments: await extractTypeVariableAsLinks(enumMirror.typeVariables, enumElement?.typeParameters, package, libraryUri),
-        annotations: await extractAnnotations(enumMirror.metadata, libraryUri, sourceUri, package, enumElement?.metadata.annotations),
+        typeArguments: await extractTypeVariableAsLinks(enumMirror.typeVariables, analyzedEnum?.typeParameters, package, libraryUri),
+        annotations: await extractAnnotations(enumMirror.metadata, libraryUri, sourceUri, package, analyzedEnum?.metadata),
         sourceLocation: sourceUri,
-        interfaces: await extractInterfacesAsLink(enumMirror, enumElement, package, libraryUri),
-        superClass: await extractSupertypeAsLink(enumMirror, enumElement, package, libraryUri),
-        mixins: await extractMixinsAsLink(enumMirror, enumElement, package, libraryUri)
+        interfaces: await extractInterfacesAsLink(enumMirror, analyzedEnum?.implementsClause, package, libraryUri),
+        superClass: await extractSupertypeAsLink(enumMirror, null, package, libraryUri),
+        mixins: await extractMixinsAsLink(enumMirror, analyzedEnum?.withClause, package, libraryUri)
       );
 
       final values = <EnumFieldDeclaration>[];
@@ -238,7 +234,7 @@ abstract class AbstractEnumDeclarationSupport extends AbstractMixinDeclarationSu
       // Process constructors with analyzer support
       for (final constructor in enumMirror.declarations.values.whereType<mirrors.MethodMirror>()) {
         if (constructor.isConstructor) {
-          constructors.add(await generateConstructor(constructor, enumElement, package, libraryUri, sourceUri, enumName, reflectedEnum));
+          constructors.add(await generateConstructor(constructor, analyzedEnum?.members, package, libraryUri, sourceUri, enumName, reflectedEnum));
         }
       }
 
@@ -248,20 +244,17 @@ abstract class AbstractEnumDeclarationSupport extends AbstractMixinDeclarationSu
           continue; // Enum fields
         }
 
-        fields.add(await generateField(field, enumElement, package, libraryUri, sourceUri, enumName, reflectedEnum, sourceCode, isBuiltIn));
+        fields.add(await generateField(field, analyzedEnum?.members, package, libraryUri, sourceUri, enumName, reflectedEnum, sourceCode, isBuiltIn));
       }
 
       // Process methods with analyzer support
       for (final method in enumMirror.declarations.values.whereType<mirrors.MethodMirror>()) {
         if (!method.isConstructor) {
-          methods.add(await generateMethod(method, enumElement, package, libraryUri, sourceUri, enumName, reflectedEnum));
+          methods.add(await generateMethod(method, analyzedEnum?.members, package, libraryUri, sourceUri, enumName, reflectedEnum));
         }
       }
 
-      reflectedEnum = reflectedEnum.updateWith(fields: fields, methods: methods, constructors: constructors, enumFields: values);
-      
-      typeCache[type] = reflectedEnum;
-      return reflectedEnum;
+      return reflectedEnum.updateWith(fields: fields, methods: methods, constructors: constructors, enumFields: values);
     });
 
     RuntimeBuilder.logFullyVerboseInfo("Completed ${logMessage.toLowerCase()} within ${result.getFormatted()}", trackWith: logMessage, level: 1);

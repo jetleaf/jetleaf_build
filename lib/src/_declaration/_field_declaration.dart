@@ -38,8 +38,6 @@ final class StandardFieldDeclaration extends StandardSourceDeclaration implement
   const StandardFieldDeclaration({
     required super.name,
     required super.type,
-    super.dartType,
-    super.element,
     required super.libraryDeclaration,
     LinkDeclaration? parentClass,
     required LinkDeclaration linkDeclaration,
@@ -132,6 +130,8 @@ final class StandardFieldDeclaration extends StandardSourceDeclaration implement
   @override
   Map<String, Object> toJson() {
     Map<String, Object> result = {};
+    result.addAll(super.toJson());
+
     result['declaration'] = 'field';
     result['name'] = getName();
 
@@ -160,6 +160,7 @@ final class StandardFieldDeclaration extends StandardSourceDeclaration implement
     result['isLate'] = getIsLate();
     result['isStatic'] = getIsStatic();
     result['isAbstract'] = getIsAbstract();
+    
     return result;
   }
 

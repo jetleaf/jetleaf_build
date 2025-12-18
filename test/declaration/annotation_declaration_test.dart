@@ -200,7 +200,6 @@ void main() async {
       final annotatedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'AnnotatedClass');
       
       final annotations = annotatedClass.getAnnotations();
-      print(annotations);
       expect(annotations, isNotEmpty);
       
       final simpleAnnotation = annotations.firstWhere((a) => a.getLinkDeclaration().getType() == SimpleAnnotation);
@@ -566,17 +565,6 @@ void main() async {
       expect(fieldsWithUserValues['required']!.getUserProvidedValue(), equals('test'));
     });
 
-    test('should handle element annotation if available', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
-      
-      final annotations = testClass.getAnnotations();
-      final firstAnnotation = annotations.first;
-      
-      final elementAnnotation = firstAnnotation.getElementAnnotation();
-      // This might be null if analyzer is not available
-      expect(elementAnnotation, anyOf(isNull, isNotNull));
-    });
-
     test('should correctly identify getDebugIdentifier', () {
       final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
       
@@ -586,20 +574,6 @@ void main() async {
       expect(firstAnnotation.getDebugIdentifier(), isNotEmpty);
       expect(firstAnnotation.getDebugIdentifier(), contains('Annotation'));
       expect(firstAnnotation.getDebugIdentifier(), contains(firstAnnotation.getLinkDeclaration().getName()));
-    });
-
-    test('should handle analyzer support if available', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
-      
-      final annotations = testClass.getAnnotations();
-      final firstAnnotation = annotations.first;
-      
-      expect(firstAnnotation.hasAnalyzerSupport(), anyOf(isTrue, isFalse));
-      
-      if (firstAnnotation.hasAnalyzerSupport()) {
-        expect(firstAnnotation.getDartType(), isNotNull);
-        expect(firstAnnotation.getElement(), isNotNull);
-      }
     });
   });
 
@@ -672,22 +646,6 @@ void main() async {
       
       expect(firstField.getDebugIdentifier(), isNotEmpty);
       expect(firstField.getDebugIdentifier(), contains('annotation_field_value'));
-    });
-
-    test('should handle analyzer support if available', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
-      
-      final annotations = testClass.getAnnotations();
-      final firstAnnotation = annotations.first;
-      final fields = firstAnnotation.getFields();
-      final firstField = fields.first;
-      
-      expect(firstField.hasAnalyzerSupport(), anyOf(isTrue, isFalse));
-      
-      if (firstField.hasAnalyzerSupport()) {
-        expect(firstField.getDartType(), isNotNull);
-        expect(firstField.getElement(), isNotNull);
-      }
     });
   });
 

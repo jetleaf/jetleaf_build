@@ -33,8 +33,6 @@ part of '../declaration/declaration.dart';
 /// {@endtemplate}
 final class StandardLibraryDeclaration extends LibraryDeclaration with EqualsAndHashCode {
   final String _uri;
-  final DartType? _dartType;
-  final Element? _element;
   final Package _parentPackage;
   final List<AnnotationDeclaration> _annotations;
   final Uri? _sourceLocation;
@@ -46,8 +44,6 @@ final class StandardLibraryDeclaration extends LibraryDeclaration with EqualsAnd
   /// {@macro standard_library}
   StandardLibraryDeclaration({
     required String uri,
-    DartType? dartType,
-    Element? element,
     required Package parentPackage,
     required List<SourceDeclaration> declarations,
     required List<RecordLinkDeclaration> recordLinkDeclarations,
@@ -58,8 +54,6 @@ final class StandardLibraryDeclaration extends LibraryDeclaration with EqualsAnd
   })  : _uri = uri,
         _isPublic = isPublic,
         _isSynthetic = isSynthetic,
-        _dartType = dartType,
-        _element = element,
         _parentPackage = parentPackage,
         _declarations = declarations,
         _annotations = annotations,
@@ -74,12 +68,6 @@ final class StandardLibraryDeclaration extends LibraryDeclaration with EqualsAnd
 
   @override
   bool getIsSynthetic() => _isSynthetic;
-
-  @override
-  DartType? getDartType() => _dartType;
-
-  @override
-  Element? getElement() => _element;
 
   @override
   List<AnnotationDeclaration> getAnnotations() => List.unmodifiable(_annotations);
@@ -125,17 +113,13 @@ final class StandardLibraryDeclaration extends LibraryDeclaration with EqualsAnd
     List<AnnotationDeclaration>? annotations,
     List<RecordLinkDeclaration>? records,
     Uri? sourceLocation,
-    DartType? dartType,
-    Element? element,
     bool? isPublic,
     bool? isSynthetic,
   }) {
     return StandardLibraryDeclaration(
       uri: uri ?? _uri,
-      dartType: dartType ?? _dartType,
       isPublic: isPublic ?? getIsPublic(),
       isSynthetic: isSynthetic ?? getIsSynthetic(),
-      element: element ?? _element,
       parentPackage: parentPackage ?? _parentPackage,
       recordLinkDeclarations: records ?? _recordLinkDeclarations,
       declarations: declarations ?? _declarations,

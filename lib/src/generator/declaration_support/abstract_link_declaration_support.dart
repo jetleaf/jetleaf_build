@@ -19,6 +19,7 @@ import '../../classes.dart';
 import '../../declaration/declaration.dart';
 import '../../utils/dart_type_resolver.dart';
 import '../../utils/generic_type_parser.dart';
+import '../abstract_element_support.dart';
 import '../abstract_type_support.dart';
 
 /// {@template abstract_link_declaration_support}
@@ -31,7 +32,7 @@ import '../abstract_type_support.dart';
 /// - **Cycle detection**: Prevents infinite recursion when types reference themselves,
 ///   such as in recursive generics or bounded type parameters.
 /// - **Caching**: Stores previously generated link declarations to avoid redundant computation.
-/// - **Type resolution**: Resolves runtime types from both analyzer [DartType] and mirrors,
+/// - **Type resolution**: Resolves runtime types from both analyzer [AnalyzedTypeAnnotation] and mirrors,
 ///   including handling of generics, parameterized types, function types, and special types
 ///   like `dynamic` and `void`.
 /// - **Variance inference**: Supports variance for type parameters (covariant, contravariant, invariant),
@@ -47,7 +48,7 @@ import '../abstract_type_support.dart';
 /// this class for framework-specific type linking behavior.
 ///
 /// ### Responsibilities
-/// 1. Generate link declarations from `DartType` or mirror objects.
+/// 1. Generate link declarations from `AnalyzedTypeAnnotation` or mirror objects.
 /// 2. Maintain caches to avoid repeated computation and infinite recursion.
 /// 3. Resolve runtime types accurately, including generics and specialized types.
 /// 4. Infer type variances and bounds for proper type representation.
@@ -112,17 +113,17 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
     linkGenerationInProgress.clear();
   }
 
-  /// Retrieves a [LinkDeclaration] for a given type, using either the analyzer [DartType]
+  /// Retrieves a [LinkDeclaration] for a given type, using either the analyzer [AnalyzedTypeAnnotation]
   /// or mirror [mirrors.TypeMirror] as the source of truth. Handles special types and provides
   /// fallbacks for unknown types.
   ///
   /// - [typeMirror]: The mirror representing the type at runtime.
   /// - [package]: The package context used for type resolution.
   /// - [libraryUri]: The URI of the library containing the type.
-  /// - [dartType]: Optional analyzer [DartType] for more precise resolution.
+  /// - [dartType]: Optional analyzer [AnalyzedTypeAnnotation] for more precise resolution.
   ///
   /// Workflow:
-  /// 1. If a [DartType] is provided, attempts to generate a link declaration from it.
+  /// 1. If a [AnalyzedTypeAnnotation] is provided, attempts to generate a link declaration from it.
   /// 2. Otherwise, attempts to generate from the mirror.
   /// 3. If generation fails, checks for special cases:
   ///    - `dynamic` → creates a dynamic declaration.
@@ -131,7 +132,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   ///
   /// Returns a [LinkDeclaration] representing the type.
   @protected
-  Future<LinkDeclaration> getLinkDeclaration(mirrors.TypeMirror typeMirror, Package package, String libraryUri, [DartType? dartType]) async {
+  Future<LinkDeclaration> getLinkDeclaration(mirrors.TypeMirror typeMirror, Package package, String libraryUri, [AnalyzedTypeAnnotation? dartType]) async {
     if (await generateLinkDeclaration(typeMirror, package, libraryUri, dartType) case final result?) {
       return result;
     }
@@ -184,10 +185,8 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
     qualifiedName: Void.getQualifiedName(),
     canonicalUri: Void.getUri(),
     referenceUri: Void.getUri(),
-    variance: TypeVariance.invariant,
     isPublic: true,
     isSynthetic: false,
-    dartType: null
   );
 
   /// Creates a [LinkDeclaration] representing the Dart `dynamic` type.
@@ -221,10 +220,8 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
     qualifiedName: Dynamic.getQualifiedName(),
     canonicalUri: Dynamic.getUri(),
     referenceUri: Dynamic.getUri(),
-    variance: TypeVariance.invariant,
     isPublic: true,
     isSynthetic: false,
-    dartType: null
   );
 
   /// Creates a fallback [LinkDeclaration] representing Dart’s `Object` type.
@@ -257,7 +254,6 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
     qualifiedName: buildQualifiedName('Object', await findRealClassUriFromMirror(mirrors.reflectType(Object), null) ?? 'dart:core'),
     isPublic: true,
     isSynthetic: false,
-    dartType: null
   );
 
   /// Resolves a [TypeParameterElement] by index or name.
@@ -282,13 +278,13 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   /// ### Returns
   /// - The resolved [TypeParameterElement], if found
   /// - `null` if no matching parameter exists
-  TypeParameterElement? _getParameter(String paramName, int index, List<TypeParameterElement>? parameters) {
-    if (parameters != null && index < parameters.length) {
-      return parameters[index];
-    }
+  // TypeParameterElement? _getParameter(String paramName, int index, List<TypeParameterElement>? parameters) {
+  //   if (parameters != null && index < parameters.length) {
+  //     return parameters[index];
+  //   }
 
-    return parameters?.where((a) => a.displayName == paramName).firstOrNull;
-  }
+  //   return parameters?.where((a) => a.displayName == paramName).firstOrNull;
+  // }
 
   /// Extracts **type arguments** (generic type parameters) as a list of [LinkDeclaration]s,
   /// with cycle detection to avoid infinite recursion when processing recursive or mutually
@@ -310,7 +306,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   /// Returns a list of [LinkDeclaration] objects for all type arguments. Returns an empty
   /// list if there are no type parameters.
   @protected
-  Future<List<LinkDeclaration>> extractTypeVariableAsLinks(List<mirrors.TypeVariableMirror> mirrorTypeVars, List<TypeParameterElement>? analyzerTypeParams, Package package, String libraryUri) async {
+  Future<List<LinkDeclaration>> extractTypeVariableAsLinks(List<mirrors.TypeVariableMirror> mirrorTypeVars, AnalyzedTypeParameterList? analyzerTypeParams, Package package, String libraryUri) async {
     final typeArgs = <LinkDeclaration>[];
   
     for (int i = 0; i < mirrorTypeVars.length; i++) {
@@ -321,7 +317,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
         typeVarName = "Object";
       }
 
-      final analyzerTypeParam = _getParameter(typeVarName, i, analyzerTypeParams);
+      // final analyzerTypeParam = _getParameter(typeVarName, i, analyzerTypeParams);
       final typeKey = 'typevar_${typeVarName}_${libraryUri}_$i';
     
       // Skip if already processing to prevent infinite recursion
@@ -333,33 +329,16 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
       linkGenerationInProgress.add(typeKey);
     
       try {
-        // Get upper bound (with cycle protection)
-        LinkDeclaration? upperBound;
-        if (mirrorTypeVar.upperBound != mirrorTypeVar.owner && mirrorTypeVar.upperBound.runtimeType.toString() != 'dynamic') {
-          final boundName = mirrors.MirrorSystem.getName(mirrorTypeVar.upperBound.simpleName);
-          final boundKey = 'mirror_${boundName}_${mirrorTypeVar.upperBound.runtimeType}_${mirrorTypeVar.upperBound.hashCode}';
-          if (!linkGenerationInProgress.contains(boundKey)) {
-            upperBound = await getLinkDeclaration(mirrorTypeVar.upperBound, package, libraryUri, analyzerTypeParam?.bound);
-          }
-        }
-      
-        // Determine variance
-        final variance = getVarianceFromTypeParameter(analyzerTypeParam, mirrorTypeVar);
-      
         final typeArgLink = StandardLinkDeclaration(
           name: typeVarName,
           type: type,
           pointerType: type,
-          dartType: analyzerTypeParam?.bound,
           typeArguments: [], // Type parameters don't have their own type arguments
           qualifiedName: buildQualifiedName(typeVarName, libraryUri),
           canonicalUri: Uri.tryParse(libraryUri),
           referenceUri: Uri.tryParse(libraryUri),
-          variance: variance,
-          upperBound: upperBound,
           isPublic: !isInternal(typeVarName),
           isSynthetic: isSynthetic(typeVarName),
-          typeParameterElement: analyzerTypeParam
         );
       
         typeArgs.add(typeArgLink);
@@ -374,19 +353,19 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
 
   /// Extracts the **supertype** of a class as a [LinkDeclaration].
   ///
-  /// This method first attempts to use the analyzer's [InterfaceElement] if available.
+  /// This method first attempts to use the analyzer's [AnalyzedSuperClassClause] if available.
   /// If the analyzer data is not present, it falls back to using the `dart:mirrors`
   /// [mirrors.ClassMirror] to find the superclass.
   ///
   /// - [classMirror]: The mirror representing the class in the runtime system.
-  /// - [classElement]: The analyzer element representing the class, if available.
+  /// - [analyzedClass]: The analyzer element representing the class, if available.
   /// - [package]: The package context used to resolve type information.
   /// - [libraryUri]: The URI of the library containing the class.
   ///
   /// Returns a [LinkDeclaration] representing the superclass, or `null` if the class
   /// has no superclass (e.g., `Object`) or the supertype cannot be determined.
   @protected
-  Future<LinkDeclaration?> extractSupertypeAsLink(mirrors.ClassMirror classMirror, InterfaceElement? classElement, Package package, String libraryUri) async {
+  Future<LinkDeclaration?> extractSupertypeAsLink(mirrors.ClassMirror classMirror, AnalyzedSuperClassClause? analyzedClass, Package package, String libraryUri) async {
     if (classMirror.superclass case final superClass?) {
       final superClassName = mirrors.MirrorSystem.getName(superClass.simpleName);
       final className = mirrors.MirrorSystem.getName(classMirror.simpleName);
@@ -395,7 +374,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
       RuntimeBuilder.logFullyVerboseInfo(logMessage, level: 2);
       
       final result = await RuntimeBuilder.timeExecution(() async {
-        return await generateLinkDeclaration(superClass, package, libraryUri, classElement?.supertype);
+        return await generateLinkDeclaration(superClass, package, libraryUri, analyzedClass?.superclass);
       });
 
       RuntimeBuilder.logFullyVerboseInfo("Completed ${logMessage.toLowerCase()} within ${result.getFormatted()}", trackWith: logMessage, level: 2);
@@ -407,18 +386,18 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
 
   /// Extracts all **interfaces** implemented by a class as a list of [LinkDeclaration]s.
   ///
-  /// Uses the analyzer [InterfaceElement.interfaces] if available, otherwise
+  /// Uses the analyzer [AnalyzedInterfaceClause] if available, otherwise
   /// falls back to the mirror system [mirrors.ClassMirror.superinterfaces].
   ///
   /// - [classMirror]: The mirror representing the class at runtime.
-  /// - [classElement]: The analyzer element representing the class, if available.
+  /// - [analyzedClass]: The analyzer element representing the class, if available.
   /// - [package]: The package context used for type resolution.
   /// - [libraryUri]: The URI of the library containing the class.
   ///
   /// Returns a list of [LinkDeclaration] objects representing each interface. Returns
   /// an empty list if no interfaces are implemented or they cannot be resolved.
   @protected
-  Future<List<LinkDeclaration>> extractInterfacesAsLink(mirrors.ClassMirror classMirror, InterfaceElement? classElement, Package package, String libraryUri) async {
+  Future<List<LinkDeclaration>> extractInterfacesAsLink(mirrors.ClassMirror classMirror, AnalyzedInterfaceClause? analyzedClass, Package package, String libraryUri) async {
     final className = mirrors.MirrorSystem.getName(classMirror.simpleName);
 
     final logMessage = "Extracting interfaces for $className";
@@ -427,12 +406,12 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
     final result = await RuntimeBuilder.timeExecution(() async {
       final interfaces = <LinkDeclaration>[];
       final superInterfaces = classMirror.superinterfaces;
-      final elementInterfaces = classElement?.interfaces ?? <InterfaceType>[];
+      final analyzedInterfaces = analyzedClass?.interfaces.toList() ?? <AnalyzedNamedType>[];
 
       for (int i = 0; i < superInterfaces.length; i++) {
         final interfaceMirror = superInterfaces[i];
         final interfaceName = mirrors.MirrorSystem.getName(interfaceMirror.simpleName);
-        final interfaceType = elementInterfaces.where((c) => c.element.displayName == interfaceName).firstOrNull;
+        final interfaceType = analyzedInterfaces.where((c) => getNameFromAnalyzedTypeAnnotation(c) == interfaceName).firstOrNull;
 
         final logMessage = "Extracting $interfaceName interface for $className";
         RuntimeBuilder.logFullyVerboseInfo(logMessage, level: 3);
@@ -456,18 +435,18 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
 
   /// Extracts all **mixins** applied to a class as a list of [LinkDeclaration]s.
   ///
-  /// When the analyzer [InterfaceElement.mixins] is available, it uses it to
+  /// When the analyzer [AnalyzedMixinClause] is available, it uses it to
   /// extract mixin types. There is currently no fallback for mirrors for mixins.
   ///
   /// - [classMirror]: The mirror representing the class at runtime.
-  /// - [classElement]: The analyzer element representing the class, if available.
+  /// - [analyzedClass]: The analyzer element representing the class, if available.
   /// - [package]: The package context used for type resolution.
   /// - [libraryUri]: The URI of the library containing the class.
   ///
   /// Returns a list of [LinkDeclaration] objects representing each mixin applied to
   /// the class. Returns an empty list if no mixins are present.
   @protected
-  Future<List<LinkDeclaration>> extractMixinsAsLink(mirrors.ClassMirror classMirror, InterfaceElement? classElement, Package package, String libraryUri) async {
+  Future<List<LinkDeclaration>> extractMixinsAsLink(mirrors.ClassMirror classMirror, AnalyzedMixinClause? analyzedClass, Package package, String libraryUri) async {
     final className = mirrors.MirrorSystem.getName(classMirror.simpleName);
 
     final logMessage = "Extracting mixins for $className";
@@ -477,11 +456,11 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
       final mixins = <LinkDeclaration>[];
       final mixinMirrors = await _collectMixinsFromClassMirror(classMirror, libraryUri);
 
-      final mixinElements = classElement?.mixins ?? [];
+      final mixinElements = analyzedClass?.mixinTypes.toList() ?? <AnalyzedNamedType>[];
       for (int i = 0; i < mixinMirrors.length; i++) {
         final mixinMirror = mixinMirrors[i];
         final mixinName = mirrors.MirrorSystem.getName(mixinMirror.simpleName);
-        final mixinType = mixinElements.where((c) => c.element.displayName == mixinName).firstOrNull;
+        final mixinType = mixinElements.where((c) => getNameFromAnalyzedTypeAnnotation(c) == mixinName).firstOrNull;
 
         final logMessage = "Extracting $mixinName mixin for $className";
         RuntimeBuilder.logFullyVerboseInfo(logMessage, level: 3);
@@ -624,26 +603,26 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
     if (isSynthetic(name)) return false;
 
     final uri = mirror.location?.sourceUri ?? Uri.parse(libraryUri);
-    final sourceCode = sourceCache[uri.toString()] ??= await readSourceCode(uri);
+    final sourceCode = await readSourceCode(uri);
 
     return isMixinClass(sourceCode, name);
   }
 
   /// Extracts the **superclass constraints** of a mixin as a list of [LinkDeclaration]s.
   ///
-  /// If a [MixinElement] is provided, this method uses its
-  /// [MixinElement.superclassConstraints] to extract the upper bounds for the mixin.
+  /// If a [AnalyzedMixinOnClause] is provided, this method uses its
+  /// [AnalyzedMixinOnClause.superclassConstraints] to extract the upper bounds for the mixin.
   /// There is no mirror-based fallback for constraints.
   ///
   /// - [mixinMirror]: The mirror representing the mixin (used only for type context).
-  /// - [mixinElement]: The analyzer element representing the mixin, if available.
+  /// - [onClause]: The analyzer element representing the mixin, if available.
   /// - [package]: The package context used to resolve type information.
   /// - [libraryUri]: The URI of the library containing the mixin.
   ///
   /// Returns a list of [LinkDeclaration] objects representing the superclass constraints
   /// of the mixin. Returns an empty list if no constraints are defined.
   @protected
-  Future<List<LinkDeclaration>> extractMixinConstraintsAsLink(mirrors.ClassMirror mixinMirror, MixinElement? mixinElement, Package package, String libraryUri) async {
+  Future<List<LinkDeclaration>> extractMixinConstraintsAsLink(mirrors.ClassMirror mixinMirror, AnalyzedMixinOnClause? onClause, Package package, String libraryUri) async {
     final mixinName = mirrors.MirrorSystem.getName(mixinMirror.simpleName);
 
     final logMessage = "Extracting mixin constraints for $mixinName";
@@ -663,11 +642,11 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
         }
       }
 
-      final superConstraints = mixinElement?.superclassConstraints ?? [];
+      final superConstraints = onClause?.superclassConstraints ?? <AnalyzedNamedType>[];
       for (int i = 0; i < constraintMirrors.length; i++) {
         final constraintMirror = constraintMirrors[i];
         final constraintName = mirrors.MirrorSystem.getName(constraintMirror.simpleName);
-        final constraintType = superConstraints.where((c) => c.element.displayName == constraintName).firstOrNull;
+        final constraintType = superConstraints.where((c) => getNameFromAnalyzedTypeAnnotation(c) == constraintName).firstOrNull;
 
         final logMessage = "Extracting $constraintName mixin constraint for $mixinName";
         RuntimeBuilder.logFullyVerboseInfo(logMessage, level: 4);
@@ -692,7 +671,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   /// Extracts function type arguments and converts them into [LinkDeclaration]s.
   ///
   /// This method performs **intelligent type argument resolution** by combining
-  /// reflection-based type mirrors with analyzer-based [DartType] information
+  /// reflection-based type mirrors with analyzer-based [AnalyzedTypeAnnotation] information
   /// when available.
   ///
   /// To prevent infinite recursion during link generation, each type argument
@@ -701,7 +680,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   /// ### Resolution Strategy
   /// 1. Iterate over all reflected type arguments.
   /// 2. Attempt to match each mirror argument with a corresponding analyzer
-  ///    [DartType] using the display name.
+  ///    [AnalyzedTypeAnnotation] using the display name.
   /// 3. Generate a [LinkDeclaration] for each argument.
   /// 4. Deduplicate results using a set.
   ///
@@ -719,13 +698,13 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   /// - Order is not guaranteed due to internal deduplication.
   /// - Unresolvable arguments are silently ignored.
   /// - Cycle prevention is enforced via `linkGenerationInProgress`.
-  Future<List<LinkDeclaration>> extractTypeArgumentAsLinks(List<mirrors.TypeMirror> typeArguments, List<DartType> dartTypeArguments, Package package, String libraryUri) async {
+  Future<List<LinkDeclaration>> extractTypeArgumentAsLinks(List<mirrors.TypeMirror> typeArguments, List<AnalyzedTypeAnnotation> dartTypeArguments, Package package, String libraryUri) async {
     final typeArgumentLinks = <LinkDeclaration>{};
 
     for (final arg in typeArguments) {
       final argName = mirrors.MirrorSystem.getName(arg.simpleName);
       final argKey = 'mirror_arg_${argName}_${arg.hashCode}';
-      final dartArg = dartTypeArguments.where((c) => c.element?.displayName == argName).firstOrNull;
+      final dartArg = dartTypeArguments.where((c) => getNameFromAnalyzedTypeAnnotation(c) == argName).firstOrNull;
       
       if (!linkGenerationInProgress.contains(argKey)) {
         final argLink = await generateLinkDeclaration(arg, package, libraryUri, dartArg);
@@ -776,13 +755,13 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   ///
   /// ### Example
   /// ```dart
-  /// // Given:
-  /// // class A {}
-  /// // class _Synthetic implements A {}
-  /// // class B implements _Synthetic {}
+  /// Given:
+  /// class A {}
+  /// class _Synthetic implements A {}
+  /// class B implements _Synthetic {}
   ///
   /// final constraints = _gatherConstraintsFromMirror(BMirror.superinterfaces);
-  /// // Result: [AMirror]
+  /// Result: [AMirror]
   /// ```
   ///
   /// This method is typically used during **generic constraint resolution**
@@ -805,7 +784,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   }
 
   /// Generates a [LinkDeclaration] by intelligently combining information from runtime mirror
-  /// and analyzer DartType, with **mirror data taking precedence** and DartType providing
+  /// and analyzer AnalyzedTypeAnnotation, with **mirror data taking precedence** and AnalyzedTypeAnnotation providing
   /// fallback information when mirror data is insufficient or unavailable.
   ///
   /// This unified method handles:
@@ -814,35 +793,35 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   /// - Type parameters with variance and upper bound resolution
   /// - @Generic annotations for type resolution
   /// - Robust cycle detection and caching
-  /// - Intelligent fallback: Mirror → DartType → defaults
+  /// - Intelligent fallback: Mirror → AnalyzedTypeAnnotation → defaults
   ///
   /// ## Resolution Priority
   /// 1. **Mirror data** (primary source - always available)
-  /// 2. **DartType data** (supplementary when mirror is incomplete or ambiguous)
+  /// 2. **AnalyzedTypeAnnotation data** (supplementary when mirror is incomplete or ambiguous)
   /// 3. **Defaults/inference** (when both sources lack information)
   ///
   /// ## Use Cases
-  /// - Complete mirror with partial DartType → Mirror data used, DartType fills gaps
-  /// - Mirror with ambiguous generic info + DartType → Combined resolution
-  /// - Mirror-only (no DartType) → Mirror data used exclusively
+  /// - Complete mirror with partial AnalyzedTypeAnnotation → Mirror data used, AnalyzedTypeAnnotation fills gaps
+  /// - Mirror with ambiguous generic info + AnalyzedTypeAnnotation → Combined resolution
+  /// - Mirror-only (no AnalyzedTypeAnnotation) → Mirror data used exclusively
   /// - Cyclic types → Safe termination with cycle detection
   ///
   /// Parameters:
   /// - [mirror]: Primary [mirrors.TypeMirror] source (always non-null)
-  /// - [dartType]: Supplementary [DartType] source (null if unavailable from analyzer)
+  /// - [dartType]: Supplementary [AnalyzedTypeAnnotation] source (null if unavailable from analyzer)
   /// - [package]: The [Package] context for type resolution
   /// - [libraryUri]: URI of the declaring library
   ///
   /// Returns a [Future<LinkDeclaration?>] with the best possible type resolution,
   /// or null if the type cannot be resolved at all.
   @protected
-  Future<LinkDeclaration?> generateLinkDeclaration(mirrors.TypeMirror mirror, Package package, String libraryUri, DartType? dartType) async {
+  Future<LinkDeclaration?> generateLinkDeclaration(mirrors.TypeMirror mirror, Package package, String libraryUri, AnalyzedTypeAnnotation? dartType) async {
     if (isReallyARecordType(mirror, dartType)) {
       return await generateRecordLinkDeclaration(mirror, package, libraryUri, dartType!);
     }
     
     // Handle function types specially
-    if (await generateFunctionLinkDeclaration(mirror, dartType is FunctionType ? dartType : null, package, libraryUri) case final result?) {
+    if (await generateFunctionLinkDeclaration(mirror, dartType is AnalyzedGenericFunctionTypeAnnotation ? dartType : null, package, libraryUri) case final result?) {
       return result;
     }
 
@@ -859,7 +838,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
     linkGenerationInProgress.add(typeIdentity);
 
     try {
-      // PHASE 1: Extract core type information (mirror primary, DartType fallback)
+      // PHASE 1: Extract core type information (mirror primary, AnalyzedTypeAnnotation fallback)
       final coreInfo = await _extractCoreTypeInfo(mirror, dartType, package, libraryUri);
       
       if (coreInfo.name.isEmpty) {
@@ -871,12 +850,9 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
       List<LinkDeclaration> typeArguments = [];
 
       if (mirror is mirrors.ClassMirror) {
-        final dartArgs = dartType is InterfaceType ? dartType.typeArguments : <DartType>[];
-        typeArguments.addAll(await extractTypeArgumentAsLinks(mirror.typeArguments, dartArgs, package, libraryUri));
+        final dartArgs = dartType is AnalyzedNamedType ? dartType.typeArguments?.arguments : <AnalyzedTypeAnnotation>[];
+        typeArguments.addAll(await extractTypeArgumentAsLinks(mirror.typeArguments, dartArgs ?? [], package, libraryUri));
       }
-
-      // PHASE 3: Extract variance and bounds (for type parameters)
-      final varianceBounds = await _extractVarianceAndBounds(mirror, dartType, package, libraryUri);
 
       // PHASE 4: Build the final link declaration
       return StandardLinkDeclaration(
@@ -887,9 +863,6 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
         qualifiedName: buildQualifiedName(coreInfo.name, coreInfo.sourceUri),
         canonicalUri: Uri.tryParse(coreInfo.sourceUri),
         referenceUri: Uri.tryParse(libraryUri),
-        variance: varianceBounds.variance,
-        upperBound: varianceBounds.upperBound,
-        dartType: dartType,
         isPublic: _determineIsPublic(coreInfo.name, mirror, dartType),
         isSynthetic: _determineIsSynthetic(coreInfo.name, mirror, dartType),
       );
@@ -901,7 +874,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   }
 
   /// Extracts **core type information** from a [mirrors.TypeMirror], with
-  /// [DartType] as a fallback.
+  /// [AnalyzedTypeAnnotation] as a fallback.
   ///
   /// This method produces a fully materialized [_TypeInfo] object containing:
   /// - Canonical type name
@@ -912,17 +885,16 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   ///
   /// The extraction process prefers mirror-based metadata, resolving
   /// generic annotations when present. If mirror resolution fails, the
-  /// method falls back to analyzer ([DartType]) metadata for robustness.
+  /// method falls back to analyzer ([AnalyzedTypeAnnotation]) metadata for robustness.
   ///
   /// ### Resolution Strategy
   /// 1. Start with mirror-based extraction:
   ///    - Extract type name and source URI
   ///    - Determine actual runtime type (with @Generic resolution)
   ///    - Determine base runtime type (original declaration for parameterized types)
-  /// 2. On failure, attempt fallback via [_extractCoreTypeInfoFromDartType].
-  /// 3. Extract a display-friendly name:
-  ///    - Prefer DartType formatting when available
-  /// 4. Refine source URI using DartType library information if present
+  /// 2. Extract a display-friendly name:
+  ///    - Prefer AnalyzedTypeAnnotation formatting when available
+  /// 3. Refine source URI using AnalyzedTypeAnnotation library information if present
   ///
   /// ### Parameters
   /// - [mirror] — The reflection-based type mirror.
@@ -932,7 +904,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   ///
   /// ### Returns
   /// A [_TypeInfo] object representing the fully resolved type.
-  Future<_TypeInfo> _extractCoreTypeInfo(mirrors.TypeMirror mirror, DartType? dartType, Package package, String libraryUri) async {
+  Future<_TypeInfo> _extractCoreTypeInfo(mirrors.TypeMirror mirror, AnalyzedTypeAnnotation? dartType, Package package, String libraryUri) async {
     // Start with mirror-based extraction
     String typeName = mirrors.MirrorSystem.getName(mirror.simpleName);
     String sourceUri = mirror.location?.sourceUri.toString() ?? libraryUri;
@@ -959,30 +931,17 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
         baseRuntimeType = actualRuntimeType;
       }
     } catch (e) {
-      // Mirror extraction failed, try DartType fallback
-      if (dartType != null) {
-        return await _extractCoreTypeInfoFromDartType(dartType, package, libraryUri, typeName);
-      }
-      
       // Both failed, use defaults
       actualRuntimeType = mirror.runtimeType;
       baseRuntimeType = mirror.runtimeType;
     }
 
-    // Get display name (prefer DartType if available for better formatting)
+    // Get display name (prefer AnalyzedTypeAnnotation if available for better formatting)
     String displayName = typeName;
     if (dartType != null) {
-      final dartDisplayName = dartType.getDisplayString();
+      final dartDisplayName = getNameFromAnalyzedTypeAnnotation(dartType);
       if (dartDisplayName.isNotEmpty && dartDisplayName != 'dynamic') {
         displayName = dartDisplayName;
-      }
-    }
-
-    // Refine source URI with DartType if available
-    if (dartType?.element?.library?.uri != null) {
-      final dartUri = dartType?.element!.library!.uri.toString();
-      if (dartUri != null && dartUri.isNotEmpty && dartUri != 'dart:core') {
-        sourceUri = dartUri;
       }
     }
 
@@ -993,99 +952,6 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
       baseRuntimeType: baseRuntimeType,
       sourceUri: sourceUri,
     );
-  }
-
-  /// Fallback extraction of core type information from an analyzer [DartType].
-  ///
-  /// This method is invoked when mirror-based extraction fails. It attempts to:
-  /// - Resolve canonical name and display name
-  /// - Determine runtime types via package-aware heuristics
-  /// - Locate the real source URI if available
-  ///
-  /// ### Parameters
-  /// - [dartType] — Analyzer-based type to extract from.
-  /// - [package] — Package context for runtime type resolution.
-  /// - [libraryUri] — Declaring library URI.
-  /// - [fallbackName] — Fallback type name to use if the analyzer element lacks a name.
-  ///
-  /// ### Returns
-  /// A [_TypeInfo] representing the extracted type.
-  Future<_TypeInfo> _extractCoreTypeInfoFromDartType(DartType dartType, Package package, String libraryUri, String fallbackName) async {
-    final element = dartType.element;
-    final displayString = dartType.getDisplayString();
-    
-    String name = element?.name ?? fallbackName;
-    String sourceUri = element?.library?.uri.toString() ?? libraryUri;
-
-    // Try to find runtime types
-    Type actualRuntimeType = await findRuntimeTypeFromDartType(dartType, libraryUri, package);
-    Type baseRuntimeType = await findBaseRuntimeTypeFromDartType(dartType, libraryUri, package);
-
-    // Try to get real class URI
-    if (element?.name != null) {
-      final realUri = await findRealClassUri(element!.name!, element.library?.uri.toString());
-      if (realUri != null) {
-        sourceUri = realUri;
-      }
-    }
-
-    return _TypeInfo(
-      name: name,
-      displayName: displayString.isNotEmpty ? displayString : name,
-      actualRuntimeType: actualRuntimeType,
-      baseRuntimeType: baseRuntimeType,
-      sourceUri: sourceUri,
-    );
-  }
-
-  /// Extracts **generic variance and upper-bound information** from a type mirror.
-  ///
-  /// This method resolves how a type parameter behaves in generic substitution
-  /// by determining:
-  /// - Its declared or inferred [TypeVariance]
-  /// - Its optional upper bound, if any
-  ///
-  /// Reflection metadata is treated as the primary source of truth, while
-  /// analyzer ([DartType]) information is used opportunistically to improve
-  /// accuracy and avoid incorrect defaulting to `Object`.
-  ///
-  /// ### Resolution Rules
-  /// - Non-type-variable mirrors always default to `invariant` variance.
-  /// - Variance is inferred using [inferVarianceFromMirror].
-  /// - Upper bounds are resolved only when:
-  ///   - The mirror represents a type variable
-  ///   - The upper bound is not the owner itself
-  ///   - The bound is not `dynamic`
-  ///
-  /// Cycle prevention is enforced using a generation key derived from the
-  /// upper-bound mirror.
-  ///
-  /// ### Parameters
-  /// - [mirror] — The reflection-based type mirror.
-  /// - [dartType] — The analyzer-based type, if available.
-  /// - [package] — The package context used for link generation.
-  /// - [libraryUri] — The URI of the declaring library.
-  ///
-  /// ### Returns
-  /// A [_VarianceAndBounds] instance describing the resolved variance and
-  /// optional upper bound.
-  Future<_VarianceAndBounds> _extractVarianceAndBounds(mirrors.TypeMirror mirror, DartType? dartType, Package package, String libraryUri) async {
-    TypeVariance variance = TypeVariance.invariant;
-    LinkDeclaration? upperBound;
-
-    if (mirror is mirrors.TypeVariableMirror) {
-      variance = inferVarianceFromMirror(mirror);
-
-      if (mirror.upperBound != mirror.owner && mirror.upperBound.runtimeType.toString() != 'dynamic') {
-        final boundKey = 'bound_${mirror.upperBound.hashCode}';
-        final dartBound = dartType is TypeParameterType && !dartType.bound.isDartCoreObject ? dartType.bound : null;
-        if (!linkGenerationInProgress.contains(boundKey)) {
-          upperBound = await generateLinkDeclaration(mirror.upperBound, package, libraryUri, dartBound);
-        }
-      }
-    }
-
-    return _VarianceAndBounds(variance: variance, upperBound: upperBound);
   }
 
   /// Builds a **stable, unique identity string** for a type.
@@ -1111,16 +977,15 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   /// ### Returns
   /// A unique string suitable for identifying a type across link-generation
   /// phases.
-  String _buildTypeIdentity(mirrors.TypeMirror mirror, DartType? dartType, String libraryUri) {
+  String _buildTypeIdentity(mirrors.TypeMirror mirror, AnalyzedTypeAnnotation? dartType, String libraryUri) {
     final mirrorName = mirrors.MirrorSystem.getName(mirror.simpleName);
     final mirrorHash = mirror.hashCode;
     
     if (dartType != null) {
-      final dartDisplay = dartType.getDisplayString();
-      final elementName = dartType.element?.name;
+      final dartDisplay = getNameFromAnalyzedTypeAnnotation(dartType);
       final dartHash = dartType.hashCode;
       
-      return 'type_${mirrorName}_${elementName ?? dartDisplay}_${mirrorHash}_${dartHash}_$libraryUri';
+      return 'type_${mirrorName}_${dartDisplay}_${mirrorHash}_${dartHash}_$libraryUri';
     }
     
     return 'type_mirror_${mirrorName}_${mirrorHash}_$libraryUri';
@@ -1145,16 +1010,10 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   ///
   /// ### Returns
   /// `true` if the type is public and externally visible; otherwise `false`.
-  bool _determineIsPublic(String typeName, mirrors.TypeMirror mirror, DartType? dartType) {
+  bool _determineIsPublic(String typeName, mirrors.TypeMirror mirror, AnalyzedTypeAnnotation? dartType) {
     // Check mirror first
     final isMirrorPublic = !mirror.isPrivate;
     if (!isMirrorPublic) return false;
-      
-    // Check DartType if available
-    if (dartType?.element is InterfaceElement) {
-      final element = dartType!.element as InterfaceElement;
-      if (element.isPrivate) return false;
-    }
     
     // Final check by name convention
     return !isInternal(typeName);
@@ -1180,10 +1039,10 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   ///
   /// ### Returns
   /// `true` if the type is synthetic; otherwise `false`.
-  bool _determineIsSynthetic(String typeName, mirrors.TypeMirror mirror, DartType? dartType) {
-    // Check DartType first (analyzer has better synthetic detection)
-    if (dartType?.element case final element?) {
-      if (element.isSynthetic) return true;
+  bool _determineIsSynthetic(String typeName, mirrors.TypeMirror mirror, AnalyzedTypeAnnotation? dartType) {
+    // Check AnalyzedTypeAnnotation first (analyzer has better synthetic detection)
+    if (dartType?.isSynthetic case final element?) {
+      return element;
     }
     
     // Check mirror
@@ -1215,13 +1074,13 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   /// - [typeIdentity] — The unique identity key of the function type.
   /// - [mirror] — The reflection-based representation of the function type.
   /// - [dartType] — The analyzer-based function type, if available.
-  void _logCycleDetection(String typeIdentity, mirrors.TypeMirror mirror, DartType? dartType) {
+  void _logCycleDetection(String typeIdentity, mirrors.TypeMirror mirror, AnalyzedTypeAnnotation? dartType) {
     final mirrorName = mirrors.MirrorSystem.getName(mirror.simpleName);
-    final dartName = dartType?.getDisplayString() ?? 'no-dart-type';
+    final dartName = dartType != null ? getNameFromAnalyzedTypeAnnotation(dartType) : 'no-dart-type';
     StringBuffer buffer = StringBuffer();
     buffer.writeln('Cycle detected in type resolution: $typeIdentity');
     buffer.writeln('  Mirror: $mirrorName (${mirror.runtimeType})');
-    buffer.writeln('  DartType: $dartName');
+    buffer.writeln('  AnalyzedTypeAnnotation: $dartName');
 
     RuntimeBuilder.logCycle(buffer.toString());
   }
@@ -1235,7 +1094,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   /// Generates a unified [FunctionLinkDeclaration] for a function type.
   ///
   /// This method is the **central entry point** for function type linking.
-  /// It combines reflection (`mirrors`) and analyzer (`FunctionType`)
+  /// It combines reflection (`mirrors`) and analyzer (`AnalyzedGenericFunctionTypeAnnotation`)
   /// information to produce a fully materialized
   /// [StandardFunctionLinkDeclaration].
   ///
@@ -1261,7 +1120,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   /// A [Future] that completes with a [FunctionLinkDeclaration] representing the
   /// function type, or `null` if generation fails or a cycle is detected.
   @protected
-  Future<FunctionLinkDeclaration?> generateFunctionLinkDeclaration(mirrors.TypeMirror mirror, FunctionType? dartType, Package package, String libraryUri);
+  Future<FunctionLinkDeclaration?> generateFunctionLinkDeclaration(mirrors.TypeMirror mirror, AnalyzedGenericFunctionTypeAnnotation? dartType, Package package, String libraryUri);
 
   /// Generates a [RecordLinkDeclaration] from a Dart **record type**.
   ///
@@ -1280,7 +1139,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   /// - [mirror] — The runtime type mirror representing the record type.
   /// - [package] — The package context used for resolving referenced types.
   /// - [libraryUri] — The URI of the library declaring the record.
-  /// - [dartType] — The analyzer-based [DartType] for improved accuracy.
+  /// - [dartType] — The analyzer-based [AnalyzedTypeAnnotation] for improved accuracy.
   ///
   /// ### Returns
   /// A [Future] that completes with a [RecordLinkDeclaration] describing the
@@ -1292,7 +1151,7 @@ abstract class AbstractLinkDeclarationSupport extends AbstractTypeSupport {
   /// - Implementations should include cycle detection if recursive record
   ///   types are possible.
   @protected
-  Future<RecordLinkDeclaration?> generateRecordLinkDeclaration(mirrors.TypeMirror mirror, Package package, String libraryUri, DartType dartType);
+  Future<RecordLinkDeclaration?> generateRecordLinkDeclaration(mirrors.TypeMirror mirror, Package package, String libraryUri, AnalyzedTypeAnnotation dartType);
 }
 /// Helper class that encapsulates **core type identity and source metadata**.
 ///
@@ -1342,31 +1201,4 @@ class _TypeInfo {
     required this.baseRuntimeType,
     required this.sourceUri,
   });
-}
-
-/// Helper class that bundles **generic variance information and bounds**.
-///
-/// `_VarianceAndBounds` is used internally to model type parameter behavior,
-/// capturing both the declared variance and its optional upper bound.
-///
-/// This structure allows the type system to reason about assignability,
-/// substitution, and constraint validation in a consistent and explicit way.
-///
-/// ## Fields
-///
-/// - [variance]  
-///   The declared [TypeVariance] of the type parameter (e.g. covariant,
-///   contravariant, invariant).
-///
-/// - [upperBound]  
-///   An optional [LinkDeclaration] representing the upper bound of the type
-///   parameter. If `null`, the bound is implicitly `Object`.
-///
-/// Instances of this class are typically created while processing generic
-/// declarations and are later consumed by type-checking and inference logic.
-class _VarianceAndBounds {
-  final TypeVariance variance;
-  final LinkDeclaration? upperBound;
-
-  _VarianceAndBounds({required this.variance, this.upperBound});
 }

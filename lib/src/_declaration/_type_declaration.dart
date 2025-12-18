@@ -26,8 +26,6 @@ final class StandardTypeDeclaration extends TypeDeclaration with EqualsAndHashCo
   final String _name;
   final bool _isNullable;
   final TypeKind _kind;
-  final Element? _element;
-  final DartType? _dartType;
   final Type _type;
   final String _qualifiedName;
   final String _simpleName;
@@ -44,8 +42,6 @@ final class StandardTypeDeclaration extends TypeDeclaration with EqualsAndHashCo
     required String name,
     required bool isNullable,
     required TypeKind kind,
-    required Element? element,
-    required DartType? dartType,
     required Type type,
     required String qualifiedName,
     required String simpleName,
@@ -60,8 +56,6 @@ final class StandardTypeDeclaration extends TypeDeclaration with EqualsAndHashCo
         _isNullable = isNullable,
         _isPublic = isPublic, _isSynthetic = isSynthetic,
         _typeArguments = typeArguments,
-        _element = element,
-        _dartType = dartType,
         _type = type,
         _kind = kind,
         _qualifiedName = qualifiedName,
@@ -128,22 +122,10 @@ final class StandardTypeDeclaration extends TypeDeclaration with EqualsAndHashCo
   // }
 
   @override
-  bool isGeneric() {
-    final dartType = getDartType();
-    if (dartType is ParameterizedType) {
-      return dartType.typeArguments.isNotEmpty;
-    }
-    return getTypeArguments().isNotEmpty || (getType().toString().contains("<") && getType().toString().endsWith(">"));
-  }
+  bool isGeneric() => getTypeArguments().isNotEmpty || (getType().toString().contains("<") && getType().toString().endsWith(">"));
 
   @override
   List<LinkDeclaration> getTypeArguments() => List.unmodifiable(_typeArguments);
-  
-  @override
-  DartType? getDartType() => _dartType;
-  
-  @override
-  Element? getElement() => _element;
   
   @override
   String getPackageUri() => _packageUri;
@@ -175,8 +157,6 @@ final class StandardTypeDeclaration extends TypeDeclaration with EqualsAndHashCo
       _name,
       _isNullable,
       _kind,
-      _element,
-      _dartType,
       _type,
       _qualifiedName,
       _simpleName,

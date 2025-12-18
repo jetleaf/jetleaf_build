@@ -604,20 +604,6 @@ void main() async {
       expect(firstMethod.getDebugIdentifier(), contains('Method'));
       expect(firstMethod.getDebugIdentifier(), contains(firstMethod.getName()));
     });
-
-    test('should handle analyzer support if available', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
-      
-      final methods = testClass.getMethods();
-      final firstMethod = methods.first;
-      
-      expect(firstMethod.hasAnalyzerSupport(), anyOf(isTrue, isFalse));
-      
-      if (firstMethod.hasAnalyzerSupport()) {
-        expect(firstMethod.getDartType(), isNotNull);
-        expect(firstMethod.getElement(), isNotNull);
-      }
-    });
   });
 
   group('MethodDeclaration Edge Cases', () {

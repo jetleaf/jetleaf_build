@@ -9,15 +9,13 @@
 import 'dart:async';
 import 'dart:mirrors' as mirrors;
 
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
 import '../../builder/runtime_builder.dart';
 import '../../declaration/declaration.dart';
 import '../../utils/dart_type_resolver.dart';
 import '../../utils/generic_type_parser.dart';
+import '../abstract_element_support.dart';
 import 'abstract_parameter_declaration_support.dart';
 
 /// {@template abstract_method_declaration_support}
@@ -82,65 +80,8 @@ abstract class AbstractMethodDeclarationSupport extends AbstractParameterDeclara
     required super.packages,
   });
 
-  /// Resolves the corresponding analyzer [`ExecutableElement`] for a reflected
-  /// method represented by [methodMirror].
-  ///
-  /// This utility bridges JetLeaf’s hybrid reflection system by mapping a
-  /// runtime mirror method (from `dart:mirrors`) to its static counterpart
-  /// obtained from the Dart Analyzer via an [InterfaceElement].
-  ///
-  /// Because getters, setters, and regular methods are represented differently
-  /// in the Analyzer, this method selects the correct lookup path based on the
-  /// mirror’s characteristics.
-  ///
-  /// ### Parameters
-  /// - **[methodName]**  
-  ///   The simple name of the method as extracted from the mirror system.
-  ///
-  /// - **[methodMirror]**  
-  ///   The reflective descriptor of the method. Used to determine whether the
-  ///   method is a getter, setter, or a standard function.
-  ///
-  /// - **[parentElement]**  
-  ///   The analyzer element representing the containing class, mixin, or enum.
-  ///   This is required to resolve members through the Analyzer API.
-  ///
-  /// ### Behavior
-  /// The method resolves elements according to this precedence:
-  ///
-  /// 1. **If the mirror represents a getter**  
-  ///    → returns `parentElement.getGetter(methodName)`
-  ///
-  /// 2. **If the mirror represents a setter**  
-  ///    → returns `parentElement.getSetter(methodName)`
-  ///
-  /// level: 3. **Otherwise (regular method)**  
-  ///    → returns `parentElement.getMethod(methodName)`
-  ///
-  /// If [parentElement] is `null`, this method returns `null` without throwing.
-  ///
-  /// ### Returns
-  /// The analyzer [`ExecutableElement`] corresponding to the reflected method,
-  /// or `null` if the element is not present or the parent element is missing.
-  ///
-  /// ### Notes
-  /// - This method does **not** attempt to resolve inherited members; it only
-  ///   queries the provided [parentElement].
-  /// - This is an internal resolution helper used during method and field
-  ///   declaration generation, ensuring consistency between reflected and
-  ///   analyzer-backed metadata.
-  ExecutableElement? _getMethod(String methodName, mirrors.MethodMirror methodMirror, InterfaceElement? parentElement) {
-    if (methodMirror.isGetter) {
-      return parentElement?.getGetter(methodName);
-    } else if (methodMirror.isSetter) {
-      return parentElement?.getSetter(methodName);
-    } else {
-      return parentElement?.getMethod(methodName);
-    }
-  }
-
   @override
-  Future<MethodDeclaration> generateMethod(mirrors.MethodMirror methodMirror, InterfaceElement? parentElement, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration? parentClass) async {
+  Future<MethodDeclaration> generateMethod(mirrors.MethodMirror methodMirror, AnalyzedMemberList? members, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration? parentClass) async {
     final methodName = mirrors.MirrorSystem.getName(methodMirror.simpleName);
     final methodClass = methodMirror.returnType;
     final methodClassName = mirrors.MirrorSystem.getName(methodClass.simpleName);
@@ -150,45 +91,42 @@ abstract class AbstractMethodDeclarationSupport extends AbstractParameterDeclara
     RuntimeBuilder.logFullyVerboseInfo(logMessage, level: 3);
 
     final result = await RuntimeBuilder.timeExecution(() async {
-      final methodElement = _getMethod(methodName, methodMirror, parentElement);
-      final dartType = methodElement?.type;
+      final analyzedMethod = getAnalyzedMethod(members, methodName);
+      final dartType = analyzedMethod?.returnType;
       type = await resolveGenericAnnotationIfNeeded(type, methodClass, package, libraryUri, sourceUri, methodClassName);
 
-      final sourceCode = sourceCache[sourceUri.toString()] ?? await readSourceCode(sourceUri);
+      final sourceCode = await readSourceCode(sourceUri);
 
       final result = StandardMethodDeclaration(
         name: methodName,
-        element: methodElement,
-        dartType: dartType,
         type: type,
         libraryDeclaration: await getLibrary(libraryUri),
         returnType: await getLinkDeclaration(methodMirror.returnType, package, libraryUri, dartType),
-        annotations: await extractAnnotations(methodMirror.metadata, libraryUri, sourceUri, package, methodElement?.metadata.annotations),
-        isPublic: methodElement?.isPublic ?? !isInternal(methodName),
-        isSynthetic: methodElement?.isSynthetic ?? isSynthetic(methodName),
+        annotations: await extractAnnotations(methodMirror.metadata, libraryUri, sourceUri, package, analyzedMethod?.metadata),
+        isPublic: !isInternal(methodName),
+        isSynthetic: analyzedMethod?.isSynthetic ?? isSynthetic(methodName),
         sourceLocation: sourceUri,
         isStatic: methodMirror.isStatic,
         isAbstract: methodMirror.isAbstract,
-        hasNullableReturn: methodElement?.returnType.nullabilitySuffix == NullabilitySuffix.question || hasNullableReturn(methodMirror.source, sourceCode, methodName),
-        isGetter: methodElement != null ? methodElement is GetterElement : methodMirror.isGetter,
-        isSetter: methodElement != null ? methodElement is SetterElement : methodMirror.isSetter,
+        hasNullableReturn: checkTypeAnnotationNullable(dartType) || hasNullableReturn(methodMirror.source, sourceCode, methodName),
+        isGetter: analyzedMethod?.isGetter ?? methodMirror.isGetter,
+        isSetter: analyzedMethod?.isSetter ?? methodMirror.isSetter,
         parentClass: parentClass != null ? StandardLinkDeclaration(
           name: parentClass.getName(),
           type: parentClass.getType(),
           pointerType: parentClass.getType(),
           qualifiedName: parentClass.getQualifiedName(),
           isPublic: parentClass.getIsPublic(),
-          dartType: parentClass.getDartType(),
           canonicalUri: Uri.parse(parentClass.getPackageUri()),
           referenceUri: Uri.parse(parentClass.getPackageUri()),
           isSynthetic: parentClass.getIsSynthetic(),
         ) : null,
         isFactory: methodMirror.isFactoryConstructor,
         isConst: methodMirror.isConstConstructor,
-        isExternal: methodElement?.isExternal ?? false
+        isExternal: analyzedMethod?.externalKeyword != null || false
       );
 
-      result.parameters = await extractParameters(methodMirror.parameters, methodElement?.formalParameters, package, libraryUri, result);
+      result.parameters = await extractParameters(methodMirror.parameters, analyzedMethod?.parameters, package, libraryUri, result);
 
       return result;
     });
@@ -230,38 +168,30 @@ abstract class AbstractMethodDeclarationSupport extends AbstractParameterDeclara
     RuntimeBuilder.logFullyVerboseInfo(logMessage, level: 3);
 
     final result = await RuntimeBuilder.timeExecution(() async {
-      final libraryElement = await getLibraryElement(libraryUri);
-      final functionElement = libraryElement?.getTopLevelFunction(methodName) ?? libraryElement?.topLevelFunctions.where((f) => f.name == methodName).firstOrNull;
-      final dartType = functionElement?.type;
+      final analyzedMethod = await getAnalyzedTopLevelMethod(libraryUri, methodName);
+      final dartType = analyzedMethod?.returnType;
       type = await resolveGenericAnnotationIfNeeded(type, methodClass, package, libraryUri.toString(), sourceUri, methodClassName);
 
-      final sourceCode = sourceCache[sourceUri.toString()] ?? await readSourceCode(sourceUri);
+      final sourceCode = await readSourceCode(sourceUri);
 
       final result = StandardMethodDeclaration(
         name: methodName,
-        element: functionElement,
-        dartType: dartType,
         type: type,
         libraryDeclaration: await getLibrary(libraryUri.toString()),
         returnType: await getLinkDeclaration(methodMirror.returnType, package, libraryUri.toString(), dartType),
-        annotations: await extractAnnotations(methodMirror.metadata, libraryUri.toString(), sourceUri, package, functionElement?.metadata.annotations),
+        annotations: await extractAnnotations(methodMirror.metadata, libraryUri.toString(), sourceUri, package, analyzedMethod?.metadata),
         sourceLocation: sourceUri,
-        isStatic: functionElement?.isStatic ?? true,
-        isAbstract: functionElement?.isAbstract ?? false,
         isGetter: methodMirror.isGetter,
         isSetter: methodMirror.isSetter,
         isFactory: false,
-        hasNullableReturn: functionElement != null 
-          ? functionElement.type.nullabilitySuffix == NullabilitySuffix.question
-          : hasNullableReturn(methodMirror.source, sourceCode, methodName),
-        isPublic: functionElement?.isPublic ?? !isInternal(methodName),
-        isSynthetic: functionElement?.isSynthetic ?? isSynthetic(methodName),
+        hasNullableReturn: checkTypeAnnotationNullable(dartType) || hasNullableReturn(methodMirror.source, sourceCode, methodName),
+        isPublic: !isInternal(methodName),
+        isSynthetic: analyzedMethod?.isSynthetic ?? isSynthetic(methodName),
         isConst: false,
-        isEntrypoint: functionElement?.isEntryPoint ?? false,
         isTopLevel: true
       );
 
-      result.parameters = await extractParameters(methodMirror.parameters, functionElement?.formalParameters, package, libraryUri.toString(), result);
+      result.parameters = await extractParameters(methodMirror.parameters, analyzedMethod?.functionExpression.parameters, package, libraryUri.toString(), result);
 
       return result;
     });

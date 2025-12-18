@@ -1,11 +1,9 @@
 import 'dart:mirrors' as mirrors;
 
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
 import '../../declaration/declaration.dart';
+import '../abstract_element_support.dart';
 import 'abstract_link_declaration_support.dart';
 
 /// {@template abstract_function_link_declaration_support}
@@ -15,11 +13,11 @@ import 'abstract_link_declaration_support.dart';
 /// `AbstractFunctionLinkDeclarationSupport` specializes
 /// [AbstractLinkDeclarationSupport] with comprehensive logic for resolving,
 /// normalizing, and materializing **function and callable type declarations**
-/// from both **Dart runtime mirrors** and **analyzer `DartType`s**.
+/// from both **Dart runtime mirrors** and **analyzer `AnalyzedTypeAnnotation`s**.
 ///
 /// ## Responsibilities
 /// This class is responsible for:
-/// - Translating `FunctionTypeMirror` and analyzer `FunctionType` instances
+/// - Translating `FunctionTypeMirror` and analyzer `AnalyzedTypeAnnotation` instances
 ///   into canonical [FunctionLinkDeclaration] objects.
 /// - Resolving return types, parameters, generic type parameters, and
 ///   applied type arguments.
@@ -53,7 +51,7 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
   AbstractFunctionLinkDeclarationSupport({required super.mirrorSystem, required super.forceLoadedMirrors, required super.configuration, required super.packages});
 
   @override
-  Future<FunctionLinkDeclaration?> generateFunctionLinkDeclaration(mirrors.TypeMirror mirror, FunctionType? dartType, Package package, String libraryUri) async {
+  Future<FunctionLinkDeclaration?> generateFunctionLinkDeclaration(mirrors.TypeMirror mirror, AnalyzedGenericFunctionTypeAnnotation? dartType, Package package, String libraryUri) async {
     if (mirror case mirrors.FunctionTypeMirror functionTypeMirror) {
       return await generateFunctionLinkDeclarationFromMirror(functionTypeMirror, dartType, package, libraryUri);
     } else if (dartType case final functionType?) {
@@ -67,7 +65,7 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
   ///
   /// {@template generate_function_from_mirror}
   /// This method converts a [mirrors.FunctionTypeMirror] and optional analyzer
-  /// [FunctionType] into a fully materialized [FunctionLinkDeclaration].
+  /// [AnalyzedTypeAnnotation] into a fully materialized [FunctionLinkDeclaration].
   ///
   /// It performs the following steps:
   /// 1. Computes a stable **identity** for cycle detection.
@@ -78,7 +76,7 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
   ///
   /// ### Parameters
   /// - [functionTypeMirror]: The runtime reflection mirror for the function type.
-  /// - [dartType]: Optional analyzer [FunctionType] for additional metadata.
+  /// - [dartType]: Optional analyzer [AnalyzedTypeAnnotation] for additional metadata.
   /// - [package]: The [Package] context for type resolution.
   /// - [libraryUri]: URI of the library containing this function.
   ///
@@ -101,7 +99,7 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
   /// ```
   /// {@endtemplate}
   @protected
-  Future<FunctionLinkDeclaration> generateFunctionLinkDeclarationFromMirror(mirrors.FunctionTypeMirror functionTypeMirror, FunctionType? dartType, Package package, String libraryUri) async {
+  Future<FunctionLinkDeclaration> generateFunctionLinkDeclarationFromMirror(mirrors.FunctionTypeMirror functionTypeMirror, AnalyzedGenericFunctionTypeAnnotation? dartType, Package package, String libraryUri) async {
     final typeIdentity = _buildFunctionTypeIdentity(functionTypeMirror, dartType, libraryUri);
     linkGenerationInProgress.add(typeIdentity);
 
@@ -117,8 +115,7 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
         typeParameters: signature.typeParameters,
         typeArguments: signature.typeArguments,
         isNullable: signature.isNullable,
-        name: dartType?.getDisplayString() ?? signature.displayName,
-        dartType: dartType,
+        name: dartType?.functionKeyword.lexeme ?? signature.displayName,
         type: Function,
         pointerType: Function,
         qualifiedName: buildQualifiedName("Function", functionUri),
@@ -126,7 +123,6 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
         referenceUri: Uri.tryParse(libraryUri),
         isPublic: true,
         isSynthetic: signature.isSynthetic,
-        variance: TypeVariance.invariant,
         methodDeclaration: await generateMethod(
           functionTypeMirror.callMethod,
           null,
@@ -169,20 +165,16 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
   ///
   /// ### Returns
   /// A [_FunctionSignature] describing the function’s complete type shape.
-  Future<_FunctionSignature> _extractFunctionSignatureFromMirror(mirrors.FunctionTypeMirror mirror, Package package, String libraryUri, FunctionType? dartType) async {
+  Future<_FunctionSignature> _extractFunctionSignatureFromMirror(mirrors.FunctionTypeMirror mirror, Package package, String libraryUri, AnalyzedTypeAnnotation? dartType) async {
     // Get return type
     final returnTypeLink = await getLinkDeclaration(mirror.returnType, package, libraryUri, dartType);
     
     // Get parameters
     final parameters = <LinkDeclaration>[];
     final mirrorParameters = mirror.parameters;
-    final dartTypeParameters = dartType?.formalParameters ?? <FormalParameterElement>[];
     for (int i = 0; i < mirrorParameters.length; i++) {
       final param = mirrorParameters[i];
-      final paramName = mirrors.MirrorSystem.getName(param.simpleName);
-      final paramType = dartTypeParameters.where((p) => p.displayName == paramName).firstOrNull;
-
-      final paramLink = await getLinkDeclaration(param.type, package, libraryUri, paramType?.type);
+      final paramLink = await getLinkDeclaration(param.type, package, libraryUri, null);
       parameters.add(paramLink);
     }
 
@@ -190,12 +182,14 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
     final typeParameters = <LinkDeclaration>[];
     if (mirror is mirrors.MethodMirror) {
       final mirrorVariables = mirror.typeVariables;
-      final dartTypeParameters = dartType?.typeParameters ?? <TypeParameterElement>[];
+      final dartTypeParameters = dartType is AnalyzedGenericFunctionTypeAnnotation 
+        ? dartType.typeParameters?.typeParameters ?? <AnalyzedTypeParameter>[] 
+        : <AnalyzedTypeParameter>[];
 
       for (int i = 0; i < mirrorVariables.length; i++) {
         final variable = mirrorVariables[i];
         final variableName = mirrors.MirrorSystem.getName(variable.simpleName);
-        final variableType = dartTypeParameters.where((p) => p.displayName == variableName).firstOrNull;
+        final variableType = dartTypeParameters.where((p) => p.name.toString() == variableName).firstOrNull;
         
         final typeParamLink = await generateLinkDeclaration(variable, package, libraryUri, variableType?.bound);
         if (typeParamLink != null) {
@@ -219,16 +213,16 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
       returnType: returnTypeLink,
       parameters: parameters,
       typeParameters: typeParameters,
-      isNullable: dartType?.returnType.nullabilitySuffix == NullabilitySuffix.question || isNullable,
+      isNullable: checkTypeAnnotationNullable(dartType) || isNullable,
       displayName: displayName,
       isSynthetic: isSynthetic(displayName),
       typeArguments: typeArguments
     );
   }
 
-  Future<FunctionLinkDeclaration?> _generateFunctionLinkDeclarationFromDartType(FunctionType functionType, Package package, String libraryUri, [mirrors.TypeMirror? mirror]) async {
+  Future<FunctionLinkDeclaration?> _generateFunctionLinkDeclarationFromDartType(AnalyzedGenericFunctionTypeAnnotation functionType, Package package, String libraryUri, [mirrors.TypeMirror? mirror]) async {
     // Create a unique key for this function type
-    final typeKey = 'dart_func_${functionType.getDisplayString()}_${functionType.hashCode}';
+    final typeKey = 'dart_func_${getNameFromAnalyzedTypeAnnotation(functionType)}_${functionType.hashCode}';
     
     // Check if we're already processing this function type
     if (linkGenerationInProgress.contains(typeKey)) {
@@ -243,60 +237,45 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
 
       // Get parameter types
       final parameterLinks = <LinkDeclaration>[];
-      for (final param in functionType.formalParameters) {
-        final paramTypeLink = await _generateLinkDeclarationFromDartType(param.type, package, libraryUri);
+      for (final param in functionType.parameters.parameters) {
+        if (getAnalyzedTypeAnnotationFromParameter(param) case final paramType?) {
+          final paramTypeLink = await _generateLinkDeclarationFromDartType(paramType, package, libraryUri);
         
-        if (paramTypeLink case final typed?) {
-          parameterLinks.add(typed);
+          if (paramTypeLink case final typed?) {
+            parameterLinks.add(typed);
+          }
         }
       }
 
       // Get type parameters
       final typeParamLinks = <LinkDeclaration>[];
-      for (final typeParam in functionType.typeParameters) {
+      for (final typeParam in functionType.typeParameters?.typeParameters ?? <AnalyzedTypeParameter>[]) {
         if (typeParam.bound case final dartType?) {
           final typeParamLink = await _generateLinkDeclarationFromDartType(dartType, package, libraryUri);
-          final typeName = typeParam.name ?? typeParam.displayName;
-
-          // Create a proper type parameter link with variance
-          final typeParamDeclaration = StandardLinkDeclaration(
-            name: typeName,
-            type: Object,
-            pointerType: Object,
-            dartType: dartType,
-            typeArguments: [],
-            qualifiedName: buildQualifiedName(typeName, libraryUri),
-            canonicalUri: Uri.tryParse(libraryUri),
-            referenceUri: Uri.tryParse(libraryUri),
-            variance: inferVarianceFromContext(typeParam.instantiate(nullabilitySuffix: NullabilitySuffix.question)),
-            upperBound: typeParamLink,
-            isPublic: !isInternal(typeName),
-            isSynthetic: isSynthetic(typeName),
-          );
-          typeParamLinks.add(typeParamDeclaration);
+          if (typeParamLink != null) {
+            typeParamLinks.add(typeParamLink);
+          }
         }
       }
 
       // Build the function signature
       if (returnTypeLink != null) {
-        final signature = functionType.getDisplayString();
+        final signature = getNameFromAnalyzedTypeAnnotation(functionType);
         final functionUri = await findRealClassUriFromMirror(mirrors.reflectType(Function), null) ?? libraryUri;
 
         return StandardFunctionLinkDeclaration(
           returnType: returnTypeLink,
           parameters: parameterLinks,
           typeParameters: typeParamLinks,
-          isNullable: functionType.returnType.nullabilitySuffix == NullabilitySuffix.question,
+          isNullable: checkTypeAnnotationNullable(functionType),
           name: signature,
           type: Function,
-          dartType: functionType,
           pointerType: Function,
           qualifiedName: buildQualifiedName("Function", functionUri),
           canonicalUri: Uri.tryParse(libraryUri),
           referenceUri: Uri.tryParse(libraryUri),
           isPublic: true,
-          isSynthetic: isSynthetic(functionType.getDisplayString()),
-          variance: TypeVariance.invariant,
+          isSynthetic: isSynthetic(getNameFromAnalyzedTypeAnnotation(functionType)),
         );
       } else {
         return null;
@@ -307,32 +286,30 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
     }
   }
 
-  /// Generates a [LinkDeclaration] from an analyzer [DartType], with **cycle detection**.
+  /// Generates a [LinkDeclaration] from an analyzer [AnalyzedTypeAnnotation], with **cycle detection**.
   ///
   /// This method handles:
-  /// - Function types (`FunctionType`) by delegating to `_generateFunctionLinkDeclarationFromDartType`.
+  /// - Function types (`AnalyzedTypeAnnotation`) by delegating to `_generateFunctionLinkDeclarationFromDartType`.
   /// - Parameterized types, recursively generating links for type arguments.
   /// - Type parameters, including variance and upper bound resolution.
   /// - Cycle detection to avoid infinite recursion in recursive type definitions.
   ///
   /// Parameters:
-  /// - [dartType]: The analyzer [DartType] representing the type to generate a link for.
+  /// - [dartType]: The analyzer [AnalyzedTypeAnnotation] representing the type to generate a link for.
   /// - [package]: The [Package] context for resolving type references.
   /// - [libraryUri]: URI of the library where the type is declared.
   /// - [mirror]: Optional [mirrors.TypeMirror] to supplement type resolution from runtime mirrors.
   ///
   /// Returns a [Future] that completes with the generated [LinkDeclaration], or `null`
   /// if the type cannot be resolved.
-  Future<LinkDeclaration?> _generateLinkDeclarationFromDartType(DartType dartType, Package package, String libraryUri, [mirrors.TypeMirror? mirror]) async {
-    if (dartType is FunctionType) {
+  Future<LinkDeclaration?> _generateLinkDeclarationFromDartType(AnalyzedTypeAnnotation dartType, Package package, String libraryUri, [mirrors.TypeMirror? mirror]) async {
+    if (dartType is AnalyzedGenericFunctionTypeAnnotation) {
       return await _generateFunctionLinkDeclarationFromDartType(dartType, package, libraryUri, mirror);
     }
-    
-    final element = dartType.element;
-    if (element == null) return null;
 
+    final name = getNameFromAnalyzedTypeAnnotation(dartType);
     // Create a unique key for this type to detect cycles
-    final typeKey = '${element.library?.uri}_${element.name}_${dartType.getDisplayString()}';
+    final typeKey = '${libraryUri}_${name}_$name';
     
     // Check if we're already processing this type (cycle detection)
     if (linkGenerationInProgress.contains(typeKey)) {
@@ -344,20 +321,20 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
     
     try {
       // Find the real class in the runtime system to get the actual package URI
-      final realClassUri = await findRealClassUri(element.name!, element.library?.uri.toString());
+      final realClassUri = await findRealClassUri(name, libraryUri.toString());
 
-      // Get the actual runtime type for this DartType
+      // Get the actual runtime type for this AnalyzedTypeAnnotation
       final actualRuntimeType = await findRuntimeTypeFromDartType(dartType, libraryUri, package);
       
       // Get the base type (without type parameters)
       final baseRuntimeType = await findBaseRuntimeTypeFromDartType(dartType, libraryUri, package);
-      final realPackageUri = realClassUri ?? element.library?.uri.toString() ?? libraryUri;
+      final realPackageUri = realClassUri ?? libraryUri;
 
       // Get type arguments from the implementing class (with cycle protection)
       final typeArguments = <LinkDeclaration>[];
-      if (dartType is ParameterizedType && dartType.typeArguments.isNotEmpty) {
-        for (final arg in dartType.typeArguments) {
-          final argKey = '${arg.element?.library?.uri}_${arg.element?.name}_${arg.getDisplayString()}';
+      if (dartType is AnalyzedNamedType && dartType.typeArguments != null) {
+        for (final arg in dartType.typeArguments!.arguments) {
+          final argKey = '${libraryUri}_${getNameFromAnalyzedTypeAnnotation(arg)}';
           if (!linkGenerationInProgress.contains(argKey)) {
             final argLink = mirror != null 
               ? await getLinkDeclaration(mirror, package, libraryUri, arg)
@@ -370,41 +347,16 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
         }
       }
 
-      // Determine variance and upper bound for type parameters (with cycle protection)
-      TypeVariance variance = TypeVariance.invariant;
-      LinkDeclaration? upperBound;
-      
-      if (dartType is TypeParameterType) {
-        // Handle type parameter variance and bounds
-        final bound = dartType.bound;
-        if (!bound.isDartCoreObject) {
-          final boundKey = '${bound.element?.library?.uri}_${bound.element?.name}_${bound.getDisplayString()}';
-          if (!linkGenerationInProgress.contains(boundKey)) {
-            upperBound = mirror != null 
-              ? await getLinkDeclaration(mirror, package, libraryUri, bound)
-              : await _generateLinkDeclarationFromDartType(bound, package, libraryUri);
-          }
-        }
-      
-        // Infer variance from usage context (simplified)
-        variance = inferVarianceFromContext(dartType);
-      }
-
-      final displayString = await getClassNameFromDartType(dartType, libraryUri) ?? (element is InterfaceElement 
-        ? element.thisType.getDisplayString()
-        : dartType.getDisplayString());
+      final displayString = await getClassNameFromDartType(dartType, libraryUri) ?? getNameFromAnalyzedTypeAnnotation(dartType);
 
       return StandardLinkDeclaration(
-        name: dartType.getDisplayString(),
+        name: getNameFromAnalyzedTypeAnnotation(dartType),
         type: actualRuntimeType,
         pointerType: baseRuntimeType,
         typeArguments: typeArguments,
-        dartType: dartType,
         qualifiedName: buildQualifiedName(displayString, realPackageUri),
         canonicalUri: Uri.tryParse(realPackageUri),
         referenceUri: Uri.tryParse(libraryUri),
-        variance: variance,
-        upperBound: upperBound,
         isPublic: !isInternal(displayString),
         isSynthetic: isSynthetic(displayString),
       );
@@ -458,8 +410,8 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
         : '';
     
     final paramString = parameters.isEmpty
-        ? '()'
-        : '(${parameters.map((p) => p.getName()).join(', ')})';
+        ? 'Function()'
+        : 'Function(${parameters.map((p) => p.getName()).join(', ')})';
     
     final nullableSuffix = isNullable ? '?' : '';
     
@@ -492,12 +444,12 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
   /// ### Notes
   /// - This identity is **not** intended for display purposes.
   /// - Changes in analyzer or mirror metadata will result in a different key.
-  String _buildFunctionTypeIdentity(mirrors.TypeMirror mirror, DartType? dartType, String libraryUri) {
+  String _buildFunctionTypeIdentity(mirrors.TypeMirror mirror, AnalyzedTypeAnnotation? dartType, String libraryUri) {
     final mirrorName = mirrors.MirrorSystem.getName(mirror.simpleName);
     final mirrorHash = mirror.hashCode;
     
     if (dartType != null) {
-      final dartName = dartType.getDisplayString();
+      final dartName = getNameFromAnalyzedTypeAnnotation(dartType);
       final dartHash = dartType.hashCode;
       return 'func_${mirrorName}_${dartName}_${mirrorHash}_${dartHash}_$libraryUri';
     }
@@ -509,7 +461,7 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
   /// Dart reflection (`mirrors`) and analyzer support.
   ///
   /// This method combines information from a [mirrors.MethodMirror] and an
-  /// optional analyzer [Element] (if available) to build a complete
+  /// optional analyzer [AnalyzedMemberList] (if available) to build a complete
   /// metadata representation of a method. It resolves:
   /// - Method name, visibility (public/private), and whether it is static, abstract,
   ///   a getter, a setter, factory, or const constructor.
@@ -526,7 +478,7 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
   ///
   /// Parameters:
   /// - [methodMirror]: The mirror representing the method to generate.
-  /// - [parentElement]: Optional analyzer element corresponding to the containing
+  /// - [members]: Optional analyzer element corresponding to the containing
   ///   class or interface; used to provide richer type information.
   /// - [package]: The package context to resolve types and annotations.
   /// - [libraryUri]: URI of the library containing the method, used for caching
@@ -537,7 +489,7 @@ abstract class AbstractFunctionLinkDeclarationSupport extends AbstractLinkDeclar
   ///
   /// Returns: A fully populated [MethodDeclaration] object representing the method.
   @protected
-  Future<MethodDeclaration> generateMethod(mirrors.MethodMirror methodMirror, InterfaceElement? parentElement, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration? parentClass);
+  Future<MethodDeclaration> generateMethod(mirrors.MethodMirror methodMirror, AnalyzedMemberList? members, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration? parentClass);
 }
 
 /// Helper class representing a **fully materialized function signature**.

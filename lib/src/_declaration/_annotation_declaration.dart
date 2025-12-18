@@ -31,25 +31,20 @@ final class StandardAnnotationDeclaration extends StandardEntityDeclaration impl
   final dynamic _instance;
   final Map<String, AnnotationFieldDeclaration> _fields;
   final Map<String, dynamic> _userProvidedValues;
-  final ElementAnnotation? _elementAnnotation;
 
   /// {@macro standard_annotation}
   const StandardAnnotationDeclaration({
     required LinkDeclaration linkDeclaration,
     required dynamic instance,
-    required InterfaceType? super.dartType,
     required super.isPublic,
     required super.isSynthetic,
-    super.element,
     required super.name,
     required super.type,
     required Map<String, AnnotationFieldDeclaration> fields,
     required Map<String, dynamic> userProvidedValues,
-    required ElementAnnotation? elementAnnotation
   })  : _linkDeclaration = linkDeclaration,
         _instance = instance,
         _fields = fields,
-        _elementAnnotation = elementAnnotation,
         _userProvidedValues = userProvidedValues;
 
   @override
@@ -72,9 +67,6 @@ final class StandardAnnotationDeclaration extends StandardEntityDeclaration impl
 
   @override
   List<String> getFieldNames() => _fields.keys.toList();
-
-  @override
-  InterfaceType? getDartType() => super.getDartType() as InterfaceType?;
 
   @override
   Map<String, AnnotationFieldDeclaration> getFieldsWithDefaults() {
@@ -102,11 +94,10 @@ final class StandardAnnotationDeclaration extends StandardEntityDeclaration impl
   String getDebugIdentifier() => 'annotation_${getLinkDeclaration().getName()}';
 
   @override
-  ElementAnnotation? getElementAnnotation() => _elementAnnotation;
-
-  @override
   Map<String, Object> toJson() {
     Map<String, Object> result = {};
+    result.addAll(super.toJson());
+    
     result['declaration'] = 'annotation';
 
     final fields = getFields().map((f) => f.toJson()).toList();
@@ -138,6 +129,7 @@ final class StandardAnnotationDeclaration extends StandardEntityDeclaration impl
     if(fieldsWithUserValues.isNotEmpty) {
       result['fieldsWithUserValues'] = fieldsWithUserValues;
     }
+
     return result;
   }
 
@@ -180,8 +172,6 @@ final class StandardAnnotationFieldDeclaration extends StandardSourceDeclaration
     required bool isFinal,
     required bool isConst,
     required int position,
-    required super.dartType,
-    super.element,
     required bool isNullable,
     required super.type,
     required super.libraryDeclaration,
@@ -233,6 +223,8 @@ final class StandardAnnotationFieldDeclaration extends StandardSourceDeclaration
   @override
   Map<String, Object> toJson() {
     Map<String, Object> result = {};
+    result.addAll(super.toJson());
+
     result['declaration'] = 'annotation_field';
     result['name'] = getName();
 

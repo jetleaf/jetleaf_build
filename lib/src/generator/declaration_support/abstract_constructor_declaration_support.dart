@@ -9,14 +9,13 @@
 import 'dart:async';
 import 'dart:mirrors' as mirrors;
 
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
 import '../../builder/runtime_builder.dart';
 import '../../declaration/declaration.dart';
 import '../../utils/dart_type_resolver.dart';
 import '../../utils/generic_type_parser.dart';
+import '../abstract_element_support.dart';
 import 'abstract_method_declaration_support.dart';
 
 /// {@template abstract_constructor_declaration_support}
@@ -85,22 +84,24 @@ abstract class AbstractConstructorDeclarationSupport extends AbstractMethodDecla
     required super.packages,
   });
 
-  /// Retrieves a [ConstructorElement] from a [InterfaceElement], given a
+  /// Retrieves a [AnalyzedConstructorDeclaration] from a [AnalyzedMemberList], given a
   /// constructor name.
   ///
   /// If [constructorName] is empty, returns the unnamed constructor;
   /// otherwise, returns the named constructor if it exists.
-  ConstructorElement? _getConstructorElement(InterfaceElement? element, String constructorName) {
-    ConstructorElement? constructorElement;
-    if (element case final element?) {
-      if (constructorName.isEmpty) {
-        constructorElement = element.unnamedConstructor;
-      } else {
-        constructorElement = element.getNamedConstructor(constructorName);
+  AnalyzedConstructorDeclaration? _getConstructor(AnalyzedMemberList? members, String constructorName) {
+    AnalyzedConstructorDeclaration? analyzedConstructor;
+    if (members case final members?) {
+      for (final member in members.whereType<AnalyzedConstructorDeclaration>()) {
+        if (member.name == null && constructorName.isEmpty) {
+          analyzedConstructor = member;
+        } else if (member.name.toString() == constructorName) {
+          analyzedConstructor = member;
+        }
       }
     }
 
-    return constructorElement;
+    return analyzedConstructor;
   }
 
   /// Generates a [ConstructorDeclaration] for a class using mirrors and
@@ -119,7 +120,7 @@ abstract class AbstractConstructorDeclarationSupport extends AbstractMethodDecla
   ///
   /// Parameters:
   /// - [constructorMirror]: The mirror representing the constructor.
-  /// - [element]: Optional analyzer [InterfaceElement] to obtain richer
+  /// - [members]: Optional analyzer [AnalyzedMemberList] to obtain richer
   ///   type information.
   /// - [package]: Package context for type and annotation resolution.
   /// - [libraryUri]: URI of the library containing the constructor.
@@ -129,7 +130,7 @@ abstract class AbstractConstructorDeclarationSupport extends AbstractMethodDecla
   ///
   /// Returns: A fully populated [ConstructorDeclaration] representing the constructor.
   @protected
-  Future<ConstructorDeclaration> generateConstructor(mirrors.MethodMirror constructorMirror, InterfaceElement? element, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration parentClass) async {
+  Future<ConstructorDeclaration> generateConstructor(mirrors.MethodMirror constructorMirror, AnalyzedMemberList? members, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration parentClass) async {
     final constructorName = mirrors.MirrorSystem.getName(constructorMirror.constructorName);
     final constructorClass = constructorMirror.returnType;
     Type type = constructorClass.hasReflectedType ? constructorClass.reflectedType : constructorClass.runtimeType;
@@ -138,35 +139,44 @@ abstract class AbstractConstructorDeclarationSupport extends AbstractMethodDecla
     RuntimeBuilder.logFullyVerboseInfo(logMessage, level: 3);
 
     final result = await RuntimeBuilder.timeExecution(() async {
-      final constructorElement = _getConstructorElement(element, constructorName);
+      final analyzedConstructor = _getConstructor(members, constructorName);
       type = await resolveGenericAnnotationIfNeeded(type, constructorClass, package, libraryUri, sourceUri, className);
 
       final result = StandardConstructorDeclaration(
         name: constructorName.isEmpty ? '' : constructorName,
         type: type,
-        element: constructorElement,
-        dartType: constructorElement?.type,
         libraryDeclaration: await getLibrary(libraryUri),
         parentClass: StandardLinkDeclaration(
           name: parentClass.getName(),
           type: parentClass.getType(),
           pointerType: parentClass.getType(),
-          dartType: parentClass.getDartType(),
           qualifiedName: parentClass.getQualifiedName(),
           isPublic: parentClass.getIsPublic(),
           canonicalUri: Uri.parse(parentClass.getPackageUri()),
           referenceUri: Uri.parse(parentClass.getPackageUri()),
           isSynthetic: parentClass.getIsSynthetic(),
         ),
-        annotations: await extractAnnotations(constructorMirror.metadata, libraryUri, sourceUri, package, constructorElement?.metadata.annotations),
+        annotations: await extractAnnotations(
+          constructorMirror.metadata,
+          libraryUri,
+          sourceUri,
+          package,
+          analyzedConstructor?.metadata
+        ),
         sourceLocation: sourceUri,
-        isFactory: constructorElement?.isFactory ?? constructorMirror.isFactoryConstructor,
-        isConst: constructorElement?.isConst ?? constructorMirror.isConstConstructor,
-        isPublic: constructorElement?.isPublic ?? !isInternal(constructorName),
-        isSynthetic: constructorElement?.isSynthetic ?? isSynthetic(constructorName),
+        isFactory: analyzedConstructor?.factoryKeyword != null || constructorMirror.isFactoryConstructor,
+        isConst: analyzedConstructor?.constKeyword != null || constructorMirror.isConstConstructor,
+        isPublic: !isInternal(constructorName),
+        isSynthetic: analyzedConstructor?.isSynthetic ?? isSynthetic(constructorName),
       );
 
-      result.parameters = await extractParameters(constructorMirror.parameters, constructorElement?.formalParameters, package, libraryUri, result);
+      result.parameters = await extractParameters(
+        constructorMirror.parameters,
+        analyzedConstructor?.parameters,
+        package,
+        libraryUri,
+        result
+      );
 
       return result;
     });

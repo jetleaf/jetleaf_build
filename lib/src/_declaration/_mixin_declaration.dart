@@ -45,8 +45,6 @@ final class StandardMixinDeclaration extends StandardClassDeclaration implements
     List<LinkDeclaration> constraints = const [],
     required super.name,
     required super.type,
-    required super.element,
-    required super.dartType,
     required super.isPublic,
     required super.isSynthetic,
     super.qualifiedName,
@@ -86,8 +84,6 @@ final class StandardMixinDeclaration extends StandardClassDeclaration implements
     return StandardMixinDeclaration(
       name: getName(),
       type: getType(),
-      element: getElement(),
-      dartType: getDartType(),
       isPublic: getIsPublic(),
       isSynthetic: getIsSynthetic(),
       parentLibrary: getParentLibrary(),
@@ -112,6 +108,8 @@ final class StandardMixinDeclaration extends StandardClassDeclaration implements
   @override
   Map<String, Object> toJson() {
     Map<String, Object> result = {};
+    result.addAll(super.toJson());
+    
     result['declaration'] = 'mixin';
     result['name'] = getName();
     
@@ -169,6 +167,7 @@ final class StandardMixinDeclaration extends StandardClassDeclaration implements
     result['type'] = getType().toString();
     result['isNullable'] = getIsNullable();
     result['kind'] = getKind().toString();
+    
     return result;
   }
 

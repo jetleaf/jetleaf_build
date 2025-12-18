@@ -39,9 +39,6 @@ final class StandardRecordLinkDeclaration extends StandardLinkDeclaration implem
     required super.isPublic,
     required super.isSynthetic,
     super.referenceUri,
-    super.variance,
-    super.upperBound,
-    required super.dartType,
     bool isNullable = false,
     List<RecordFieldDeclaration> fields = const [],
   })  : _fields = fields, _isNullable = isNullable;
@@ -115,7 +112,7 @@ final class StandardRecordLinkDeclaration extends StandardLinkDeclaration implem
 final class StandardRecordFieldDeclaration extends StandardLinkDeclaration implements RecordFieldDeclaration {
   final int _position; // null for named fields
   final bool _isNullable;
-  final RecordTypeField _recordTypeField;
+  final bool _isNamed;
   final LinkDeclaration _fieldLinkDeclaration;
 
   /// {@macro standard_record_field}
@@ -129,14 +126,11 @@ final class StandardRecordFieldDeclaration extends StandardLinkDeclaration imple
     required super.isPublic,
     required super.isSynthetic,
     super.referenceUri,
-    super.variance,
-    super.upperBound,
-    required super.dartType,
     int position = -1,
     required bool isNullable,
-    required RecordTypeField fieldType,
+    required bool isNamed,
     required LinkDeclaration fieldLink,
-  })  : _position = position, _isNullable = isNullable, _recordTypeField = fieldType, _fieldLinkDeclaration = fieldLink;
+  })  : _position = position, _isNullable = isNullable, _fieldLinkDeclaration = fieldLink, _isNamed = isNamed;
 
   @override
   String getName() => _name;
@@ -145,22 +139,16 @@ final class StandardRecordFieldDeclaration extends StandardLinkDeclaration imple
   int getPosition() => _position;
 
   @override
-  DartType? getDartType() => _dartType;
-
-  @override
   Type getType() => _type;
 
   @override
   bool getIsNullable() => _isNullable;
 
   @override
-  bool getIsNamed() => _position == -1;
+  bool getIsNamed() => _isNamed;
 
   @override
-  bool getIsPositional() => _position != -1;
-
-  @override
-  RecordTypeField getRecordFieldType() => _recordTypeField;
+  bool getIsPositional() => !_isNamed;
 
   @override
   Map<String, Object> toJson() {

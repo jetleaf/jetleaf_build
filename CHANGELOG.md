@@ -6,6 +6,14 @@ This project follows a simple, human-readable changelog format inspired by
 
 ---
 
+## [1.0.9]
+
+### Changed
+- Reduced memory usage by switching from full analyzer resolution to **AST-only parsing** for reflection and declaration analysis.
+
+
+---
+
 ## [1.0.8]
 
 ### Added

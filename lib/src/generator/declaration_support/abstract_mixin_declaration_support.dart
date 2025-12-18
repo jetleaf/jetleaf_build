@@ -9,8 +9,6 @@
 import 'dart:async';
 import 'dart:mirrors' as mirrors;
 
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
 import '../../builder/runtime_builder.dart';
@@ -123,7 +121,7 @@ abstract class AbstractMixinDeclarationSupport extends AbstractTypedefDeclaratio
   /// ### 2. **Annotation Resolution**
   /// Extracts metadata from:
   /// - Mirror metadata (`mixinMirror.metadata`)
-  /// - Analyzer metadata (`mixinElement?.metadata.annotations`)
+  /// - Analyzer metadata (`analyedMixin?.metadata.annotations`)
   ///
   /// Generic-aware annotations are processed through [GenericTypeParser] to
   /// resolve substituted or aliased types.
@@ -205,32 +203,30 @@ abstract class AbstractMixinDeclarationSupport extends AbstractTypedefDeclaratio
     RuntimeBuilder.logFullyVerboseInfo(logMessage, level: 1);
     
     final result = await RuntimeBuilder.timeExecution(() async {
-      final mixinElement = await getMixinElement(mixinName, sourceUri);
-      final dartType = mixinElement?.thisType;
-      final annotations = await extractAnnotations(mixinMirror.metadata, libraryUri, sourceUri, package, mixinElement?.metadata.annotations);
+      final analyedMixin = await getAnalyzedMixinDeclaration(mixinName, sourceUri);
+      // final dartType = analyedMixin?.thisType;
+      final annotations = await extractAnnotations(mixinMirror.metadata, libraryUri, sourceUri, package, analyedMixin?.metadata);
       type = await resolveGenericAnnotationIfNeeded(type, mixinMirror, package, libraryUri, sourceUri, mixinName);
 
       // Get source code for modifier detection
-      final sourceCode = sourceCache[sourceUri.toString()] ?? await readSourceCode(sourceUri);
+      final sourceCode = await readSourceCode(sourceUri);
 
       StandardMixinDeclaration reflectedMixin = StandardMixinDeclaration(
         name: mixinName,
         type: type,
-        element: mixinElement,
-        dartType: dartType,
         qualifiedName: buildQualifiedName(mixinName, (mixinMirror.location?.sourceUri ?? Uri.parse(libraryUri)).toString()),
         parentLibrary: await getLibrary(libraryUri),
         isNullable: false,
-        typeArguments: await extractTypeVariableAsLinks(mixinMirror.typeVariables, mixinElement?.typeParameters, package, libraryUri),
+        typeArguments: await extractTypeVariableAsLinks(mixinMirror.typeVariables, analyedMixin?.typeParameters, package, libraryUri),
         annotations: annotations,
         sourceLocation: sourceUri,
-        constraints: await extractMixinConstraintsAsLink(mixinMirror, mixinElement, package, libraryUri),
-        superClass: await extractSupertypeAsLink(mixinMirror, mixinElement, package, libraryUri),
-        interfaces: await extractInterfacesAsLink(mixinMirror, mixinElement, package, libraryUri),
-        mixins: await extractMixinsAsLink(mixinMirror, mixinElement, package, libraryUri),
-        isBase: mixinElement?.isBase ?? isBaseClass(sourceCode, mixinName),
-        isPublic: mixinElement?.isPublic ?? !isInternal(mixinName),
-        isSynthetic: mixinElement?.isSynthetic ?? isSynthetic(mixinName),
+        constraints: await extractMixinConstraintsAsLink(mixinMirror, analyedMixin?.onClause, package, libraryUri),
+        superClass: await extractSupertypeAsLink(mixinMirror, null, package, libraryUri),
+        interfaces: await extractInterfacesAsLink(mixinMirror, analyedMixin?.implementsClause, package, libraryUri),
+        mixins: await extractMixinsAsLink(mixinMirror, null, package, libraryUri),
+        isBase: isBaseClass(sourceCode, mixinName),
+        isPublic: !isInternal(mixinName),
+        isSynthetic: analyedMixin?.isSynthetic ?? isSynthetic(mixinName),
       );
 
       final fields = <FieldDeclaration>[];
@@ -238,20 +234,17 @@ abstract class AbstractMixinDeclarationSupport extends AbstractTypedefDeclaratio
 
       // Process fields
       for (final field in mixinMirror.declarations.values.whereType<mirrors.VariableMirror>()) {
-        fields.add(await generateField(field, mixinElement, package, libraryUri, sourceUri, mixinName, null, null, isBuiltIn));
+        fields.add(await generateField(field, analyedMixin?.members, package, libraryUri, sourceUri, mixinName, null, null, isBuiltIn));
       }
 
       // Process methods
       for (final method in mixinMirror.declarations.values.whereType<mirrors.MethodMirror>()) {
         if (!method.isConstructor) {
-          methods.add(await generateMethod(method, mixinElement, package, libraryUri, sourceUri, mixinName, null));
+          methods.add(await generateMethod(method, analyedMixin?.members, package, libraryUri, sourceUri, mixinName, null));
         }
       }
 
-      reflectedMixin = reflectedMixin.updateWith(fields: fields, methods: methods);
-
-      typeCache[type] = reflectedMixin;
-      return reflectedMixin;
+      return reflectedMixin.updateWith(fields: fields, methods: methods);
     });
 
     RuntimeBuilder.logFullyVerboseInfo("Completed ${logMessage.toLowerCase()} within ${result.getFormatted()}", trackWith: logMessage, level: 1);

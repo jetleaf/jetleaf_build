@@ -126,7 +126,6 @@ export 'src/file_utility/located_files.dart';
 export 'src/runner/run_scan.dart';
 export 'src/runner/test_scan.dart';
 
-export 'src/generator/declaration_writer/declaration_file_writer.dart';
 export 'src/generator/tree_shaker/tree_shaker.dart';
 export 'src/generator/library_generator.dart';
 export 'src/generator/mock_library_generator.dart';
