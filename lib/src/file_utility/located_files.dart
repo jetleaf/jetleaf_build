@@ -75,7 +75,7 @@ final class LocatedFiles {
   /// - Inheritance and interface linking
   ///
   /// A file in this set is *not required* to be scanned for annotations.
-  Set<File> _filesToAnalyze = {};
+  Set<String> _filesToAnalyze = {};
 
   /// Files scheduled for **lightweight structural scanning**.
   ///
@@ -85,7 +85,7 @@ final class LocatedFiles {
   /// - Symbol extraction
   ///
   /// Files in this set may or may not be fully analyzed.
-  Set<File> _filesToScan = {};
+  Set<String> _filesToScan = {};
 
   /// Creates a new [LocatedFiles] container with pre-initialized file sets.
   ///
@@ -143,8 +143,8 @@ final class LocatedFiles {
   ///
   /// Duplicate additions are ignored.
   void add(File file) {
-    _filesToAnalyze.add(file);
-    _filesToScan.add(file);
+    _filesToAnalyze.add(file.path);
+    _filesToScan.add(file.path);
   }
 
   /// Adds a file **only** to the analysis pipeline.
@@ -156,7 +156,7 @@ final class LocatedFiles {
   ///
   /// The file will not be included in scanning operations.
   void addToAnalyzer(File file) {
-    _filesToAnalyze.add(file);
+    _filesToAnalyze.add(file.path);
   }
 
   /// Returns an **immutable view** of all files scheduled for scanning.
@@ -167,7 +167,7 @@ final class LocatedFiles {
   /// - Metadata extractors
   ///
   /// Mutating the returned set will throw at runtime.
-  Set<File> getScannableDartFiles() => UnmodifiableSetView(_filesToScan);
+  Set<File> getScannableDartFiles() => UnmodifiableSetView(_filesToScan.map((f) => File(f)).toSet());
 
   /// Returns an **immutable view** of all files scheduled for analysis.
   ///
@@ -177,5 +177,5 @@ final class LocatedFiles {
   /// - Dependency graph builders
   ///
   /// Mutating the returned set will throw at runtime.
-  Set<File> getAnalyzeableDartFiles() => UnmodifiableSetView(_filesToAnalyze);
+  Set<File> getAnalyzeableDartFiles() => UnmodifiableSetView(_filesToAnalyze.map((f) => File(f)).toSet());
 }

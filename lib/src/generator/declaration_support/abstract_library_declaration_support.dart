@@ -181,19 +181,17 @@ abstract class AbstractLibraryDeclarationSupport extends AbstractClassDeclaratio
     RuntimeBuilder.logLibraryVerboseInfo(logMessage);
 
     final result = await RuntimeBuilder.timeExecution(() async {
-      final libraryElement = await getLibraryElement(uri);
       final isNotBuiltIn = !isBuiltInDartLibrary(uri);
       final isBuiltIn = isBuiltInDartLibrary(uri);
 
       final currentLibrary = StandardLibraryDeclaration(
         uri: uriString,
-        element: libraryElement,
         parentPackage: package,
         declarations: [],
         recordLinkDeclarations: [],
         isPublic: !isInternal(uriString),
         isSynthetic: isSynthetic(uriString),
-        annotations: await extractAnnotations(library.metadata, uriString, uri, package, libraryElement?.metadata.annotations),
+        annotations: await extractAnnotations(library.metadata, uriString, uri, package),
         sourceLocation: uri,
       );
 
@@ -278,10 +276,10 @@ abstract class AbstractLibraryDeclarationSupport extends AbstractClassDeclaratio
           } else if (declaration is mirrors.VariableMirror) {
             declarations.add(await generateTopLevelField(declaration, package, uri, fileUri, isBuiltIn));
           } else if (declaration is mirrors.TypeMirror) {
-            final libraryElement = await getLibraryElement(uri);
-            final element = libraryElement?.getTopLevelFunction(name);
-            if (isReallyARecordType(declaration, element?.type)) {
-              if (await generateRecordLinkDeclaration(declaration, package, uriString, element!.type) case final record?) {
+            final element = await getAnalyzedTopLevelMethod(uriString, name);
+            
+            if (isReallyARecordType(declaration, element?.returnType)) {
+              if (await generateRecordLinkDeclaration(declaration, package, uriString, element!.returnType!) case final record?) {
                 recordLinkDeclarations.add(record);
               }
             }

@@ -12,7 +12,11 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
+import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
 import 'library_generator.dart';
@@ -61,45 +65,6 @@ import 'library_generator.dart';
 /// performant even as the complexity of type resolution increases.
 /// {@endtemplate}
 abstract class AbstractElementSupport extends LibraryGenerator {
-  /// Internal cache of all resolved class declarations.
-  ///
-  /// Keys are fully qualified library URIs combined with the class name, such as:
-  /// ```
-  /// package:example/src/foo.dart:MyClass
-  /// ```
-  ///
-  /// Values are the analyzer's semantic model objects describing each class.
-  final Map<String, ClassElement> _classes = {};
-
-  /// Internal cache of all resolved enum declarations.
-  ///
-  /// The key format mirrors that used for [_classes].
-  ///
-  /// This cache allows JetLeaf to quickly retrieve enum metadata such as
-  /// value identifiers, annotations, documentation comments, and their
-  /// underlying index values without repeated analyzer passes.
-  final Map<String, EnumElement> _enums = {};
-
-  /// Internal cache of all typedef (type alias) declarations.
-  ///
-  /// These include:
-  /// - Function type aliases
-  /// - Generic alias declarations
-  /// - Aliases referencing classes or other typedefs
-  ///
-  /// Stored for quick lookup and expansion during type resolution.
-  final Map<String, TypeAliasElement> _typedefs = {};
-
-  /// Internal cache of all resolved mixin declarations.
-  ///
-  /// Useful for retrieving:
-  /// - Required "on" type constraints
-  /// - Methods and fields defined by mixins
-  /// - Mixin constructors and annotations
-  ///
-  /// Often used when building full type graphs.
-  final Map<String, MixinElement> _mixins = {};
-
   /// Creates the base element-support layer used by JetLeaf library and
   /// declaration generators.
   ///
@@ -112,239 +77,360 @@ abstract class AbstractElementSupport extends LibraryGenerator {
     required super.configuration,
     required super.packages,
   });
-
-  /// Retrieves the resolved [LibraryElement] associated with the given [uri].
+  
+  /// Parses and returns the analyzer [CompilationUnit] for the Dart source
+  /// identified by the given [uri].
   ///
-  /// This method must be implemented by subclasses and serves as the primary
-  /// entry point for obtaining analyzer semantic models for Dart libraries.
-  ///
-  /// ### Responsibilities
-  /// - Convert a `Uri` representing a Dart source file or package asset into an
-  ///   analyzer [LibraryElement].
-  /// - Provide cached results where possible to avoid repeated analyzer lookups.
-  /// - Return `null` if the library cannot be resolved or if analyzer
-  ///   initialization was not performed.
-  ///
-  /// This API is marked `@protected` because it is intended only for use inside
-  /// JetLeaf's generator infrastructure.
-  @protected
-  Future<LibraryElement?> getLibraryElement(Uri uri);
-
-  /// Retrieves the [ClassElement] corresponding to [className] within the
-  /// library identified by [sourceUri].
-  ///
-  /// This method provides a cached, analyzer-based resolution mechanism for Dart
-  /// class declarations. It ensures that repeated lookups for the same class do
-  /// not require additional analyzer queries.
+  /// This method acts as a lightweight bridge between raw source loading
+  /// ([readSourceCode]) and analyzer-based semantic resolution. It converts
+  /// Dart source code into an abstract syntax tree (AST) representation that
+  /// can later be used to obtain a [LibraryElement].
   ///
   /// ### Behavior
-  /// - Computes a canonical key combining the library URI and class name.
-  /// - Returns the cached [ClassElement] if it exists.
-  /// - Otherwise resolves the library via [getLibraryElement] and looks up the
-  ///   class using `libraryElement.getClass(className)`.
-  /// - Stores resolved elements into the internal cache for future use.
+  /// - Reads the source code associated with [uri] using [readSourceCode].
+  /// - Invokes `parseString` from `package:analyzer` to produce a
+  ///   [CompilationUnit].
+  /// - Returns the parsed unit if successful.
+  /// - Silently returns `null` if parsing fails for any reason.
   ///
   /// ### Parameters
-  /// - `className`: The simple name of the class (e.g., `"MyService"`).
-  /// - `sourceUri`: The URI of the library where the class is expected to be
-  ///   declared.
+  /// - `uri`: The URI identifying the Dart source to parse. This value is
+  ///   forwarded to both the source reader and analyzer parser.
   ///
   /// ### Returns
-  /// - The resolved [ClassElement], or `null` if not found.
+  /// - A [Future] that completes with a [CompilationUnit] when parsing
+  ///   succeeds.
+  /// - `null` if the source cannot be read or contains syntax errors that
+  ///   prevent parsing.
   ///
   /// ### Notes
-  /// Resolution depends on analyzer semantic models, so it requires the
-  /// analysis context to be initialized beforehand.
+  /// - This method intentionally suppresses parsing errors to keep JetLeaf’s
+  ///   generator pipeline resilient when encountering partially invalid or
+  ///   unsupported source files.
+  ///
+  /// This method does **not** perform full semantic resolution; it only builds
+  /// the syntactic AST needed to access declared fragments.
   @protected
-  Future<ClassElement?> getClassElement(String className, Uri sourceUri) async {
-    final key = _getUriKey(className, sourceUri);
-    
-    final existing = _classes[key];
-    if (existing != null) {
-      return existing;
+  Future<CompilationUnit?> getUnit(Object uri) async {
+    try {
+      final result = parseString(content: await readSourceCode(uri), path: uri.toString());
+      return result.unit;
+    } catch (_) {
+      return null;
     }
-
-    final libraryElement = await getLibraryElement(sourceUri);
-    final element = libraryElement?.getClass(className);
-
-    if (element != null) {
-      _classes[key] = element;
-    }
-
-    return element;
   }
 
-  /// Creates a stable cache key for analyzer element lookups.
+  /// Retrieves the analyzer [ClassDeclaration] AST node for the class named
+  /// [name] within the Dart source identified by [sourceUri].
   ///
-  /// The key uniquely identifies a declaration within a library by combining:
-  /// - The library URI
-  /// - The declaration name (class, enum, mixin, typedef)
-  ///
-  /// Example output:
-  /// ```
-  /// package:example/src/foo.dart#MyClass
-  /// ```
-  ///
-  /// Used internally for caching analyzer elements.
-  String _getUriKey(String name, Uri sourceUri) => "${sourceUri.toString()}#$name";
-
-  /// Retrieves the [EnumElement] corresponding to [enumName] within the library
-  /// identified by [sourceUri].
-  ///
-  /// This method mirrors the behavior of [getClassElement], but for enum
-  /// declarations. It provides efficient, analyzer-based enum resolution with
-  /// automatic caching.
+  /// This method operates purely at the **syntax
+  /// (AST) level** and returns the raw parsed declaration as it appears in
+  /// source code, without requiring full semantic resolution.
   ///
   /// ### Behavior
-  /// - Generates a lookup key based on the library URI and enum name.
-  /// - Returns a cached [EnumElement] if available.
-  /// - Otherwise resolves the library using [getLibraryElement].
-  /// - Looks up the enum via `libraryElement.getEnum(enumName)`.
-  /// - Caches the resolved element for future requests.
+  /// - Parses the source file using [getUnit].
+  /// - Searches top-level declarations for a matching [ClassDeclaration].
+  /// - Returns the first matching declaration if found.
+  /// - Returns `null` if the source cannot be parsed or the class is absent.
   ///
   /// ### Parameters
-  /// - `enumName`: The simple name of the enum (e.g., `"LogLevel"`).
-  /// - `sourceUri`: The URI of the file where the enum is expected to reside.
+  /// - `name`: The simple name of the class to locate.
+  /// - `sourceUri`: The URI of the Dart source file to analyze.
   ///
   /// ### Returns
-  /// - The resolved [EnumElement], or `null` if the enum is not found.
+  /// - A [ClassDeclaration] representing the class syntax node.
+  /// - `null` if no matching class declaration exists.
+  ///
+  /// ### Use Cases
+  /// - Inspecting constructors, fields, methods, and modifiers directly.
+  /// - Reading documentation comments or annotations from source.
+  /// - Performing source-level transformations or validations.
   ///
   /// ### Notes
-  /// This method is part of JetLeaf's internal reflection system and is not
-  /// intended to be used directly by user code.
+  /// - This method does **not** require analyzer element resolution.
+  /// - It is marked `@protected` for internal JetLeaf generator usage only.
   @protected
-  Future<EnumElement?> getEnumElement(String enumName, Uri sourceUri) async {
-    final key = _getUriKey(enumName, sourceUri);
-    
-    final existing = _enums[key];
-    if (existing != null) {
-      return existing;
+  Future<AnalyzedClassDeclaration?> getAnalyzedClassDeclaration(String name, Uri sourceUri) async {
+    if (await getUnit(sourceUri) case final unit?) {
+      if (unit.declarations.whereType<ClassDeclaration>().where((c) => c.name.toString() == name).firstOrNull case final type?) {
+        return type;
+      }
     }
 
-    final libraryElement = await getLibraryElement(sourceUri);
-    final element = libraryElement?.getEnum(enumName);
-
-    if (element != null) {
-      _enums[key] = element;
-    }
-
-    return element;
+    return null;
   }
 
-  /// Retrieves the [TypeAliasElement] corresponding to the typedef named
-  /// [typedefName] within the library identified by [sourceUri].
+  AnalyzedFieldDeclaration? getAnalyzedField(AnalyzedMemberList? members, String fieldName) {
+    if (members case final members?) {
+      if (members.whereType<FieldDeclaration>().where((f) => f.fields.variables.firstOrNull?.name.toString() == fieldName || f.fields.toString() == fieldName).firstOrNull case final field?) {
+        return field;
+      }
+    }
+
+    return null;
+  }
+
+  AnalyzedMethodDeclaration? getAnalyzedMethod(AnalyzedMemberList? members, String methodName) {
+    if (members case final members?) {
+      if (members.whereType<MethodDeclaration>().where((f) => f.name.toString() == methodName || f.toString() == methodName).firstOrNull case final method?) {
+        return method;
+      }
+    }
+
+    return null;
+  }
+
+  Future<AnalyzedTopLevelVariableDeclaration?> getAnalyzedTopLevelVariable(Object libraryUri, String variableName) async {
+    if (await getUnit(libraryUri) case final unit?) {
+      if (unit.declarations.whereType<TopLevelVariableDeclaration>().where((f) => f.toString() == variableName || f.variables.variables.firstOrNull?.name.toString() == variableName).firstOrNull case final variable?) {
+        return variable;
+      }
+    }
+
+    return null;
+  }
+
+  Future<AnalyzedTopLevelFunctionDeclaration?> getAnalyzedTopLevelMethod(Object libraryUri, String functionName) async {
+    if (await getUnit(libraryUri) case final unit?) {
+      if (unit.declarations.whereType<FunctionDeclaration>().where((f) => f.toString() == functionName || f.name.toString() == functionName).firstOrNull case final function?) {
+        return function;
+      }
+    }
+
+    return null;
+  }
+
+  /// Retrieves the analyzer [MixinDeclaration] AST node for the mixin named
+  /// [name] within the Dart source identified by [sourceUri].
   ///
-  /// This method provides a cached lookup mechanism for Dart typedefs using the
-  /// analyzer's semantic model. It ensures that repeated requests for the same
-  /// typedef do not require redundant analyzer traversal.
+  /// This method provides direct access to the **syntactic representation**
+  /// of a mixin declaration without relying on analyzer element resolution.
   ///
   /// ### Behavior
-  /// - Builds a unique cache key combining the source URI and typedef name.
-  /// - Checks the local typedef cache for an existing entry.
-  /// - If absent, resolves the library using [getLibraryElement].
-  /// - Retrieves the typedef via `libraryElement.getTypeAlias(typedefName)`.
-  /// - Stores and returns the resolved element.
+  /// - Parses the source file via [getUnit].
+  /// - Searches for a top-level [MixinDeclaration] matching [name].
+  /// - Returns the declaration if found; otherwise returns `null`.
   ///
   /// ### Parameters
-  /// - `typedefName`: The simple identifier of the typedef.
-  /// - `sourceUri`: The library URI where the typedef is expected to be
-  ///   declared.
+  /// - `name`: The simple name of the mixin.
+  /// - `sourceUri`: The URI of the source file containing the mixin.
   ///
   /// ### Returns
-  /// - The resolved [TypeAliasElement], or `null` if the typedef is not found.
+  /// - A [MixinDeclaration] AST node if present.
+  /// - `null` if the mixin is not declared in the source.
   ///
-  /// This API is restricted to JetLeaf internals and marked `@protected`.
-  @protected
-  Future<TypeAliasElement?> getTypedefElement(String typedefName, Uri sourceUri) async {
-    final key = _getUriKey(typedefName, sourceUri);
-    
-    final existing = _typedefs[key];
-    if (existing != null) {
-      return existing;
-    }
-
-    final libraryElement = await getLibraryElement(sourceUri);
-    final element = libraryElement?.getTypeAlias(typedefName);
-
-    if (element != null) {
-      _typedefs[key] = element;
-    }
-
-    return element;
-  }
-
-  /// Retrieves the [MixinElement] corresponding to the mixin named [mixinName]
-  /// within the library identified by [sourceUri].
-  ///
-  /// Provides analyzer-backed mixin resolution with caching to avoid unnecessary
-  /// repeated analyzer calls.
-  ///
-  /// ### Behavior
-  /// - Constructs a cache key using the library URI and mixin name.
-  /// - Returns a cached [MixinElement] if available.
-  /// - Otherwise resolves the library via [getLibraryElement].
-  /// - Looks up the mixin using `libraryElement.getMixin(mixinName)`.
-  /// - Caches and returns the resolved analyzer element.
-  ///
-  /// ### Parameters
-  /// - `mixinName`: The simple name of the mixin (e.g., `"Serializable"`).
-  /// - `sourceUri`: The URI of the library where the mixin is defined.
-  ///
-  /// ### Returns
-  /// - The resolved [MixinElement], or `null` if not found.
-  @protected
-  Future<MixinElement?> getMixinElement(String mixinName, Uri sourceUri) async {
-    final key = _getUriKey(mixinName, sourceUri);
-    
-    final existing = _mixins[key];
-    if (existing != null) {
-      return existing;
-    }
-
-    final libraryElement = await getLibraryElement(sourceUri);
-    final element = libraryElement?.getMixin(mixinName);
-
-    if (element != null) {
-      _mixins[key] = element;
-    }
-
-    return element;
-  }
-
-  /// Attempts to resolve **any supported analyzer element** (class, mixin,
-  /// enum, or typedef) by name within the library referenced by [sourceUri].
-  ///
-  /// This method acts as a unified lookup utility when the caller is unsure
-  /// what kind of declaration a given identifier refers to.
-  ///
-  /// ### Resolution Order
-  /// The element is returned according to this priority:
-  /// 1. `ClassElement`
-  /// 2. `MixinElement`
-  /// 3. `EnumElement`
-  /// 4. `TypeAliasElement`
-  ///
-  /// ### Parameters
-  /// - `typeName`: The simple identifier of the type-like element.
-  /// - `sourceUri`: The URI of the library where the element is expected.
-  ///
-  /// ### Returns
-  /// - A resolved [Element] (any of the supported analyzer element types),  
-  ///   or `null` if no matching declaration is found.
+  /// ### Use Cases
+  /// - Inspecting `on` constraints and implemented interfaces.
+  /// - Reading mixin-level annotations or documentation.
+  /// - Source-driven metadata generation.
   ///
   /// ### Notes
-  /// This method does **not** use caching directly, but instead relies on the
-  /// analyzer's own library element model. Use the type-specific lookup methods
-  /// when performance matters.
+  /// - This method works even when semantic resolution is unavailable.
+  /// - Intended exclusively for internal JetLeaf generator logic.
   @protected
-  Future<Element?> getTypeElement(String typeName, Uri sourceUri) async {
-    final libraryElement = await getLibraryElement(sourceUri);
-    if (libraryElement == null) return null;
+  Future<AnalyzedMixinDeclaration?> getAnalyzedMixinDeclaration(String name, Uri sourceUri) async {
+    if (await getUnit(sourceUri) case final unit?) {
+      if (unit.declarations.whereType<MixinDeclaration>().where((c) => c.name.toString() == name).firstOrNull case final type?) {
+        return type;
+      }
+    }
 
-    return libraryElement.getClass(typeName) ??
-           libraryElement.getMixin(typeName) ??
-           libraryElement.getEnum(typeName) ??
-           libraryElement.getTypeAlias(typeName);
+    return null;
+  }
+
+  /// Retrieves the analyzer [EnumDeclaration] AST node for the enum named
+  /// [name] within the Dart source identified by [sourceUri].
+  ///
+  /// This method exposes the enum’s **raw syntax tree**, including values,
+  /// annotations, and documentation, without requiring analyzer element
+  /// resolution.
+  ///
+  /// ### Behavior
+  /// - Parses the source file using [getUnit].
+  /// - Searches top-level declarations for an [EnumDeclaration] matching [name].
+  /// - Returns the declaration if found.
+  ///
+  /// ### Parameters
+  /// - `name`: The simple name of the enum.
+  /// - `sourceUri`: The URI of the Dart source file to analyze.
+  ///
+  /// ### Returns
+  /// - An [EnumDeclaration] representing the enum syntax.
+  /// - `null` if the enum does not exist in the source.
+  ///
+  /// ### Use Cases
+  /// - Extracting enum values and documentation comments.
+  /// - Source-based code generation or validation.
+  /// - Analyzing annotations applied to enum values.
+  ///
+  /// ### Notes
+  /// - This method is AST-only and does not imply semantic correctness.
+  /// - Intended for internal use by JetLeaf’s generator pipeline.
+  @protected
+  Future<AnalyzedEnumDeclaration?> getAnalyzedEnumDeclaration(String name, Uri sourceUri) async {
+    if (await getUnit(sourceUri) case final unit?) {
+      if (unit.declarations.whereType<EnumDeclaration>().where((c) => c.name.toString() == name).firstOrNull case final type?) {
+        return type;
+      }
+    }
+
+    return null;
+  }
+
+  /// Retrieves the analyzer [FunctionTypeAlias] AST node for the typedef named
+  /// [name] within the Dart source identified by [sourceUri].
+  ///
+  /// This method returns the **syntactic typedef declaration** exactly as it
+  /// appears in source code, without resolving it to a [TypeAliasElement].
+  ///
+  /// ### Behavior
+  /// - Parses the source file using [getUnit].
+  /// - Searches for a matching [FunctionTypeAlias] declaration.
+  /// - Returns the declaration if found; otherwise returns `null`.
+  ///
+  /// ### Parameters
+  /// - `name`: The simple name of the typedef.
+  /// - `sourceUri`: The URI of the Dart file where the typedef is declared.
+  ///
+  /// ### Returns
+  /// - A [FunctionTypeAlias] AST node.
+  /// - `null` if the typedef is not present.
+  ///
+  /// ### Use Cases
+  /// - Reading typedef signatures directly from source.
+  /// - Inspecting generic parameters and function shapes.
+  /// - Supporting source-driven reflection features.
+  ///
+  /// ### Notes
+  /// - Only supports legacy `typedef` declarations represented by
+  ///   [FunctionTypeAlias].
+  /// - Modern alias syntax is handled via analyzer elements instead.
+  @protected
+  Future<AnalyzedTypedefDeclaration?> getAnalyzedTypeAliasDeclaration(String name, Uri sourceUri) async {
+    if (await getUnit(sourceUri) case final unit?) {
+      if (unit.declarations.whereType<FunctionTypeAlias>().where((c) => c.name.toString() == name).firstOrNull case final type?) {
+        return type;
+      }
+    }
+
+    return null;
+  }
+
+  /// Determines whether the given analyzer [TypeAnnotation] represents a
+  /// **nullable type**.
+  ///
+  /// This method performs a **hybrid nullability check**, combining:
+  /// - **Syntactic analysis** (AST-level `?` markers and string forms), and
+  /// - **Semantic analysis** (resolved [DartType] nullability information).
+  ///
+  /// It exists because nullability information may be partially available
+  /// depending on whether analyzer resolution has been performed.
+  ///
+  /// ### How Nullability Is Detected
+  /// The method evaluates nullability using the following strategy:
+  ///
+  /// 1. **Explicit syntax (`?`)**
+  ///    - If `type?.question` is present.
+  ///    - If the string representation ends with `?`.
+  ///
+  /// 2. **Named types**
+  ///    - Checks the resolved [DartType] via [_checkDartType].
+  ///    - Recursively inspects generic type arguments
+  ///      (e.g. `List<String?>`).
+  ///
+  /// 3. **Generic function types**
+  ///    - Evaluates the function’s return type for nullability.
+  ///
+  /// 4. **Fallback semantic check**
+  ///    - Uses analyzer nullability metadata when available.
+  ///
+  /// ### Parameters
+  /// - `type`: The analyzer [TypeAnnotation] to inspect. May be `null`.
+  ///
+  /// ### Returns
+  /// - `true` if the type is nullable.
+  /// - `false` if the type is definitively non-nullable.
+  ///
+  /// ### Use Cases
+  /// - Determining optional parameters or fields during code generation.
+  /// - Enforcing null-safety rules in JetLeaf metadata models.
+  /// - Supporting mixed-resolution analysis where full type information
+  ///   may not yet be available.
+  ///
+  /// ### Notes
+  /// - This method is resilient to partially-resolved analyzer states.
+  /// - It intentionally favors correctness over minimal checks.
+  /// - Record types are currently ignored and treated as non-nullable
+  ///   unless semantic information is present.
+  bool checkTypeAnnotationNullable(TypeAnnotation? type) {
+    if (type?.question != null) return true;
+    if (type.toString().endsWith("?")) return true;
+
+    if (type is NamedType) {
+      if (_checkDartType(type.type)) return true;
+
+      if (type.typeArguments != null) {
+        for (final arg in type.typeArguments!.arguments) {
+          if (arg is NamedType && checkTypeAnnotationNullable(arg)) return true;
+        }
+      }
+
+      return false;
+    }
+
+    if (type is GenericFunctionType) {
+      return checkTypeAnnotationNullable(type.returnType);
+    }
+
+    return _checkDartType(type?.type);
+  }
+
+  String getNameFromAnalyzedTypeAnnotation(AnalyzedTypeAnnotation annotation) {
+    return annotation is AnalyzedNamedType ? annotation.name.lexeme : annotation.toString();
+  }
+
+  /// Checks whether the given analyzer [DartType] is marked as **nullable**
+  /// according to its resolved nullability suffix.
+  ///
+  /// This method performs a **semantic-level nullability check** and is used
+  /// as a fallback when syntactic nullability (`?`) cannot be reliably
+  /// determined from the AST alone.
+  ///
+  /// ### Behavior
+  /// - Returns `true` if the type’s [NullabilitySuffix] is
+  ///   [NullabilitySuffix.question].
+  /// - Returns `false` if the type is non-nullable or unresolved.
+  ///
+  /// ### Parameters
+  /// - `dartType`: A resolved analyzer [DartType], or `null`.
+  ///
+  /// ### Returns
+  /// - `true` if the type is nullable.
+  /// - `false` otherwise.
+  ///
+  /// ### Notes
+  /// - This method assumes analyzer resolution has occurred.
+  /// - When resolution is incomplete, callers should rely on
+  ///   syntactic checks first.
+  bool _checkDartType(DartType? dartType) => dartType?.nullabilitySuffix == NullabilitySuffix.question;
+
+  /// Retrieves the Dart type of a parameter from its AST node.
+  ///
+  /// Supports all parameter types including simple, field, function-typed,
+  /// default, and super formal parameters.
+  ///
+  /// # Parameters
+  /// - [param]: The AST parameter node.
+  ///
+  /// # Returns
+  /// The [AnalyzedTypeAnnotation] of the parameter, or `null` if it cannot be determined.
+  AnalyzedTypeAnnotation? getAnalyzedTypeAnnotationFromParameter(FormalParameter? param) {
+    if (param is SimpleFormalParameter) return param.type;
+    if (param is FieldFormalParameter) return param.type;
+    if (param is FunctionTypedFormalParameter) return param.returnType;
+    if (param is DefaultFormalParameter) return getAnalyzedTypeAnnotationFromParameter(param.parameter);
+    if (param is SuperFormalParameter) return param.type;
+    return null;
   }
 
   /// Clears all analyzer element caches maintained by this support class.
@@ -363,10 +449,103 @@ abstract class AbstractElementSupport extends LibraryGenerator {
   /// ### Side Effects
   /// - `_classes`, `_enums`, `_mixins`, `_typedefs` are all cleared.
   @mustCallSuper
-  Future<void> cleanup() async {
-    _classes.clear();
-    _enums.clear();
-    _mixins.clear();
-    _typedefs.clear();
-  }
+  Future<void> cleanup() async {}
+
+  /// Reads and returns the **raw Dart source code** associated with the given
+  /// [uri] reference.
+  ///
+  /// This method provides low-level access to the textual contents of a Dart
+  /// source file and serves as a bridge between JetLeaf’s generator pipeline
+  /// and the underlying source system (file system, package resolver, or
+  /// in-memory assets).
+  ///
+  /// ### Responsibilities
+  /// Implementations are expected to:
+  /// - Resolve the provided [uri] into a readable Dart source location.
+  /// - Load and return the complete source code as a UTF-8 string.
+  /// - Support common URI types such as:
+  ///   - `file://` URIs
+  ///   - `package:` URIs
+  ///   - Analyzer-provided source references
+  ///
+  /// ### Parameters
+  /// - `uri`: A reference to the Dart source. This may be a [Uri], a string,
+  ///   or an analyzer-specific object depending on the implementation.
+  ///
+  /// ### Returns
+  /// - A [Future] that completes with the raw source code as a [String].
+  ///
+  /// ### Use Cases
+  /// - Parsing documentation comments directly from source.
+  /// - Performing source-level analysis not exposed by analyzer elements.
+  /// - Supporting hybrid reflection (mirrors + source inspection).
+  ///
+  /// ### Notes
+  /// - This method is marked `@protected` because it is intended solely for
+  ///   internal use by JetLeaf generators.
+  /// - Implementations should throw meaningful exceptions if the source
+  ///   cannot be resolved or read.
+  ///
+  /// Subclasses **must** provide an implementation appropriate to their
+  /// execution environment (build-time, runtime, or analyzer-driven).
+  @protected
+  Future<String> readSourceCode(Object uri);
 }
+
+@internal
+typedef AnalyzedClassDeclaration = ClassDeclaration;
+
+@internal
+typedef AnalyzedEnumDeclaration = EnumDeclaration;
+
+@internal
+typedef AnalyzedMixinDeclaration = MixinDeclaration;
+
+@internal
+typedef AnalyzedTypedefDeclaration = FunctionTypeAlias;
+
+@internal
+typedef AnalyzedParameterDeclaration = FormalParameter;
+
+@internal
+typedef AnalyzedConstructorDeclaration = ConstructorDeclaration;
+
+@internal
+typedef AnalyzedMethodDeclaration = MethodDeclaration;
+
+@internal
+typedef AnalyzedTopLevelVariableDeclaration = TopLevelVariableDeclaration;
+
+@internal
+typedef AnalyzedTopLevelFunctionDeclaration = FunctionDeclaration;
+
+@internal
+typedef AnalyzedFieldDeclaration = FieldDeclaration;
+
+@internal
+typedef AnalyzedTypeAnnotation = TypeAnnotation;
+
+@internal
+typedef AnalyzedRecordTypeAnnotation = RecordTypeAnnotation;
+
+typedef AnalyzedRecordTypeAnnotationField = RecordTypeAnnotationField;
+
+typedef AnalyzedRecordTypeAnnotationNamedField = RecordTypeAnnotationNamedField;
+
+typedef AnalyzedGenericFunctionTypeAnnotation = GenericFunctionType;
+
+typedef AnalyzedTypeParameterList = TypeParameterList;
+
+typedef AnalyzedTypeParameter = TypeParameter;
+
+typedef AnalyzedFormalParameterList = FormalParameterList;
+
+typedef AnalyzedAnnotation = Annotation;
+
+typedef AnalyzedNamedType = NamedType;
+
+typedef AnalyzedMixinClause = WithClause;
+typedef AnalyzedInterfaceClause = ImplementsClause;
+typedef AnalyzedSuperClassClause = ExtendsClause;
+typedef AnalyzedMixinOnClause = MixinOnClause;
+typedef AnalyzedMemberList = NodeList<ClassMember>;

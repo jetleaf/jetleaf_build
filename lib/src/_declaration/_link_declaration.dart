@@ -29,11 +29,7 @@ final class StandardLinkDeclaration extends StandardDeclaration implements LinkD
   final String _pointerQualifiedName;
   final Uri? _canonicalUri;
   final Uri? _referenceUri;
-  final TypeVariance _variance;
-  final LinkDeclaration? _upperBound;
   final List<LinkDeclaration> _typeArguments;
-  final TypeParameterElement? _typeParameterElement;
-  final DartType? _dartType;
 
   /// {@macro standard_link_declaration}
   const StandardLinkDeclaration({
@@ -46,13 +42,8 @@ final class StandardLinkDeclaration extends StandardDeclaration implements LinkD
     required super.isPublic,
     required super.isSynthetic,
     Uri? referenceUri,
-    TypeVariance variance = TypeVariance.invariant,
-    LinkDeclaration? upperBound,
-    TypeParameterElement? typeParameterElement,
-    required DartType? dartType
   }) : _pointerType = pointerType, _pointerQualifiedName = qualifiedName, _typeArguments = typeArguments,
-       _canonicalUri = canonicalUri, _referenceUri = referenceUri, _variance = variance, _upperBound = upperBound,
-       _typeParameterElement = typeParameterElement, _dartType = dartType;
+       _canonicalUri = canonicalUri, _referenceUri = referenceUri;
 
   @override
   Type getPointerType() => _pointerType;
@@ -67,19 +58,7 @@ final class StandardLinkDeclaration extends StandardDeclaration implements LinkD
   Uri? getCanonicalUri() => _canonicalUri;
 
   @override
-  TypeParameterElement? getElement() => _typeParameterElement;
-
-  @override
-  DartType? getDartType() => _dartType;
-
-  @override
   Uri? getReferenceUri() => _referenceUri;
-
-  @override
-  TypeVariance getVariance() => _variance;
-
-  @override
-  LinkDeclaration? getUpperBound() => _upperBound;
 
   @override
   bool getIsCanonical() => _canonicalUri != null && _referenceUri != null && _canonicalUri == _referenceUri;
@@ -91,8 +70,6 @@ final class StandardLinkDeclaration extends StandardDeclaration implements LinkD
     "qualified_name": _pointerQualifiedName,
     if(_canonicalUri != null) "canonical_uri": _canonicalUri.toString(),
     if(_referenceUri != null) "reference_uri": _referenceUri.toString(),
-    "variance": _variance,
-    if(_upperBound != null) "upper_bound": _upperBound.toJson(),
     if(_typeArguments.isNotEmpty) "type_arguments": _typeArguments.map((t) => t.toJson()).toList(),
   };
 
@@ -103,8 +80,6 @@ final class StandardLinkDeclaration extends StandardDeclaration implements LinkD
       _pointerQualifiedName,
       _canonicalUri,
       _referenceUri,
-      _variance,
-      _upperBound,
       _typeArguments,
     ];
   }

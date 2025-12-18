@@ -35,8 +35,6 @@ final class StandardParameterDeclaration extends StandardSourceDeclaration imple
   /// {@macro standard_parameter}
   const StandardParameterDeclaration({
     required super.name,
-    super.element,
-    super.dartType,
     required super.type,
     required super.libraryDeclaration,
     required LinkDeclaration typeDeclaration,
@@ -90,6 +88,8 @@ final class StandardParameterDeclaration extends StandardSourceDeclaration imple
   @override
   Map<String, Object> toJson() {
     Map<String, Object> result = {};
+    result.addAll(super.toJson());
+    
     result['declaration'] = 'parameter';
     result['name'] = getName();
 
@@ -119,6 +119,7 @@ final class StandardParameterDeclaration extends StandardSourceDeclaration imple
     if(annotations.isNotEmpty) {
       result['annotations'] = annotations;
     }
+    
     return result;
   }
 

@@ -48,8 +48,6 @@ final class StandardMethodDeclaration extends StandardSourceDeclaration implemen
   /// {@macro standard_method}
   StandardMethodDeclaration({
     required super.name,
-    required super.element,
-    required super.dartType,
     required super.isPublic,
     required super.isSynthetic,
     required super.type,
@@ -137,6 +135,8 @@ final class StandardMethodDeclaration extends StandardSourceDeclaration implemen
   @override
   Map<String, Object> toJson() {
     Map<String, Object> result = {};
+    result.addAll(super.toJson());
+    
     result['declaration'] = 'method';
     result['name'] = getName();
     
@@ -176,6 +176,7 @@ final class StandardMethodDeclaration extends StandardSourceDeclaration implemen
     if (parentClass != null) {
       result['parentClass'] = parentClass;
     }
+    
     return result;
   }
 

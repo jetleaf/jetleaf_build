@@ -18,6 +18,8 @@ import 'package:test/test.dart';
 import 'package:jetleaf_build/jetleaf_build.dart';
 
 typedef WhenChecked = Map<String, bool>;
+final record = (String, bool);
+typedef Rrec = ({String name, int age});
 
 // Classes with various parameter configurations
 class SimpleParamClass {

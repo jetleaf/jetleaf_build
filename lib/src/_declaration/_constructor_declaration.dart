@@ -39,8 +39,6 @@ final class StandardConstructorDeclaration extends StandardSourceDeclaration imp
   StandardConstructorDeclaration({
     required super.name,
     required super.type,
-    super.element,
-    super.dartType,
     required super.isPublic,
     required super.isSynthetic,
     required super.libraryDeclaration,
@@ -86,6 +84,8 @@ final class StandardConstructorDeclaration extends StandardSourceDeclaration imp
   @override
   Map<String, Object> toJson() {
     Map<String, Object> result = {};
+    result.addAll(super.toJson());
+    
     result['declaration'] = 'constructor';
     result['name'] = getName();
 
@@ -113,6 +113,7 @@ final class StandardConstructorDeclaration extends StandardSourceDeclaration imp
     
     result['isFactory'] = getIsFactory();
     result['isConst'] = getIsConst();
+    
     return result;
   }
 

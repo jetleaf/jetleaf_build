@@ -82,24 +82,6 @@ abstract class LinkDeclaration extends Declaration {
   /// {@endtemplate}
   Uri? getReferenceUri();
 
-  /// Gets the upper bound for type variables.
-  ///
-  /// {@template get_upper_bound}
-  /// Returns:
-  /// - The [LinkDeclaration] representing the upper bound
-  /// - `null` if no bound exists or not a type variable
-  /// {@endtemplate}
-  LinkDeclaration? getUpperBound();
-
-  /// Gets the variance annotation for this reference.
-  ///
-  /// {@template get_variance}
-  /// Returns:
-  /// - The [TypeVariance] (covariant, contravariant, invariant)
-  /// - Defaults to invariant for non-generic types
-  /// {@endtemplate}
-  TypeVariance getVariance();
-
   /// Checks if this reference points to its canonical definition.
   ///
   /// {@template get_is_canonical}
@@ -108,40 +90,4 @@ abstract class LinkDeclaration extends Declaration {
   /// - `false` for imported/aliased references
   /// {@endtemplate}
   bool getIsCanonical();
-
-  /// Gets the analyzer element associated with this type reference.
-  ///
-  /// {@template get_element}
-  /// Returns:
-  /// - A [TypeParameterElement] when this reference corresponds to a generic
-  ///   type parameter in analyzer metadata.
-  /// - `null` if this is a concrete type or analyzer metadata is unavailable.
-  ///
-  /// ### Example
-  /// ```dart
-  /// final element = link.getElement();
-  /// if (element != null) {
-  ///   print(element.name); // "T"
-  /// }
-  /// ```
-  /// {@endtemplate}
-  TypeParameterElement? getElement();
-
-  /// Gets the corresponding [DartType] from the analyzer.
-  ///
-  /// {@template get_dart_type}
-  /// Returns:
-  /// - The analyzer [DartType] if available, allowing integration with static
-  ///   analysis and type resolution.
-  /// - `null` if no analyzer metadata is present (e.g., runtime-only reflection).
-  ///
-  /// ### Example
-  /// ```dart
-  /// final dartType = link.getDartType();
-  /// if (dartType != null) {
-  ///   print(dartType.getDisplayString()); // "List<String>"
-  /// }
-  /// ```
-  /// {@endtemplate}
-  DartType? getDartType();
 }

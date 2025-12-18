@@ -51,8 +51,6 @@ final class StandardClassDeclaration extends StandardTypeDeclaration implements 
     required LibraryDeclaration parentLibrary,
     super.isNullable = false,
     super.typeArguments,
-    required super.element,
-    required super.dartType,
     String? qualifiedName,
     List<ConstructorDeclaration> constructors = const [],
     List<FieldDeclaration> fields = const [],
@@ -179,8 +177,6 @@ final class StandardClassDeclaration extends StandardTypeDeclaration implements 
     bool? isInterface,
     bool? isFinal,
     bool? isRecord,
-    Element? element,
-    DartType? dartType,
     String? qualifiedName,
     bool? isPublic,
     bool? isSynthetic
@@ -206,8 +202,6 @@ final class StandardClassDeclaration extends StandardTypeDeclaration implements 
       isSealed: isSealed ?? _isSealed,
       isBase: isBase ?? _isBase,
       isInterface: isInterface ?? _isInterface,
-      element: element ?? getElement(),
-      dartType: dartType ?? getDartType(),
       qualifiedName: qualifiedName ?? getQualifiedName(),
       isFinal: isFinal ?? _isFinal,
       isRecord: isRecord ?? _isRecord,
@@ -252,6 +246,8 @@ final class StandardClassDeclaration extends StandardTypeDeclaration implements 
   @override
   Map<String, Object> toJson() {
     Map<String, Object> result = {};
+    result.addAll(super.toJson());
+    
     result['declaration'] = 'class';
     result['name'] = getName();
     

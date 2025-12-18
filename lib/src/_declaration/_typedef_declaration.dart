@@ -35,8 +35,6 @@ final class StandardTypedefDeclaration extends StandardTypeDeclaration implement
   StandardTypedefDeclaration({
     required super.name,
     required super.type,
-    required super.element,
-    required super.dartType,
     required super.isPublic,
     required super.isSynthetic,
     String? qualifiedName,
@@ -86,6 +84,8 @@ final class StandardTypedefDeclaration extends StandardTypeDeclaration implement
   @override
   Map<String, Object> toJson() {
     Map<String, Object> result = {};
+    result.addAll(super.toJson());
+    
     result['declaration'] = "typedef";
     result['name'] = getName();
     result['type'] = "${getType()}";

@@ -137,14 +137,4 @@ abstract class RecordFieldDeclaration extends LinkDeclaration {
   /// ### Returns
   /// `true` if the field is positional; otherwise, `false`.
   bool getIsPositional();
-
-  /// Returns the underlying analyzer [RecordTypeField] for this field.
-  ///
-  /// This provides access to low-level analyzer metadata, such as the original
-  /// field shape and declaration details, and is primarily intended for
-  /// advanced tooling and diagnostics.
-  ///
-  /// ### Returns
-  /// The associated [RecordTypeField].
-  RecordTypeField getRecordFieldType();
 }

@@ -10,11 +10,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:mirrors' as mirrors;
 
-import 'package:analyzer/dart/analysis/utilities.dart';
-import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
 import '../annotations.dart';
@@ -66,16 +61,6 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   /// Keys are always the `.toString()` representation of the library URI.
   final Map<String, LibraryDeclaration> libraryCache = {};
   
-  /// A runtime cache mapping a Dart `Type` to its corresponding JetLeaf
-  /// [TypeDeclaration].
-  ///
-  /// This is used primarily for fast reflection lookups, ensuring that runtime
-  /// Dart types do not require re-analysis or re-resolution.
-  ///
-  /// Cached results significantly reduce overhead when working with large
-  /// type graphs or when repeatedly resolving the same generic type.
-  final Map<Type, TypeDeclaration> typeCache = {};
-  
   /// Cache storing resolved [Package] metadata keyed by package name.
   ///
   /// This allows JetLeaf to quickly determine package boundaries, dependencies,
@@ -93,33 +78,7 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   /// - annotation extraction
   /// - scanning for forbidden imports
   /// - test file detection
-  final Map<String, String> sourceCache = {};
-
-  /// Cache of type-variable declarations encountered during generic type parsing.
-  ///
-  /// Keys use a fully-qualified notation (e.g., `"MyClass<T>"`) to ensure that
-  /// type variables are associated with their correct lexical scope.
-  ///
-  /// This enables JetLeaf to resolve generic bounds and map type arguments
-  /// efficiently across complex generic hierarchies.
-  final Map<String, TypeVariableDeclaration> typeVariableCache = {};
-
-  /// Maps analyzer [DartType] identifiers (serialized as unique strings) to
-  /// corresponding runtime Dart `Type` objects.
-  ///
-  /// This bridging cache is essential when converting analyzer-based types
-  /// to JetLeaf’s runtime reflection model.
-  ///
-  /// It prevents expensive analyzer <-> runtime type conversions.
-  final Map<String, Type> dartTypeToTypeCache = {};
-
-  /// Cache of analyzer [LibraryElement] objects, keyed by URI string.
-  ///
-  /// This provides fast access to analyzer library metadata without repeatedly
-  /// invoking the analyzer session, which can be expensive.
-  ///
-  /// Populated through [getLibraryElement] in subclasses.
-  final Map<String, LibraryElement> libraryElementCache = {};
+  final Map<String, String> _sourceCache = {};
 
   /// Creates a new instance of [AbstractTypeSupport].
   ///
@@ -197,7 +156,7 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   /// - The mirror’s simple name resolves to `"Record"`
   /// - The mirror has a reflected runtime type
   /// - The reflected type is exactly `Record`
-  /// - An analyzer [DartType] is available to confirm static type information
+  /// - An analyzer [AnalyzedTypeAnnotation] is available to confirm static type information
   ///
   /// ### Parameters
   /// - [mirror] — The runtime type mirror to inspect.
@@ -211,10 +170,11 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   /// `true` if the type is conclusively identified as a Dart record type;
   /// otherwise, `false`.
   @protected
-  bool isReallyARecordType(mirrors.TypeMirror mirror, DartType? dartType) => ReflectionUtils.isThisARecord(mirror) && dartType != null;
+  bool isReallyARecordType(mirrors.TypeMirror mirror, AnalyzedTypeAnnotation? dartType) 
+    => ReflectionUtils.isThisARecord(mirror) && dartType != null;
 
   /// Determines the kind of a type based on its `dart:mirrors` [TypeMirror] 
-  /// and optional analyzer [DartType].
+  /// and optional analyzer [AnalyzedTypeAnnotation].
   ///
   /// This method classifies types into the following [TypeKind] categories:
   /// - `dynamicType`
@@ -233,7 +193,7 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   /// - [dartType]: Optional analyzer type information (can be `null`).
   /// - Returns: The corresponding [TypeKind] of the provided type.
   @protected
-  TypeKind determineTypeKind(mirrors.TypeMirror typeMirror, DartType? dartType) {
+  TypeKind determineTypeKind(mirrors.TypeMirror typeMirror, AnalyzedTypeAnnotation? dartType) {
     if (typeMirror.runtimeType.toString() == 'dynamic') return TypeKind.dynamicType;
     if (typeMirror.runtimeType.toString() == 'void') return TypeKind.voidType;
     
@@ -243,7 +203,6 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
       if (isPrimitiveType(runtimeType)) return TypeKind.primitiveType;
       if (isListType(runtimeType)) return TypeKind.listType;
       if (isMapType(runtimeType)) return TypeKind.mapType;
-      if (isRecordType(runtimeType)) return TypeKind.recordType;
       return TypeKind.classType;
     }
     
@@ -272,26 +231,6 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
     }
 
     return ReflectionUtils.buildQualifiedName(typeName, libraryUri);
-  }
-
-  /// Builds a fully qualified name for a given [Element] from the analyzer.
-  ///
-  /// If [element] or its library is `null`, returns `'unknown'`.
-  /// Otherwise, combines the element's name and the library URI using
-  /// [buildQualifiedName] to produce a stable, canonical type identifier.
-  ///
-  /// - [element]: The analyzer element to generate a qualified name for.
-  /// - Returns: A string representing the fully qualified name of the element.
-  @protected
-  String buildQualifiedNameFromElement(Element? element) {
-    if (element == null) return 'unknown';
-    
-    final library = element.library;
-    if (library == null) {
-      return buildQualifiedName(element.name ?? 'unknown', 'unknown');
-    }
-    
-    return buildQualifiedName(element.name ?? 'unknown', library.uri.toString());
   }
 
   /// Checks if a [uri] points to a built-in Dart library.
@@ -341,61 +280,6 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   bool isMirrorSyntheticType(String name) {
     // Match X followed by digits (X0, X1, X2, etc.)
     return RegExp(r'^X\d+$').hasMatch(name);
-  }
-
-  /// Determines the variance of a type parameter from either an analyzer
-  /// [TypeParameterElement] or a mirrors [TypeVariableMirror].
-  ///
-  /// Current Dart does not explicitly encode variance, but this method
-  /// allows future-proofing by checking for `in` (contravariant) or `out`
-  /// (covariant) prefixes in type parameter names.
-  ///
-  /// - [analyzerParam]: The analyzer type parameter element (optional).
-  /// - [mirrorParam]: The mirrors type variable (optional).
-  /// - Returns: The corresponding [TypeVariance] (covariant, contravariant, or invariant).
-  @protected
-  TypeVariance getVarianceFromTypeParameter(TypeParameterElement? analyzerParam, mirrors.TypeVariableMirror? mirrorParam) {
-    // Check analyzer parameter first
-    if (analyzerParam != null) {
-      // In current Dart, variance is not explicitly supported yet
-      // This is future-proofing for when it becomes available
-      final name = analyzerParam.name;
-      if (name?.startsWith('in ') ?? false) return TypeVariance.contravariant;
-      if (name?.startsWith('out ') ?? false) return TypeVariance.covariant;
-    }
-    
-    // Default to invariant
-    return TypeVariance.invariant;
-  }
-
-  /// Determines the variance of a type parameter element from an analyzer [TypeParameterElement].
-  ///
-  /// Dart currently does not have explicit variance annotations, but this method
-  /// infers variance heuristically based on naming conventions:
-  /// - `in` prefix → contravariant
-  /// - `out` prefix → covariant
-  /// - Otherwise → invariant
-  ///
-  /// - [tp]: The type parameter element to analyze.
-  /// - Returns: The inferred [TypeVariance] for the type parameter.
-  @protected
-  TypeVariance getVariance(TypeParameterElement? tp) {
-    // Dart doesn't have explicit variance annotations yet, but we can infer
-    if (tp?.name?.startsWith('in ') ?? false) return TypeVariance.contravariant;
-    if (tp?.name?.startsWith('out ') ?? false) return TypeVariance.covariant;
-    return TypeVariance.invariant;
-  }
-
-  /// Infers the variance of a type parameter from a Dart analyzer [TypeParameterType] context.
-  ///
-  /// Currently always returns [TypeVariance.invariant] as Dart does not provide
-  /// explicit variance in the type system.
-  ///
-  /// - [dartType]: The Dart analyzer type parameter type to inspect.
-  /// - Returns: The inferred [TypeVariance], defaults to invariant.
-  @protected
-  TypeVariance inferVarianceFromContext(TypeParameterType dartType) {
-    return TypeVariance.invariant;
   }
 
   /// Infers the variance of a type parameter from a mirrors [TypeVariableMirror] context.
@@ -482,7 +366,6 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
 
     final library = StandardLibraryDeclaration(
       uri: uri.toString(),
-      element: null,
       parentPackage: createDefaultPackage(getPackageNameFromUri(uri) ?? "Unknown"),
       declarations: [],
       recordLinkDeclarations: [],
@@ -496,28 +379,24 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
     return library;
   }
 
-  /// Reads the source code from a given [uri] and caches it.
-  ///
-  /// - Utilizes [sourceCache] to avoid repeated file reads.
-  /// - Strips comments from the source code using [RuntimeUtils.stripComments].
-  /// - Returns an empty string if the file cannot be read.
-  ///
-  /// - [uri]: The URI of the source file.
-  /// - Returns: The source code as a string, with comments removed.
-  @protected
-  Future<String> readSourceCode(Uri uri) async {
-    try {
-      if (sourceCache.containsKey(uri.toString())) {
-        return sourceCache[uri.toString()]!;
-      }
+  @override
+  Future<String> readSourceCode(Object uri) async {
+    if (uri case Uri uri) {
+      try {
+        if (_sourceCache.containsKey(uri.toString())) {
+          return _sourceCache[uri.toString()]!;
+        }
 
-      final filePath = (await resolveUri(uri) ?? uri).toFilePath();
-      String fileContent = await File(filePath).readAsString();
-      sourceCache[uri.toString()] = fileContent;
-      return RuntimeUtils.stripComments(fileContent);
-    } catch (_) {
-      return "";
+        final filePath = (await resolveUri(uri) ?? uri).toFilePath();
+        String fileContent = await File(filePath).readAsString();
+        _sourceCache[uri.toString()] = fileContent;
+        return RuntimeUtils.stripComments(fileContent);
+      } catch (_) { }
+    } else if(uri case String uri) {
+      return await readSourceCode(Uri.parse(uri));
     }
+
+    return "";
   }
 
   /// Returns the package URI for a given [typeName] and [actualType].
@@ -710,7 +589,7 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   /// Determines if a field is nullable either from analyzer [FieldElement] or source code.
   ///
   /// Checks nullability in multiple ways:
-  /// - If [fieldElement] is provided, checks the Dart analyzer type's nullability suffix.
+  /// - If [field] is provided, checks the Dart analyzer type's nullability suffix.
   /// - If [sourceCode] is provided, uses regular expressions to detect `?` in type declarations.
   /// 
   /// Supports:
@@ -718,15 +597,15 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   /// - Nullable parameters in constructors
   /// - `this.fieldName` syntax in parameter lists
   ///
-  /// - [fieldElement]: Optional analyzer field element to inspect nullability directly.
+  /// - [field]: Optional analyzer field element to inspect nullability directly.
   /// - [sourceCode]: Optional Dart source code as string.
   /// - [fieldName]: The field name to check.
   /// - Returns: `true` if the field is nullable, `false` otherwise.
   @protected
-  bool isNullable({FieldElement? fieldElement, String? sourceCode, required String fieldName}) {
-    if (fieldElement != null) {
-      final DartType t = fieldElement.type;
-      return t.nullabilitySuffix == NullabilitySuffix.question;
+  bool isNullable({AnalyzedFieldDeclaration? field, String? sourceCode, required String fieldName}) {
+    if (field != null) {
+      final t = field.fields.type;
+      return checkTypeAnnotationNullable(t);
     }
 
     if (sourceCode == null) return false;
@@ -856,7 +735,7 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
       final annotations = await extractAnnotations(mirror.metadata, libraryUri, sourceUri, package);
       Type? resolvedType = await resolveTypeFromGenericAnnotation(annotations, typeName);
       
-      // Fallback to DartType resolution
+      // Fallback to AnalyzedTypeAnnotation resolution
       resolvedType ??= resolvePublicDartType(libraryUri, typeName, mirror);
       
       return resolvedType ?? (typeName == "void" ? Void : runtimeType);
@@ -886,34 +765,13 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   /// This method attempts to locate the library URI where the class is defined,
   /// using multiple strategies:
   /// 1. If a `hintUri` is provided, it checks that library first.
-  /// 2. Checks cached [LibraryElement]s in `libraryElementCache`.
-  /// 3. Falls back to scanning all loaded libraries in the mirror system.
+  /// 2. Falls back to scanning all loaded libraries in the mirror system.
   ///
   /// - [className]: The name of the class, mixin, or enum to locate.
   /// - [hintUri]: Optional URI hint where the class may be declared.
   /// - Returns: The URI string of the library containing the class, or `null` if not found.
   @protected
   Future<String?> findRealClassUri(String className, String? hintUri) async {
-    // First try the hint URI if available
-    if (hintUri != null) {
-      final libraryElement = await getLibraryElement(Uri.parse(hintUri));
-      if (libraryElement?.getClass(className) != null ||
-          libraryElement?.getMixin(className) != null ||
-          libraryElement?.getEnum(className) != null) {
-        return hintUri;
-      }
-    }
-
-    // Search through all cached libraries
-    for (final entry in libraryElementCache.entries) {
-      final libraryElement = entry.value;
-      if (libraryElement.getClass(className) != null ||
-          libraryElement.getMixin(className) != null ||
-          libraryElement.getEnum(className) != null) {
-        return entry.key;
-      }
-    }
-
     // Search through mirror system
     for (final libraryMirror in getLibraries()) {
       for (final declaration in libraryMirror.declarations.values) {
@@ -985,7 +843,29 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
     return null;
   }
 
-  /// Resolves the runtime [Type] corresponding to a given [DartType].
+  /// Resolves a runtime [mirrors.TypeMirror] from an analyzer [AnalyzedTypeAnnotation].
+  ///
+  /// This helper bridges the analyzer and reflection worlds by:
+  /// - Resolving the concrete runtime [Type] associated with [dartType]
+  /// - Reflecting that runtime type into a [mirrors.TypeMirror]
+  ///
+  /// It is primarily used during record-field processing to enable
+  /// reflection-based extraction of type metadata that is not available
+  /// directly from analyzer structures.
+  ///
+  /// ### Parameters
+  /// - [dartType] — The analyzer type to resolve.
+  /// - [package] — The package context used for lookup.
+  /// - [libraryUri] — The URI of the declaring library.
+  ///
+  /// ### Returns
+  /// A [Future] that completes with the corresponding [mirrors.TypeMirror].
+  Future<mirrors.TypeMirror> getMirroredTypeAnnotation(AnalyzedTypeAnnotation dartType, Package package, String libraryUri) async {
+    final type = await findRuntimeTypeFromDartType(dartType, libraryUri, package);
+    return mirrors.reflectType(type);
+  }
+
+  /// Resolves the runtime [Type] corresponding to a given [AnalyzedTypeAnnotation].
   ///
   /// This method attempts multiple strategies to determine the actual runtime
   /// type of a Dart element:
@@ -995,82 +875,38 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   /// 4. Searches through all loaded libraries in the mirror system to find a matching class.
   /// 5. Falls back to `Object` or the element's runtime type if no match is found.
   ///
-  /// - [dartType]: The analyzer [DartType] to resolve.
+  /// - [dartType]: The analyzer [AnalyzedTypeAnnotation] to resolve.
   /// - [defaultLibraryUri]: The URI of the library where the type is defined (used for resolution).
   /// - [package]: The package context for type resolution.
   /// - Returns: The resolved runtime [Type].
   @protected
-  Future<Type> findRuntimeTypeFromDartType(DartType dartType, String defaultLibraryUri, Package package) async {
-    final cacheKey = '${dartType.element?.name}_${dartType.element?.library?.uri}_${dartType.getDisplayString()}';
-    if (dartTypeToTypeCache.containsKey(cacheKey)) {
-      return dartTypeToTypeCache[cacheKey]!;
-    }
-
-    // Handle built-in types first
-    if (dartType.isDartCoreBool) return bool;
-    if (dartType.isDartCoreDouble) return double;
-    if (dartType.isDartCoreInt) return int;
-    if (dartType.isDartCoreNum) return num;
-    if (dartType.isDartCoreString) return String;
-    if (dartType.isDartCoreList) return List;
-    if (dartType.isDartCoreMap) return Map;
-    if (dartType.isDartCoreSet) return Set;
-    if (dartType.isDartCoreIterable) return Iterable;
-    if (dartType.isDartAsyncFuture) return Future;
-    if (dartType.isDartAsyncStream) return Stream;
-    if (dartType is DynamicType) return Dynamic;
-    if (dartType is VoidType) return Void;
-
+  Future<Type> findRuntimeTypeFromDartType(AnalyzedTypeAnnotation dartType, String defaultLibraryUri, Package package) async {
     // Try to resolve from dart type resolver
-    final elementName = dartType.element?.name;
-    final libraryUri = dartType.element?.library?.uri.toString();
-    
-    if (elementName != null && libraryUri != null) {
-      final resolvedType = resolvePublicDartType(libraryUri, elementName, );
-      if (resolvedType != null) {
-        dartTypeToTypeCache[cacheKey] = resolvedType;
-        return resolvedType;
-      }
-    }
+    final elementName = getNameFromAnalyzedTypeAnnotation(dartType);
 
     // Try to find the type in our mirror system
-    if (elementName != null) {
-      // Look through all libraries to find a matching class
-      for (final libraryMirror in getLibraries()) {
-        if (libraryMirror.location?.sourceUri.toString() == defaultLibraryUri) {
-          for (final declaration in libraryMirror.declarations.values) {
-            if (declaration is mirrors.ClassMirror) {
-              final className = mirrors.MirrorSystem.getName(declaration.simpleName);
-              if (className == elementName) {
-                try {
-                  final runtimeType = await tryAndGetOriginalType(declaration, defaultLibraryUri, Uri.parse(defaultLibraryUri), package);
-                  dartTypeToTypeCache[cacheKey] = runtimeType;
-                  return runtimeType;
-                } catch (e) {
-                  // Continue searching
-                }
+    // Look through all libraries to find a matching class
+    for (final libraryMirror in getLibraries()) {
+      if (libraryMirror.location?.sourceUri.toString() == defaultLibraryUri) {
+        for (final declaration in libraryMirror.declarations.values) {
+          if (declaration is mirrors.ClassMirror) {
+            final className = mirrors.MirrorSystem.getName(declaration.simpleName);
+            if (className == elementName && declaration.simpleName == Symbol(elementName)) {
+              try {
+                return await tryAndGetOriginalType(declaration, defaultLibraryUri, Uri.parse(defaultLibraryUri), package);
+              } catch (e) {
+                // Continue searching
               }
             }
           }
         }
       }
     }
-
-    Type fallbackType = Object;
-    if (dartType.element != null) {
-      // Try to create a synthetic type based on the element
-      try {
-        fallbackType = dartType.element!.runtimeType;
-      } catch (e) {
-        fallbackType = Object;
-      }
-    }
     
-    dartTypeToTypeCache[cacheKey] = fallbackType;
-    return fallbackType;
+    return Object;
   }
 
-  /// Resolves the base runtime [Type] from a [DartType], ignoring type parameters.
+  /// Resolves the base runtime [Type] from a [AnalyzedTypeAnnotation], ignoring type parameters.
   ///
   /// This method is similar to [findRuntimeTypeFromDartType] but focuses on
   /// retrieving the non-parameterized, “raw” type of the element.  
@@ -1078,67 +914,50 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   ///
   /// Resolution steps:
   /// 1. Checks for built-in types (core and async).
-  /// 2. Searches the mirror system for the base class corresponding to the [DartType].
+  /// 2. Searches the mirror system for the base class corresponding to the [AnalyzedTypeAnnotation].
   /// 3. Falls back to [findRuntimeTypeFromDartType] if no base class is found.
   ///
-  /// - [dartType]: The analyzer [DartType] to resolve.
+  /// - [dartType]: The analyzer [AnalyzedTypeAnnotation] to resolve.
   /// - [libraryUri]: The URI of the library where the type is defined.
   /// - [package]: The package context for type resolution.
   /// - Returns: The base runtime [Type].
   @protected
-  Future<Type> findBaseRuntimeTypeFromDartType(DartType dartType, String libraryUri, Package package) async {
-    // Handle built-in types
-    if (dartType.isDartCoreBool) return bool;
-    if (dartType.isDartCoreDouble) return double;
-    if (dartType.isDartCoreInt) return int;
-    if (dartType.isDartCoreNum) return num;
-    if (dartType.isDartCoreString) return String;
-    if (dartType.isDartCoreList) return List;
-    if (dartType.isDartCoreMap) return Map;
-    if (dartType.isDartCoreSet) return Set;
-    if (dartType.isDartCoreIterable) return Iterable;
-    if (dartType.isDartAsyncFuture) return Future;
-    if (dartType.isDartAsyncStream) return Stream;
-    if (dartType is DynamicType) return Dynamic;
-    if (dartType is VoidType) return Void;
-
+  Future<Type> findBaseRuntimeTypeFromDartType(AnalyzedTypeAnnotation dartType, String libraryUri, Package package) async {
     // For parameterized types, find the base class
-    final elementName = dartType.element?.name;
-    if (elementName != null) {
-      // Look through all libraries to find the base class
-      for (final libraryMirror in getLibraries()) {
-        if (libraryMirror.location?.sourceUri.toString() == libraryUri) {
-          for (final declaration in libraryMirror.declarations.values) {
-            if (declaration is mirrors.ClassMirror) {
-              final className = mirrors.MirrorSystem.getName(declaration.simpleName);
-              if (className == elementName) {
-                try {
-                  return await tryAndGetOriginalType(declaration, libraryUri, Uri.parse(libraryUri), package);
-                } catch (e) {
-                  // Continue searching
-                }
+    final elementName = getNameFromAnalyzedTypeAnnotation(dartType);
+    // Look through all libraries to find the base class
+    for (final libraryMirror in getLibraries()) {
+      if (libraryMirror.location?.sourceUri.toString() == libraryUri) {
+        for (final declaration in libraryMirror.declarations.values) {
+          if (declaration is mirrors.ClassMirror) {
+            final className = mirrors.MirrorSystem.getName(declaration.simpleName);
+            if (className == elementName && declaration.simpleName == Symbol(elementName)) {
+              try {
+                return await tryAndGetOriginalType(declaration, libraryUri, Uri.parse(libraryUri), package);
+              } catch (e) {
+                // Continue searching
               }
             }
           }
         }
       }
-    }
+      }
 
     // Fallback to the actual runtime type
     return await findRuntimeTypeFromDartType(dartType, libraryUri, package);
   }
 
-  /// Attempts to resolve the **class name** associated with a given [DartType]
+  /// Attempts to resolve the **class name** associated with a given [AnalyzedTypeAnnotation]
   /// within a specific Dart library.
   ///
-  /// This utility bridges static analyzer types ([DartType]) with runtime
+  /// This utility bridges static analyzer types ([AnalyzedTypeAnnotation]) with runtime
   /// reflection metadata ([mirrors.ClassMirror]). It searches for a class
   /// declaration in the loaded mirror system whose name matches the element
   /// associated with the provided [dartType], but **only within the library
   /// identified by** [libraryUri].
   ///
   /// ### Behavior
-  /// - Extracts the element name from the analyzer’s [DartType].
+  /// - Extracts the element name from the analyzer’s [AnalyzedTypeAnnotation].
   /// - Scans all libraries known to the mirror system.
   /// - Identifies the library whose `sourceUri` matches [libraryUri].
   /// - Searches that library’s declarations for a matching class name.
@@ -1168,18 +987,16 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   /// ### Notes
   /// - This function only checks the **specified** library.  
   /// - Resolution may fail for synthetic, anonymous, or inferred types.
-  Future<String?> getClassNameFromDartType(DartType dartType, String libraryUri) async {
-    final elementName = dartType.element?.name;
-    if (elementName != null) {
-      // Look through all libraries to find the base class
-      for (final libraryMirror in getLibraries()) {
-        if (libraryMirror.location?.sourceUri.toString() == libraryUri) {
-          for (final declaration in libraryMirror.declarations.values) {
-            if (declaration is mirrors.ClassMirror) {
-              final className = mirrors.MirrorSystem.getName(declaration.simpleName);
-              if (className == elementName) {
-                return className;
-              }
+  Future<String?> getClassNameFromDartType(AnalyzedTypeAnnotation dartType, String libraryUri) async {
+    final elementName = getNameFromAnalyzedTypeAnnotation(dartType);
+    // Look through all libraries to find the base class
+    for (final libraryMirror in getLibraries()) {
+      if (libraryMirror.location?.sourceUri.toString() == libraryUri) {
+        for (final declaration in libraryMirror.declarations.values) {
+          if (declaration is mirrors.ClassMirror) {
+            final className = mirrors.MirrorSystem.getName(declaration.simpleName);
+            if (className == elementName && declaration.simpleName == Symbol(elementName)) {
+              return className;
             }
           }
         }
@@ -1189,7 +1006,7 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
     return null;
   }
 
-  /// Extracts annotations from a list of [InstanceMirror] metadata.
+  /// Extracts annotations from a list of [mirrors.InstanceMirror] metadata.
   ///
   /// Subclasses must implement this method to convert Dart mirrors metadata
   /// into JetLeaf [AnnotationDeclaration]s, taking package context into account.
@@ -1198,7 +1015,7 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   /// - [package]: The package context for resolving annotation types.
   /// - Returns: A list of [AnnotationDeclaration] representing the extracted annotations.
   @protected
-  Future<List<AnnotationDeclaration>> extractAnnotations(List<mirrors.InstanceMirror> metadata, String libraryUri, Uri sourceUri, Package package, [List<ElementAnnotation>? analyzerAnnotations]);
+  Future<List<AnnotationDeclaration>> extractAnnotations(List<mirrors.InstanceMirror> metadata, String libraryUri, Uri sourceUri, Package package, [List<AnalyzedAnnotation>? analyzerAnnotations]);
 
   /// Generates a full [LibraryDeclaration] for a runtime-reflected
   /// [mirrors.LibraryMirror], integrating both runtime reflection and static
@@ -1307,12 +1124,9 @@ abstract class AbstractTypeSupport extends AbstractElementSupport {
   @override
   Future<void> cleanup() async {
     await super.cleanup();
+    
     libraryCache.clear();
-    typeCache.clear();
-    typeVariableCache.clear();
     packageCache.clear();
-    sourceCache.clear();
-    dartTypeToTypeCache.clear();
-    libraryElementCache.clear();
+    _sourceCache.clear();
   }
 }

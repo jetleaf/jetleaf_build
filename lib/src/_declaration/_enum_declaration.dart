@@ -33,8 +33,6 @@ final class StandardEnumDeclaration extends StandardClassDeclaration implements 
   StandardEnumDeclaration({
     required super.name,
     required super.type,
-    required super.element,
-    required super.dartType,
     required super.isPublic,
     required super.isSynthetic,
     super.qualifiedName,
@@ -68,6 +66,8 @@ final class StandardEnumDeclaration extends StandardClassDeclaration implements 
   @override
   Map<String, Object> toJson() {
     Map<String, Object> result = {};
+    result.addAll(super.toJson());
+    
     result['declaration'] = 'enum';
     result['name'] = getName();
     
@@ -109,6 +109,7 @@ final class StandardEnumDeclaration extends StandardClassDeclaration implements 
     result['type'] = getType().toString();
     result['isNullable'] = getIsNullable();
     result['kind'] = getKind().toString();
+
     return result;
   }
 
@@ -137,8 +138,6 @@ final class StandardEnumDeclaration extends StandardClassDeclaration implements 
     return StandardEnumDeclaration(
       name: getName(),
       type: getType(),
-      element: getElement(),
-      dartType: getDartType(),
       isPublic: getIsPublic(),
       isSynthetic: getIsSynthetic(),
       parentLibrary: getParentLibrary(),
@@ -212,14 +211,11 @@ final class StandardEnumFieldDeclaration extends StandardSourceDeclaration imple
   /// Parameters:
   /// - [_name]: The declared name of the enum value
   /// - [_value]: The actual enum value instance  
-  /// - [_enum]: The parent enum declaration
   ///
   /// All parameters are required and immutable.
   /// {@endtemplate}
   const StandardEnumFieldDeclaration({
     required super.name,
-    super.element,
-    super.dartType,
     required super.type,
     required super.isPublic,
     required super.isSynthetic,
@@ -245,10 +241,13 @@ final class StandardEnumFieldDeclaration extends StandardSourceDeclaration imple
   @override
   Map<String, Object> toJson() {
     Map<String, Object> result = {};
+    result.addAll(super.toJson());
+    
     result['declaration'] = 'enum_field';
     result['name'] = getName();
     result['value'] = getValue();
     result['type'] = getType().toString();
+
     return result;
   }
 

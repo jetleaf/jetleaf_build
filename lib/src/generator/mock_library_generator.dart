@@ -73,7 +73,6 @@ base class MockLibraryGenerator extends DefaultLibraryGenerator {
     required super.configuration,
     required super.packages,
   });
-
 }
 
 /// {@template mock_library_generator_factory}

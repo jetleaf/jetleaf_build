@@ -9,15 +9,13 @@
 import 'dart:async';
 import 'dart:mirrors' as mirrors;
 
-import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
 import '../../builder/runtime_builder.dart';
 import '../../declaration/declaration.dart';
 import '../../utils/dart_type_resolver.dart';
 import '../../utils/generic_type_parser.dart';
+import '../abstract_element_support.dart';
 import 'abstract_record_link_declaration_support.dart';
 
 /// {@template abstract_annotation_declaration_support}
@@ -147,13 +145,13 @@ abstract class AbstractAnnotationDeclarationSupport extends AbstractRecordLinkDe
   ///   between Dart versions and compilation strategies.
   /// - The use of `firstOrNull` assumes an extension method (e.g., from
   ///   `collection` or custom extensions) is available in the project.
-  ElementAnnotation? _getAnnotation(String annotationName, int index, List<ElementAnnotation>? annotations) {
-    if (annotations != null && index < annotations.length) {
-      return annotations[index];
-    }
+  // ElementAnnotation? _getAnnotation(String annotationName, int index, List<ElementAnnotation>? annotations) {
+  //   if (annotations != null && index < annotations.length) {
+  //     return annotations[index];
+  //   }
 
-    return annotations?.where((a) => a.element?.displayName == annotationName).firstOrNull;
-  }
+  //   return annotations?.where((a) => a.element?.displayName == annotationName).firstOrNull;
+  // }
 
   /// Extracts a list of [AnnotationDeclaration] objects from a list of runtime metadata mirrors.
   ///
@@ -182,7 +180,7 @@ abstract class AbstractAnnotationDeclarationSupport extends AbstractRecordLinkDe
   /// - Flags for visibility (`isPublic`) and synthetic status (`isSynthetic`).
   @override
   @protected
-  Future<List<AnnotationDeclaration>> extractAnnotations(List<mirrors.InstanceMirror> metadata, String libraryUri, Uri sourceUri, Package package, [List<ElementAnnotation>? analyzerAnnotations]) async {
+  Future<List<AnnotationDeclaration>> extractAnnotations(List<mirrors.InstanceMirror> metadata, String libraryUri, Uri sourceUri, Package package, [List<AnalyzedAnnotation>? analyzerAnnotations]) async {
     final annotations = <AnnotationDeclaration>[];
     
     for (int i = 0; i < metadata.length; i++) {
@@ -196,8 +194,7 @@ abstract class AbstractAnnotationDeclarationSupport extends AbstractRecordLinkDe
 
       final result = await RuntimeBuilder.timeExecution(() async {
         final uriToUse = annotationClass.location?.sourceUri ?? sourceUri;
-        final analyzerAnnotation = _getAnnotation(annotationName, i, analyzerAnnotations);
-        final annotationElement = await getClassElement(annotationName, uriToUse);
+        final analyzedAnnotation = await getAnalyzedClassDeclaration(annotationName, sourceUri);
 
         try {
           type = await resolveGenericAnnotationIfNeeded(type, annotationClass, package, libraryUri, sourceUri, annotationName);
@@ -227,7 +224,7 @@ abstract class AbstractAnnotationDeclarationSupport extends AbstractRecordLinkDe
                 if (declaration is mirrors.VariableMirror && !declaration.isStatic) {
                   final symbol = declaration.simpleName;
                   final fieldName = mirrors.MirrorSystem.getName(symbol);
-                  final fieldElement = annotationElement?.getField(fieldName);
+                  final analyzedField = getAnalyzedField(analyzedAnnotation?.members, fieldName);
                   final resolvedLibraryUri = declaration.type.location?.sourceUri.toString() ?? declaration.location?.sourceUri.toString() ?? libraryUri;
                   final fieldType = await getLinkDeclaration(declaration.type, package, resolvedLibraryUri);
                   final sourceCode = await readSourceCode(uriToUse);
@@ -274,18 +271,16 @@ abstract class AbstractAnnotationDeclarationSupport extends AbstractRecordLinkDe
                     hasDefaultValue: hasDefaultValue,
                     userValue: userValue,
                     hasUserValue: hasUserValue,
-                    isFinal: fieldElement?.isFinal ?? declaration.isFinal,
-                    isConst: fieldElement?.isConst ?? declaration.isConst,
+                    isFinal: analyzedField?.fields.isFinal ?? declaration.isFinal,
+                    isConst: analyzedField?.fields.isConst ?? declaration.isConst,
                     type: fieldType.getType(),
-                    isPublic: fieldElement?.isPublic ?? !isInternal(fieldName),
-                    isSynthetic: fieldElement?.isSynthetic ?? isSynthetic(fieldName),
-                    dartType: fieldElement?.type,
-                    element: fieldElement,
+                    isPublic: !isInternal(fieldName),
+                    isSynthetic: analyzedField?.isSynthetic ?? isSynthetic(fieldName),
                     position: declarations.toList().indexOf(declaration),
                     annotations: await extractAnnotations(declaration.metadata, resolvedLibraryUri, sourceUri, package),
                     libraryDeclaration: await getLibrary(resolvedLibraryUri),
                     sourceLocation: sourceUri,
-                    isNullable: isNullable(fieldName: fieldName, fieldElement: fieldElement, sourceCode: sourceCode) || defaultValue == null && userValue == null
+                    isNullable: isNullable(fieldName: fieldName, field: analyzedField, sourceCode: sourceCode) || defaultValue == null && userValue == null
                   );
                 }
               } catch (_) { }
@@ -298,21 +293,22 @@ abstract class AbstractAnnotationDeclarationSupport extends AbstractRecordLinkDe
               name: annotationName,
               type: type,
               pointerType: type,
-              dartType: annotationElement?.thisType,
-              typeArguments: await extractTypeVariableAsLinks(annotationClass.typeVariables, annotationElement?.typeParameters, package, libraryUri),
+              typeArguments: await extractTypeVariableAsLinks(
+                annotationClass.typeVariables,
+                analyzedAnnotation?.typeParameters,
+                package,
+                libraryUri
+              ),
               qualifiedName: buildQualifiedName(annotationName, await getPkgUri(annotationClass, package.getName(), 'dart:core')),
-              isPublic: annotationElement?.isPublic ?? !isInternal(annotationName),
-              isSynthetic: annotationElement?.isSynthetic ?? isSynthetic(annotationName),
+              isPublic: !isInternal(annotationName),
+              isSynthetic: analyzedAnnotation?.isSynthetic ?? isSynthetic(annotationName),
             ),
             instance: annotationInstance,
             fields: annotationFields,
-            element: annotationElement,
-            elementAnnotation: analyzerAnnotation,
             userProvidedValues: userProvidedValues,
             type: type,
-            dartType: annotationElement?.thisType,
-            isPublic: annotationElement?.isPublic ?? !isInternal(annotationName),
-            isSynthetic: annotationElement?.isSynthetic ?? isSynthetic(annotationName),
+            isPublic: !isInternal(annotationName),
+            isSynthetic: analyzedAnnotation?.isSynthetic ?? isSynthetic(annotationName),
           ));
         } catch (e) {
           // print('Failed to extract annotation: $e');

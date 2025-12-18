@@ -9,8 +9,6 @@
 import 'dart:async';
 import 'dart:mirrors' as mirrors;
 
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
 import '../../builder/runtime_builder.dart';
@@ -169,41 +167,43 @@ abstract class AbstractClassDeclarationSupport extends AbstractEnumDeclarationSu
     RuntimeBuilder.logFullyVerboseInfo(logMessage, level: 1);
     
     final result = await RuntimeBuilder.timeExecution(() async {
-      final classElement = await getClassElement(className, sourceUri);
-      final dartType = classElement?.thisType;
-      final annotations = await extractAnnotations(classMirror.metadata, libraryUri, sourceUri, package, classElement?.metadata.annotations);
+      final analyzedClass = await getAnalyzedClassDeclaration(className, sourceUri);
+      // final dartType = analyzedClass?.thisType;
+      final annotations = await extractAnnotations(
+        classMirror.metadata,
+        libraryUri,
+        sourceUri,
+        package,
+        analyzedClass?.metadata
+      );
       type = await resolveGenericAnnotationIfNeeded(type, classMirror, package, libraryUri, sourceUri, className);
 
       // Get source code for modifier detection
-      final sourceCode = sourceCache[sourceUri.toString()] ?? await readSourceCode(sourceUri);
+      final sourceCode = await readSourceCode(sourceUri);
 
       // Create class declaration with full analyzer integration
       StandardClassDeclaration reflectedClass = StandardClassDeclaration(
         name: className,
         type: type,
-        element: classElement,
-        dartType: dartType,
         qualifiedName: buildQualifiedName(className, (classMirror.location?.sourceUri ?? Uri.parse(libraryUri)).toString()),
         parentLibrary: await getLibrary(libraryUri),
         isNullable: false,
-        typeArguments: await extractTypeVariableAsLinks(classMirror.typeVariables, classElement?.typeParameters, package, libraryUri),
+        typeArguments: await extractTypeVariableAsLinks(classMirror.typeVariables, analyzedClass?.typeParameters, package, libraryUri),
         annotations: annotations,
         sourceLocation: sourceUri,
-        superClass: await extractSupertypeAsLink(classMirror, classElement, package, libraryUri),
-        interfaces: await extractInterfacesAsLink(classMirror, classElement, package, libraryUri),
-        mixins: await extractMixinsAsLink(classMirror, classElement, package, libraryUri),
-        isAbstract: classElement?.isAbstract ?? classMirror.isAbstract,
-        isMixin: classElement?.isMixinClass ?? isMixinClass(sourceCode, className),
-        isSealed: classElement?.isSealed ?? isSealedClass(sourceCode, className),
-        isBase: classElement?.isBase ?? isBaseClass(sourceCode, className),
-        isInterface: classElement?.isInterface ?? isInterfaceClass(sourceCode, className),
-        isFinal: classElement?.isFinal ?? isFinalClass(sourceCode, className),
-        isPublic: classElement?.isPublic ?? !isInternal(className),
-        isSynthetic: classElement?.isSynthetic ?? isSynthetic(className),
+        superClass: await extractSupertypeAsLink(classMirror, analyzedClass?.extendsClause, package, libraryUri),
+        interfaces: await extractInterfacesAsLink(classMirror, analyzedClass?.implementsClause, package, libraryUri),
+        mixins: await extractMixinsAsLink(classMirror, analyzedClass?.withClause, package, libraryUri),
+        isAbstract: analyzedClass?.abstractKeyword != null || classMirror.isAbstract,
+        isMixin: analyzedClass?.mixinKeyword != null || isMixinClass(sourceCode, className),
+        isSealed: analyzedClass?.sealedKeyword != null || isSealedClass(sourceCode, className),
+        isBase: analyzedClass?.baseKeyword != null || isBaseClass(sourceCode, className),
+        isInterface: analyzedClass?.interfaceKeyword != null || isInterfaceClass(sourceCode, className),
+        isFinal: analyzedClass?.finalKeyword != null || isFinalClass(sourceCode, className),
+        isPublic: !isInternal(className),
+        isSynthetic: analyzedClass?.isSynthetic ?? isSynthetic(className),
         isRecord: false,
       );
-
-      typeCache[type] = reflectedClass;
 
       final constructors = <ConstructorDeclaration>[];
       final fields = <FieldDeclaration>[];
@@ -212,19 +212,19 @@ abstract class AbstractClassDeclarationSupport extends AbstractEnumDeclarationSu
       // Process constructors with analyzer support
       for (final constructor in classMirror.declarations.values.whereType<mirrors.MethodMirror>()) {
         if (constructor.isConstructor) {
-          constructors.add(await generateConstructor(constructor, classElement, package, libraryUri, sourceUri, className, reflectedClass));
+          constructors.add(await generateConstructor(constructor, analyzedClass?.members, package, libraryUri, sourceUri, className, reflectedClass));
         }
       }
 
       // Process fields with analyzer support
       for (final field in classMirror.declarations.values.whereType<mirrors.VariableMirror>()) {
-        fields.add(await generateField(field, classElement, package, libraryUri, sourceUri, className, reflectedClass, sourceCode, isBuiltIn));
+        fields.add(await generateField(field, analyzedClass?.members, package, libraryUri, sourceUri, className, reflectedClass, sourceCode, isBuiltIn));
       }
 
       // Process methods with analyzer support
       for (final method in classMirror.declarations.values.whereType<mirrors.MethodMirror>()) {
         if (!method.isConstructor) {
-          methods.add(await generateMethod(method, classElement, package, libraryUri, sourceUri, className, reflectedClass));
+          methods.add(await generateMethod(method, analyzedClass?.members, package, libraryUri, sourceUri, className, reflectedClass));
         }
       }
 

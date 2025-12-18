@@ -17,8 +17,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:analyzer/dart/element/element.dart' show Element, TypeParameterElement, ElementAnnotation;
-import 'package:analyzer/dart/element/type.dart' show DartType, InterfaceType, ParameterizedType, RecordTypeField;
 import 'package:meta/meta.dart';
 
 import '../argument/executable_argument.dart';
@@ -26,34 +24,34 @@ import '../exceptions.dart';
 import '../helpers/equals_and_hash_code.dart';
 import '../runtime/provider/meta_runtime_provider.dart';
 
-part '../_declaration/_declaration.dart';
 part '../_declaration/_annotation_declaration.dart';
-part 'annotation_declaration.dart';
-part '../_declaration/_link_declaration.dart';
-part 'link_declaration.dart';
 part '../_declaration/_class_declaration.dart';
-part 'class_declaration.dart';
-part '../_declaration/_field_declaration.dart';
-part 'field_declaration.dart';
-part '../_declaration/_method_declaration.dart';
-part 'method_declaration.dart';
-part '../_declaration/_function_link_declaration.dart';
-part 'function_link_declaration.dart';
-part '../_declaration/_record_link_declaration.dart';
-part 'record_link_declaration.dart';
 part '../_declaration/_constructor_declaration.dart';
-part 'constructor_declaration.dart';
-part '../_declaration/_library_declaration.dart';
-part 'library_declaration.dart';
+part '../_declaration/_declaration.dart';
 part '../_declaration/_enum_declaration.dart';
-part 'enum_declaration.dart';
+part '../_declaration/_field_declaration.dart';
+part '../_declaration/_function_link_declaration.dart';
+part '../_declaration/_library_declaration.dart';
+part '../_declaration/_link_declaration.dart';
+part '../_declaration/_method_declaration.dart';
 part '../_declaration/_mixin_declaration.dart';
-part 'mixin_declaration.dart';
-part '../_declaration/_type_declaration.dart';
-part 'type_declaration.dart';
 part '../_declaration/_parameter_declaration.dart';
-part 'parameter_declaration.dart';
+part '../_declaration/_record_link_declaration.dart';
+part '../_declaration/_type_declaration.dart';
 part '../_declaration/_typedef_declaration.dart';
+part 'annotation_declaration.dart';
+part 'class_declaration.dart';
+part 'constructor_declaration.dart';
+part 'enum_declaration.dart';
+part 'field_declaration.dart';
+part 'function_link_declaration.dart';
+part 'library_declaration.dart';
+part 'link_declaration.dart';
+part 'method_declaration.dart';
+part 'mixin_declaration.dart';
+part 'parameter_declaration.dart';
+part 'record_link_declaration.dart';
+part 'type_declaration.dart';
 part 'typedef_declaration.dart';
 
 /// The default character encoding used for JSON serialization and deserialization.
@@ -386,27 +384,6 @@ abstract class EntityDeclaration extends Declaration {
 
   /// The debug identifier for the entity.
   String getDebugIdentifier();
-
-  /// The analyzer DartType of the entity for enhanced type operations.
-  /// 
-  /// This provides access to the analyzer's type system for:
-  /// - Accurate generic type information
-  /// - Precise assignability checking
-  /// - Complete inheritance relationships
-  /// - Proper type parameter handling
-  DartType? getDartType();
-
-  /// The analyzer element associated with this declaration.
-  /// 
-  /// Provides access to the analyzer's element model for:
-  /// - Source code information
-  /// - Detailed metadata
-  /// - Type parameter bounds
-  /// - Member information
-  Element? getElement();
-
-  /// Returns true if this declaration has analyzer information available.
-  bool hasAnalyzerSupport() => getDartType() != null || getElement() != null;
 
   @override
   String toString() => toJson().toString();

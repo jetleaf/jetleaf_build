@@ -127,13 +127,6 @@ abstract class AnnotationDeclaration extends EntityDeclaration {
   /// print(fieldsWithUserValues['value']); // ReflectedAnnotationField(...)
   /// ```
   Map<String, AnnotationFieldDeclaration> getFieldsWithUserValues();
-
-  /// Retrieves the element annotation from analyzer. This differs from [getElement] method that
-  /// provides the class element of the annotation.
-  ElementAnnotation? getElementAnnotation();
-
-  @override
-  InterfaceType? getDartType();
 }
 
 /// {@template annotation_field}

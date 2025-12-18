@@ -9,15 +9,13 @@
 import 'dart:async';
 import 'dart:mirrors' as mirrors;
 
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
 import '../../builder/runtime_builder.dart';
 import '../../declaration/declaration.dart';
 import '../../utils/dart_type_resolver.dart';
 import '../../utils/generic_type_parser.dart';
+import '../abstract_element_support.dart';
 import 'abstract_annotation_declaration_support.dart';
 
 /// {@template abstract_field_declaration_support}
@@ -107,7 +105,7 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
   ///
   /// # Parameters
   /// - [fieldMirror]: The mirror representing the field.
-  /// - [parentElement]: Analyzer element for the class containing the field.
+  /// - [members]: Analyzer element for the class containing the field.
   /// - [package]: The package context.
   /// - [libraryUri]: URI of the library containing the field.
   /// - [sourceUri]: Source URI for locating the field in code.
@@ -115,7 +113,7 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
   /// - [parentClass]: Optional parent class declaration.
   /// - [sourceCode]: Optional source code for nullability and other heuristics.
   @protected
-  Future<FieldDeclaration> generateField(mirrors.VariableMirror fieldMirror, InterfaceElement? parentElement, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration? parentClass, String? sourceCode, bool isBuiltIn) async {
+  Future<FieldDeclaration> generateField(mirrors.VariableMirror fieldMirror, AnalyzedMemberList? members, Package package, String libraryUri, Uri sourceUri, String className, ClassDeclaration? parentClass, String? sourceCode, bool isBuiltIn) async {
     final fieldName = mirrors.MirrorSystem.getName(fieldMirror.simpleName);
     final fieldClass = fieldMirror.type;
     final fieldClassName = mirrors.MirrorSystem.getName(fieldClass.simpleName);
@@ -125,15 +123,13 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
     RuntimeBuilder.logFullyVerboseInfo(logMessage, level: 3);
 
     final result = await RuntimeBuilder.timeExecution(() async {
-      final fieldElement = parentElement?.getField(fieldName);
-      final dartType = fieldElement?.type;
+      final analyzedField = getAnalyzedField(members, fieldName);
+      final dartType = analyzedField?.fields.type;
       type = await resolveGenericAnnotationIfNeeded(type, fieldClass, package, libraryUri, sourceUri, fieldClassName);
 
       return StandardFieldDeclaration(
         name: fieldName,
         type: type,
-        element: fieldElement,
-        dartType: dartType,
         libraryDeclaration: await getLibrary(libraryUri),
         parentClass: parentClass != null ? StandardLinkDeclaration(
           name: parentClass.getName(),
@@ -141,25 +137,23 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
           pointerType: parentClass.getType(),
           qualifiedName: parentClass.getQualifiedName(),
           isPublic: parentClass.getIsPublic(),
-          dartType: parentClass.getDartType(),
           canonicalUri: Uri.parse(parentClass.getPackageUri()),
           referenceUri: Uri.parse(parentClass.getPackageUri()),
           isSynthetic: parentClass.getIsSynthetic(),
         ) : null,
         linkDeclaration: await getLinkDeclaration(fieldMirror.type, package, libraryUri, dartType),
-        annotations: await extractAnnotations(fieldMirror.metadata, libraryUri, sourceUri, package, fieldElement?.metadata.annotations),
+        annotations: await extractAnnotations(fieldMirror.metadata, libraryUri, sourceUri, package, analyzedField?.metadata),
         sourceLocation: sourceUri,
         isFinal: fieldMirror.isFinal,
         isConst: fieldMirror.isConst,
-        isLate: fieldElement?.isLate ?? isLateField(sourceCode, fieldName),
+        isLate: analyzedField?.fields.lateKeyword != null || isLateField(sourceCode, fieldName),
         isStatic: fieldMirror.isStatic,
-        isAbstract: fieldElement?.isAbstract ?? false,
-        isPublic: fieldElement?.isPublic ?? !isInternal(fieldName),
-        isSynthetic: fieldElement?.isSynthetic ?? isSynthetic(fieldName),
+        isPublic: !isInternal(fieldName),
+        isSynthetic: analyzedField?.isSynthetic ?? isSynthetic(fieldName),
         isNullable: isNullable(
           fieldName: fieldName,
           sourceCode: isBuiltIn ? "" : sourceCode ?? await readSourceCode(sourceUri),
-          fieldElement: fieldElement
+          field: analyzedField
         )
       );
     });
@@ -194,9 +188,8 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
     RuntimeBuilder.logFullyVerboseInfo(logMessage, level: 3);
 
     final result = await RuntimeBuilder.timeExecution(() async {
-      final libraryElement = await getLibraryElement(libraryUri);
-      final variableElement = libraryElement?.getTopLevelVariable(fieldName) ?? libraryElement?.topLevelVariables.where((v) => v.name == fieldName).firstOrNull;
-      final dartType = variableElement?.type;
+      final analyzedVariable = await getAnalyzedTopLevelVariable(libraryUri, fieldName);
+      final dartType = analyzedVariable?.variables.type;
       type = await resolveGenericAnnotationIfNeeded(type, fieldClass, package, libraryUri.toString(), sourceUri, fieldClassName);
 
       final sourceCode = isBuiltIn ? "" : await readSourceCode(sourceUri);
@@ -204,24 +197,19 @@ abstract class AbstractFieldDeclarationSupport extends AbstractAnnotationDeclara
       return StandardFieldDeclaration(
         name: fieldName,
         type: type,
-        element: variableElement,
-        dartType: dartType,
         libraryDeclaration: await getLibrary(libraryUri.toString()),
         parentClass: null,
         linkDeclaration: await getLinkDeclaration(fieldMirror.type, package, libraryUri.toString(), dartType),
-        annotations: await extractAnnotations(fieldMirror.metadata, libraryUri.toString(), sourceUri, package, variableElement?.metadata.annotations),
+        annotations: await extractAnnotations(fieldMirror.metadata, libraryUri.toString(), sourceUri, package, analyzedVariable?.metadata),
         sourceLocation: sourceUri,
         isFinal: fieldMirror.isFinal,
         isConst: fieldMirror.isConst,
-        isLate: variableElement?.isLate ?? false,
-        isStatic: variableElement?.isStatic ?? true,
+        isLate: analyzedVariable?.variables.lateKeyword != null || false,
         isAbstract: false,
-        isPublic: variableElement?.isPublic ?? !isInternal(fieldName),
-        isSynthetic: variableElement?.isSynthetic ?? isSynthetic(fieldName),
+        isPublic: !isInternal(fieldName),
+        isSynthetic: analyzedVariable?.isSynthetic ?? isSynthetic(fieldName),
         isTopLevel: true,
-        isNullable: variableElement != null 
-          ? variableElement.type.nullabilitySuffix == NullabilitySuffix.question
-          : isNullable(fieldName: fieldName, sourceCode: sourceCode)
+        isNullable: checkTypeAnnotationNullable(dartType) || isNullable(fieldName: fieldName, sourceCode: sourceCode)
       );
     });
 

@@ -194,12 +194,6 @@ final class StandardDeclaration extends Declaration with EqualsAndHashCode {
 /// {@endtemplate}
 /// {@endtemplate}
 final class StandardEntityDeclaration extends StandardDeclaration  implements EntityDeclaration {
-  /// Optional analyzer Element for static analysis integration
-  final Element? _element;
-
-  /// Optional analyzer DartType for static type information
-  final DartType? _dartType;
-
   /// Debug identifier for developer tools
   final String _debugger;
 
@@ -207,33 +201,18 @@ final class StandardEntityDeclaration extends StandardDeclaration  implements En
   ///
   /// {@template standard_entity_constructor}
   /// Parameters:
-  /// - [element]: Optional analyzer [Element] for static analysis
-  /// - [dartType]: Optional analyzer [DartType] for static typing
   /// - [type]: Required runtime [Type] of the entity
   /// - [debugger]: Optional custom debug identifier (defaults to "type_$type")
   ///
   /// All fields are immutable once created.
   /// {@endtemplate}
   const StandardEntityDeclaration({
-    Element? element,
-    DartType? dartType,
     required super.type,
     required super.isPublic,
     required super.isSynthetic,
     required super.name,
     String? debugger
-  }) : _element = element, 
-       _dartType = dartType,
-       _debugger = debugger ?? "type_$type";
-
-  @override
-  DartType? getDartType() => _dartType;
-
-  @override
-  Element? getElement() => _element;
-
-  @override
-  bool hasAnalyzerSupport() => _dartType != null;
+  }) : _debugger = debugger ?? "type_$type";
 
   @override
   String getDebugIdentifier() => _debugger;
@@ -253,8 +232,6 @@ final class StandardEntityDeclaration extends StandardDeclaration  implements En
       _name,
       _isPublic,
       _isSynthetic,
-      _element,
-      _dartType,
       _debugger,
     ];
   }
@@ -328,9 +305,7 @@ final class StandardSourceDeclaration extends StandardEntityDeclaration implemen
   /// All fields are immutable once created.
   /// {@endtemplate}
   const StandardSourceDeclaration({
-    super.element,
     required super.type,
-    super.dartType,
     required super.name,
     required super.isPublic,
     required super.isSynthetic,
