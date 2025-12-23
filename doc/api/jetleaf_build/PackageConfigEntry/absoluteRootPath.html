@@ -61,6 +61,16 @@
 
       </section>
       
+<section class="desc markdown">
+  <p>The fully resolved absolute filesystem path of the package’s root.</p>
+<p>Unlike <a href="../../jetleaf_build/PackageConfigEntry/rootUri.html">rootUri</a>, this value is:</p>
+<ul>
+<li>Normalized</li>
+<li>Always absolute</li>
+<li>Guaranteed to reference an on-disk directory</li>
+</ul>
+<p>JetLeaf uses this path for any operations requiring direct file access.</p>
+</section>
 
       
 <section class="summary source-code" id="source">
@@ -94,7 +104,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

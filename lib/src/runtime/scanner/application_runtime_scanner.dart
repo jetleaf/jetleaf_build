@@ -16,52 +16,73 @@ import 'dart:io';
 import 'dart:mirrors' as mirrors;
 
 import '../../builder/runtime_builder.dart';
-import '../../declaration/declaration.dart';
 import '../../generator/default_library_generator.dart';
 import '../../file_utility/file_utility.dart';
 import '../../generator/library_generator.dart';
+import '../declaration/declaration.dart';
 import '../executor/resolving/default_runtime_executor_resolving.dart';
-import '../provider/standard_runtime_provider.dart';
-import '../provider/configurable_runtime_provider.dart';
 import '../../utils/utils.dart';
+import '../provider/runtime_provider.dart';
 import 'default_runtime_scanner_summary.dart';
-import 'configurable_runtime_scanner_summary.dart';
 import 'runtime_scanner.dart';
 import 'runtime_scanner_configuration.dart';
 import 'runtime_scanner_summary.dart';
 
-/// {@template default_runtime_scan}
-/// A default implementation of [RuntimeScanner] that supports scanning,
-/// logging, and context tracking.
+/// {@template application_runtime_scanner}
+/// A runtime scanner responsible for analyzing **application-level Dart code**
+/// and generating runtime metadata required for reflection, asset discovery,
+/// and package resolution.
 ///
-/// This scanner allows optional logging hooks to handle messages during
-/// the scanning process. If no callbacks are provided, messages are
-/// buffered internally and can be retrieved later.
+/// `ApplicationRuntimeScanner` operates on the current application package,
+/// scanning Dart source files, loading libraries into the mirror system,
+/// resolving declarations, and registering runtime assets and packages.
 ///
-/// ## Example
-/// ```dart
-/// final scan = DefaultRuntimeScan(
-///   onInfo: (msg) => print('[INFO] $msg'),
-///   onWarning: (msg) => print('[WARN] $msg'),
-///   onError: (msg) => print('[ERR] $msg'),
-/// );
-/// ```
+/// ## Responsibilities
+/// - Discover Dart source files within the application
+/// - Load application libraries into the current mirror system
+/// - Generate reflection metadata using [DefaultLibraryGenerator]
+/// - Discover runtime assets and package dependencies
+/// - Build and register runtime resolvers for AOT execution
 ///
-/// The logs are tagged with the current `package` name when set, helping
-/// identify the origin of messages during multi-package scans.
+/// ## Logging
+/// The scanner supports optional logging callbacks:
+/// - [onInfo] for informational messages
+/// - [onWarning] for recoverable or non-fatal issues
+/// - [onError] for errors encountered during scanning
 ///
+/// ## Configuration
+/// Behavior is controlled through [RuntimeScannerConfiguration], allowing:
+/// - Incremental or full reloads
+/// - Selective file and package scanning
+/// - Conditional asset and package updates
+/// - Library force-loading and exclusion rules
+///
+/// This scanner is typically used for **production or application builds**
+/// where accurate runtime metadata is required for execution.
 /// {@endtemplate}
-class ApplicationRuntimeScanner implements RuntimeScanner {
-  /// Optional info log callback.
+final class ApplicationRuntimeScanner implements RuntimeScanner {
+  /// Optional callback invoked for **informational log messages**
+  /// emitted during the application runtime scanning process.
+  ///
+  /// This is typically used for general progress reporting,
+  /// diagnostics, and verbose output during scanning.
   final OnLogged? onInfo;
 
-  /// Optional warning log callback.
+  /// Optional callback invoked for **warning log messages**
+  /// emitted during the application runtime scanning process.
+  ///
+  /// Warnings usually indicate recoverable issues or non-fatal
+  /// conditions encountered while scanning application code.
   final OnLogged? onWarning;
 
-  /// Optional error log callback.
+  /// Optional callback invoked for **error log messages**
+  /// emitted during the application runtime scanning process.
+  ///
+  /// Errors reported here may indicate failures in file discovery,
+  /// library loading, or declaration generation.
   final OnLogged? onError;
 
-  /// {@macro default_runtime_scan}
+  /// {@macro application_runtime_scanner}
   ApplicationRuntimeScanner({this.onInfo, this.onWarning, this.onError});
 
   @override
@@ -69,10 +90,8 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
     String? package;
     RuntimeBuilder.setContext(args, onError: onError, onInfo: onInfo, onWarning: onWarning, package: package);
 
-    final result = await RuntimeBuilder.timeExecution(() async {
+    final result = await RuntimeBuilder.timeAsyncExecution(() async {
       bool refreshContext = configuration.reload;
-      ConfigurableRuntimeProvider context = StandardRuntimeProvider();
-
       FileUtility FileUtils = FileUtility(
         RuntimeBuilder.logInfo,
         RuntimeBuilder.logWarning,
@@ -96,8 +115,9 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
       mirrors.MirrorSystem access = mirrors.currentMirrorSystem();
       final iso = access.isolate;
       RuntimeBuilder.logVerboseInfo('Mirror system and access domain set up for ${iso.rootLibrary.uri}');
+      setRuntimeLibraryTag(iso.rootLibrary.uri.toString());
 
-      RuntimeBuilder.logVerboseInfo("${refreshContext ? "Reloading" : "Scanning"} $package application...");
+      RuntimeBuilder.logVerboseInfo("Scanning $package application...");
       final locatedFiles = await FileUtils.findDartFiles(directory);
       Set<File> dartFiles = {};
 
@@ -111,8 +131,6 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
       }
 
       RuntimeBuilder.logVerboseInfo("Found ${dartFiles.length} dart files.");
-
-      List<LibraryDeclaration> libraries = [];
 
       // 5. Load dart files that are not present in the [currentMirrorSystem]
       List<mirrors.LibraryMirror> forceLoadedMirrors = [];
@@ -166,54 +184,56 @@ class ApplicationRuntimeScanner implements RuntimeScanner {
         packages: packages,
         refresh: refreshContext
       );
-      final result = await libraryGenerator.generate(locatedFiles.getAnalyzeableDartFiles().toList());
-      RuntimeBuilder.logVerboseInfo('Resolved ${result.length} declaration libraries.');
-
-      libraries.addAll(result);
-      libraries.addAll(context.getAllLibraries());
+      await libraryGenerator.generate(locatedFiles.getAnalyzeableDartFiles().toList());
+      RuntimeBuilder.logVerboseInfo('Done generating declaration libraries.');
 
       // 6. Generate AOT Runtime Resolvers
       final resolving = DefaultRuntimeExecutorResolving(libraries: mirrorLibraries);
-
-      context.setRuntimeResolver(await resolving.resolve());
+      setRuntimeResolver(await resolving.resolve());
 
       if(resources.isNotEmpty) {
-        context.addAssets(resources, replace: refreshContext);
+        addRuntimeAssets(resources, replace: refreshContext);
       }
 
       if(packages.isNotEmpty) {
-        context.addPackages(packages, replace: refreshContext);
+        addRuntimePackages(packages, replace: refreshContext);
       }
 
-      if(libraries.isNotEmpty) {
-        context.addLibraries(libraries, replace: refreshContext);
-      }
-
-      // Handle removals (now configuration.removals) by removing them from the context
-      if(configuration.removals.isNotEmpty) {
-        final libs = context.getAllLibraries();
-        final urisToRemove = configuration.removals.map((f) => FileUtils.resolveToPackageUri(f.absolute.path, package!)).whereType<String>().toSet();
-        final updatedLibs = libs.where((lib) => !urisToRemove.contains(lib.getUri())).toList();
-        context.addLibraries(updatedLibs, replace: true);
-      }
-
-      return context;
+      freezeRuntimeLibrary();
     });
 
     RuntimeBuilder.logVerboseInfo("Application scanning completed in ${result.getFormatted()}.");
 
     ConfigurableRuntimeScannerSummary summary = DefaultRuntimeScannerSummary();
-    summary.setContext(result.result);
     summary.setBuildTime(DateTime.fromMillisecondsSinceEpoch(result.watch.elapsedMilliseconds));
     summary.addInfos(RuntimeBuilder.onCompleted().getInfos());
     summary.addWarnings(RuntimeBuilder.onCompleted().getWarnings());
     summary.addErrors(RuntimeBuilder.onCompleted().getErrors());
+    summary.addAll(RuntimeBuilder.onCompleted().getLogs());
+
+    RuntimeBuilder.clearTrackedLogs();
 
     return summary;
   }
 
-  /// Adds default packages to scan if none are specified.
-  /// By default, the user's current package and 'jetleaf' are included.
+  /// Returns a new [RuntimeScannerConfiguration] with default packages
+  /// added to the scan list when not explicitly excluded.
+  ///
+  /// This helper ensures that the **current application package**
+  /// is always included in the scan scope, alongside any packages
+  /// already specified in [RuntimeScannerConfiguration.packagesToScan].
+  ///
+  /// Behavior:
+  /// - Adds [currentPackage] to the list of packages to scan
+  /// - Preserves any user-defined packages already present
+  /// - Removes packages listed in [RuntimeScannerConfiguration.packagesToExclude]
+  /// - Does not mutate the original [configuration]
+  ///
+  /// The returned configuration is created using [RuntimeScannerConfiguration.copyWith],
+  /// ensuring all other configuration options remain unchanged.
+  ///
+  /// This function is typically invoked during scanner initialization
+  /// to normalize the effective package scan set.
   RuntimeScannerConfiguration _addDefaultPackagesToScan(RuntimeScannerConfiguration configuration, String currentPackage) {
     final defaultPackages = {
       currentPackage,

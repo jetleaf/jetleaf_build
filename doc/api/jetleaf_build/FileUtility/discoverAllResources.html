@@ -56,65 +56,123 @@
       
 <span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../jetleaf_build/Asset-class.html">Asset</a></span>&gt;</span></span>&gt;</span></span>
 <span class="name ">discoverAllResources</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="discoverAllResources-param-currentPackageName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">currentPackageName</span>, [</span></li>
-<li><span class="parameter" id="discoverAllResources-param-mirrorSystem"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a>?</span> <span class="parameter-name">mirrorSystem</span></span></li>
+<li><span class="parameter" id="discoverAllResources-param-mirrorSystem"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a>?</span> <span class="parameter-name">mirrorSystem</span>, </span></li>
+<li><span class="parameter" id="discoverAllResources-param-libraries"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/LibraryMirror-class.html">LibraryMirror</a></span>&gt;</span>?</span> <span class="parameter-name">libraries</span></span></li>
 </ol>])
 
-      
+      <div class="features"><span class="feature">inherited</span></div>
 
     </section>
     
 <section class="desc markdown">
-  <p>Discovers all resource files in the current project and ALL dependencies.</p>
+  <p>Discovers <strong>all resource assets</strong> available to the current application,
+including:</p>
+<ul>
+<li>Project-local resources</li>
+<li>Dependency resources</li>
+<li>Generated (mirror-based) assets</li>
+</ul>
+<p>This method serves as the <strong>primary asset discovery pipeline</strong> in JetLeaf.
+It aggregates assets from multiple sources into a single, unified list.</p>
+<hr>
+<h2 id="discovery-phases">Discovery Phases</h2>
+<p>The discovery process runs in the following order:</p>
+<h3 id="1-user-project-scan">1️⃣ User Project Scan</h3>
+<p>Scans the current project root for resources:</p>
+<ul>
+<li><strong>Default directories</strong> (<code>resources/</code>, <code>assets/</code>, and <code>lib/</code> variants)</li>
+<li><strong>Root-level extension-based assets</strong> (based on configuration)</li>
+</ul>
+<h3 id="2-dependency-scan">2️⃣ Dependency Scan</h3>
+<p>Iterates over all resolved package dependencies and performs the same
+scanning strategy as the user project, subject to package filters.</p>
+<p>Packages are skipped if:</p>
+<ul>
+<li>They appear in <code>configuration.packagesToExclude</code>, or</li>
+<li>They are not listed in <code>configuration.packagesToScan</code> (when non-empty)</li>
+</ul>
+<h3 id="3-mirror-based-generation">3️⃣ Mirror-Based Generation</h3>
+<p>Optionally scans runtime mirrors for <strong>generative assets</strong>, such as
+resources produced by annotations, code generation, or reflection-based
+providers.</p>
+<hr>
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>currentPackageName</code>: Name of the root application package</li>
+<li><code>mirrorSystem</code>: Optional <a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">mirrors.MirrorSystem</a> used to discover generative assets</li>
+<li><code>libraries</code>: Optional subset of libraries to restrict mirror scanning</li>
+</ul>
+<h2 id="returns">Returns</h2>
+<p>A flat list of all discovered <a href="../../jetleaf_build/Asset-class.html">Asset</a> instances, including duplicates
+if they originate from different packages or sources.</p>
+<hr>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Asset discovery is <strong>I/O intensive</strong> and should not be run repeatedly
+without caching.</li>
+<li>This method assumes package configuration has been loaded; if not,
+it will load it automatically.</li>
+</ul>
+<hr>
+<h2 id="example">Example</h2>
+<pre class="language-dart"><code class="language-dart">final assets = await discoverAllResources('my_app');
+for (final asset in assets) {
+  print('${asset.packageName}: ${asset.fileName}');
+}
+</code></pre>
 </section>
 
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Future&lt;List&lt;Asset&gt;&gt; discoverAllResources(String currentPackageName, [mirrors.MirrorSystem? mirrorSystem]) async {
-  if (_packageConfig == null) {
-    await _loadPackageConfig();
+  <pre class="language-dart"><code class="language-dart">Future&lt;List&lt;Asset&gt;&gt; discoverAllResources(String currentPackageName, [mirrors.MirrorSystem? mirrorSystem, List&lt;mirrors.LibraryMirror&gt;? libraries]) async {
+  if (packageConfigCache == null) {
+    await loadPackageConfig();
   }
 
   final List&lt;Asset&gt; allResources = [];
   final currentProjectRoot = Directory.current.path;
 
-  List&lt;Directory&gt; searchDirectories(String root) =&gt; [
-    Directory(p.join(root, Constant.RESOURCES_DIR_NAME)),
-    Directory(p.join(root, &#39;lib&#39;, Constant.RESOURCES_DIR_NAME)),
-    Directory(p.join(root, Constant.PACKAGE_ASSET_DIR)),
-    Directory(p.join(root, &#39;lib&#39;, Constant.PACKAGE_ASSET_DIR)),
-  ];
+  &#47;&#47; 1. Scan user&#39;s project
+  onInfo(&#39;🔍 Scanning user project for resources...&#39;, true);
 
-  &#47;&#47; 1. User&#39;s project resources
-  _onInfo(&#39;🔍 Scanning user project for resources...&#39;);
-  for (final dir in searchDirectories(currentProjectRoot)) {
-    if (dir.existsSync()) {
-      allResources.addAll(await _scanDirectoryForResources(dir, currentPackageName, currentProjectRoot));
-    }
-  }
+  &#47;&#47; 1a. Scan default directories (all non-Dart files)
+  allResources.addAll(await _scanDefaultDirectories(currentProjectRoot, currentPackageName));
 
-  &#47;&#47; 2. ALL dependency resources unless explicitly excluded
-  _onInfo(&#39;🔍 Scanning all dependencies for resources...&#39;);
-  for (final dep in (_packageConfig ?? &lt;PackageConfigEntry&gt;[])) {
+  &#47;&#47; 1b. Scan project root for specific extensions
+  allResources.addAll(await _scanRootForExtensions(currentProjectRoot, currentPackageName));
+
+  &#47;&#47; 2. Scan dependencies
+  onInfo(&#39;🔍 Scanning all dependencies for resources...&#39;, true);
+  for (final dep in (packageConfigCache ?? &lt;PackageConfigEntry&gt;[])) {
     final depPackagePath = dep.absoluteRootPath;
     final packageName = dep.name;
 
-    &#47;&#47; Only exclude if user explicitly excludes this package
-    final bool excludePackage = _configuration.packagesToExclude.contains(packageName);
-    final bool includePackage = _configuration.packagesToScan.isEmpty || _configuration.packagesToScan.contains(packageName);
+    &#47;&#47; Check if package should be scanned
+    if (!_shouldScanPackage(packageName)) continue;
 
-    if (Directory(depPackagePath).existsSync() &amp;&amp; includePackage &amp;&amp; !excludePackage) {
-      for (final dir in searchDirectories(depPackagePath)) {
-        if (dir.existsSync()) {
-          allResources.addAll(await _scanDirectoryForResources(dir, dep.name, depPackagePath));
-        }
-      }
+    final depRoot = Directory(depPackagePath);
+    if (!depRoot.existsSync()) continue;
+
+    &#47;&#47; 2a. Scan default directories in dependency
+    allResources.addAll(await _scanDefaultDirectories(depPackagePath, packageName));
+
+    &#47;&#47; 2b. Scan dependency root for specific extensions
+    if (configuration.searchAssetExtensionsInProjectOnly) {
+      continue;
+    } else {
+      allResources.addAll(await _scanRootForExtensions(depPackagePath, packageName));
     }
   }
 
+  &#47;&#47; 3. Scan for generative assets from mirrors
   if (mirrorSystem != null) {
-    allResources.addAll(await _scanMirrorForGenerativeAssets(mirrorSystem));
+    allResources.addAll(await _scanMirrorForGenerativeAssets(mirrorSystem, libraries));
+  }
+
+  for (final asset in allResources) {
+    print(asset.getFilePath());
   }
 
   return allResources;
@@ -146,7 +204,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

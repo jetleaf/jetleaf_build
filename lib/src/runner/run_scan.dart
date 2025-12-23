@@ -17,7 +17,6 @@ import 'dart:io';
 // Conditional import: use `reflection.dart` if dart:mirrors is available,
 // otherwise fall back to a stubbed scanner implementation.
 import '../builder/runtime_builder.dart';
-import '../runtime/provider/meta_runtime_provider.dart';
 import '../runtime/scanner/application_runtime_scanner.dart';
 import '../runtime/scanner/runtime_scanner.dart';
 import '../runtime/scanner/runtime_scanner_configuration.dart';
@@ -227,8 +226,5 @@ Future<RuntimeScannerSummary> runScan({
     outputPath: config?.outputPath ?? "build/generated"
   );
 
-  final scan = await scanner.scan(overrideConfig ? config ?? defaultConfig : defaultConfig, args, source: source);
-  Runtime.register(scan.getContext());
-
-  return scan;
+  return await scanner.scan(overrideConfig ? config ?? defaultConfig : defaultConfig, args, source: source);
 }

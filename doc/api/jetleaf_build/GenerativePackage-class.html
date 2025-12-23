@@ -116,7 +116,7 @@ API across all packages.</li>
   <dd>
     <ul class="gt-separated dark clazz-relationships">
       <li><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></li>
-        <li><a href="../jetleaf_build/ResourceDeclaration-class.html">ResourceDeclaration</a></li>
+        <li><a href="../jetleaf_build/BaseDeclaration-class.html">BaseDeclaration</a></li>
         <li><a href="../jetleaf_build/Package-class.html">Package</a></li>
       <li>GenerativePackage</li>
     </ul>
@@ -153,7 +153,7 @@ API across all packages.</li>
     <h2>Properties</h2>
     <dl class="properties">
         <dt id="hashCode" class="property inherited">
-  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/hashCode.html">hashCode</a></span>
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/hashCode.html">hashCode</a></span>
   <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/int-class.html">int</a></span>
   
 
@@ -185,6 +185,45 @@ API across all packages.</li>
       id="instance-methods">
     <h2>Methods</h2>
     <dl class="callables">
+        <dt id="equalizedProperties" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/Package/equalizedProperties.html">equalizedProperties</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Mixin-style contract for value-based equality, <code>hashCode</code>, and <code>toString</code>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getDependencies" class="callable">
+  <span class="name"><a href="../jetleaf_build/GenerativePackage/getDependencies.html">getDependencies</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Iterable-class.html">Iterable</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns all dependencies of this package (including jetleaf dependencies too - if any).
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="getDevDependencies" class="callable">
+  <span class="name"><a href="../jetleaf_build/GenerativePackage/getDevDependencies.html">getDevDependencies</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Iterable-class.html">Iterable</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns all dev dependencies of this package (including jetleaf dependencies too - if any).
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
         <dt id="getFilePath" class="callable">
   <span class="name"><a href="../jetleaf_build/GenerativePackage/getFilePath.html">getFilePath</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a>?</span>
@@ -193,7 +232,8 @@ API across all packages.</li>
 
 </dt>
 <dd>
-  Returns the file path of the package.
+  Returns the <strong>absolute file system path</strong> to the package root,
+or <code>null</code> if unavailable.
   <div class="features"><span class="feature">override</span></div>
 
 </dd>
@@ -206,7 +246,20 @@ API across all packages.</li>
 
 </dt>
 <dd>
-  Returns whether the package is the root package.
+  Returns <code>true</code> if this package is the <strong>root application package</strong>.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="getJetleafDependencies" class="callable">
+  <span class="name"><a href="../jetleaf_build/GenerativePackage/getJetleafDependencies.html">getJetleafDependencies</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Iterable-class.html">Iterable</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns the <strong>JetLeaf-specific dependencies</strong> of this package.
   <div class="features"><span class="feature">override</span></div>
 
 </dd>
@@ -219,7 +272,8 @@ API across all packages.</li>
 
 </dt>
 <dd>
-  Returns the language version of the package.
+  Returns the <strong>Dart language version constraint</strong> of the package,
+or <code>null</code> if it was not specified.
   <div class="features"><span class="feature">override</span></div>
 
 </dd>
@@ -232,7 +286,7 @@ API across all packages.</li>
 
 </dt>
 <dd>
-  Returns the name of the package.
+  Returns the <strong>name of the package</strong>.
   <div class="features"><span class="feature">override</span></div>
 
 </dd>
@@ -245,7 +299,7 @@ API across all packages.</li>
 
 </dt>
 <dd>
-  Returns the root URI of the package.
+  Returns the <strong>root URI</strong> of the package, or <code>null</code> if unavailable.
   <div class="features"><span class="feature">override</span></div>
 
 </dd>
@@ -258,8 +312,21 @@ API across all packages.</li>
 
 </dt>
 <dd>
-  Returns the version of the package.
+  Returns the <strong>version of the package</strong>.
   <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+        <dt id="isJetleafPackaged" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/Package/isJetleafPackaged.html">isJetleafPackaged</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns <code>true</code> if this package is <strong>JetLeaf-enabled</strong>.
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
@@ -284,20 +351,33 @@ API across all packages.</li>
 
 </dt>
 <dd class="inherited">
-  Serializes this resource to a JSON-encodable map.
+  Serializes this declaration into a JSON-compatible map.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
         <dt id="toString" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/ResourceDeclaration/toString.html">toString</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/ToString/toString.html">toString</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  Standard string representation of this resource.
+  A string representation of this object.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="toStringOptions" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/Package/toStringOptions.html">toStringOptions</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/ToStringOptions-class.html">ToStringOptions</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -311,7 +391,7 @@ API across all packages.</li>
     <h2>Operators</h2>
     <dl class="callables">
         <dt id="operator ==" class="callable inherited">
-  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
   </span>
   
@@ -352,7 +432,7 @@ API across all packages.</li>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

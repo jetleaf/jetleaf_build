@@ -62,22 +62,8 @@
     </section>
     
 <section class="desc markdown">
-  <p>Checks if this declaration is a public declaration.</p>
-<p>Public vlues in dart is often just the name without any prefix.
-While private values are often prefixed with <code>_</code>.</p>
-<h3 id="example">Example</h3>
-<pre class="language-dart"><code class="language-dart">class _PrivateClass {
-  final String publicField;
-
-  void _privateMethod() {}
-}
-
-class PublicClass {
-  final String _privateField;
-  
-  void publicMethod() {}
-}
-</code></pre>
+  <p>Indicates whether this declaration is <strong>publicly visible</strong>.</p>
+<p>Returns <code>true</code> for public declarations and <code>false</code> for private ones.</p>
 </section>
 
 
@@ -112,7 +98,7 @@ class PublicClass {
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

@@ -15,7 +15,6 @@
 import 'dart:io';
 
 import '../builder/runtime_builder.dart';
-import '../runtime/provider/meta_runtime_provider.dart';
 import '../runtime/scanner/runtime_scanner.dart';
 import '../runtime/scanner/runtime_scanner_configuration.dart';
 import '../generator/mock_library_generator.dart';
@@ -195,8 +194,5 @@ Future<RuntimeScannerSummary> runTestScan({
     )
   );
 
-  final scan = await scanner.scan(config ?? defaultConfig, args, source: source);
-
-  Runtime.register(scan.getContext());
-  return scan;
+  return await scanner.scan(config ?? defaultConfig, args, source: source);
 }

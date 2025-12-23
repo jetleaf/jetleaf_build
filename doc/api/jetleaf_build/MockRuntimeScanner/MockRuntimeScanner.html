@@ -54,9 +54,9 @@
 
     <section class="multi-line-signature">
       
-      <span class="name ">MockRuntimeScanner</span>(<wbr>{<ol class="parameter-list"> <li><span class="parameter" id="-param-onInfo"><span class="type-annotation">OnLogged?</span> <span class="parameter-name">onInfo</span>, </span></li>
-<li><span class="parameter" id="-param-onWarning"><span class="type-annotation">OnLogged?</span> <span class="parameter-name">onWarning</span>, </span></li>
-<li><span class="parameter" id="-param-onError"><span class="type-annotation">OnLogged?</span> <span class="parameter-name">onError</span>, </span></li>
+      <span class="name ">MockRuntimeScanner</span>(<wbr>{<ol class="parameter-list"> <li><span class="parameter" id="-param-onInfo"><span class="type-annotation"><a href="../../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onInfo</span>, </span></li>
+<li><span class="parameter" id="-param-onWarning"><span class="type-annotation"><a href="../../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onWarning</span>, </span></li>
+<li><span class="parameter" id="-param-onError"><span class="type-annotation"><a href="../../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onError</span>, </span></li>
 <li><span class="parameter" id="-param-forceLoadFiles"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span>&gt;</span></span> <span class="parameter-name">forceLoadFiles</span> = <span class="default-value">const []</span>, </span></li>
 <li><span class="parameter" id="-param-libraryGeneratorFactory"><span class="type-annotation"><a href="../../jetleaf_build/MockLibraryGeneratorFactory.html">MockLibraryGeneratorFactory</a>?</span> <span class="parameter-name">libraryGeneratorFactory</span>, </span></li>
 <li><span class="parameter" id="-param-includeCurrentIsolateLibraries"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">includeCurrentIsolateLibraries</span> = <span class="default-value">true</span>, </span></li>
@@ -64,47 +64,42 @@
     </section>
     
 <section class="desc markdown">
-  <p>A lightweight mock implementation of <a href="../../jetleaf_build/RuntimeScanner-class.html">RuntimeScanner</a> for testing and development.</p>
-<p>This scanner provides a simplified reflection system that:</p>
+  <p>A <strong>mock implementation</strong> of <a href="../../jetleaf_build/RuntimeScanner-class.html">RuntimeScanner</a> designed for testing,
+experimentation, and controlled runtime scanning scenarios.</p>
+<p><a href="../../jetleaf_build/MockRuntimeScanner-class.html">MockRuntimeScanner</a> simulates JetLeaf’s runtime scanning pipeline while
+allowing fine-grained control over:</p>
 <ul>
-<li>Operates only on the current isolate's libraries</li>
-<li>Supports force-loading specific files</li>
-<li>Uses Dart's mirrors API instead of filesystem scanning</li>
-<li>Provides configurable logging</li>
+<li>Logging and error handling</li>
+<li>Forced file inclusion</li>
+<li>Library generation behavior</li>
+</ul>
+<p>It is primarily intended for:</p>
+<ul>
+<li>Unit and integration testing</li>
+<li>Tooling and development environments</li>
+<li>Scenarios where full production scanning is unnecessary or undesirable</li>
+</ul>
+<hr>
+<h4 id="key-characteristics">Key Characteristics</h4>
+<ul>
+<li>Uses Dart mirrors to inspect the current isolate</li>
+<li>Supports force-loading Dart files not discoverable via mirrors</li>
 <li>Allows custom library generator injection</li>
+<li>Produces deterministic reflection metadata</li>
 </ul>
-<p>{@template mock_runtime_scan_features}</p>
-<h2 id="key-features">Key Features</h2>
-<ul>
-<li><strong>Isolated Scanning</strong>: Only processes currently loaded libraries by default</li>
-<li><strong>Selective Loading</strong>: Can force-load specific files via <code>forceLoadFiles</code></li>
-<li><strong>Pluggable Logging</strong>: Configurable info/warning/error callbacks</li>
-<li><strong>Custom Generators</strong>: Supports alternative library generators via factory</li>
-<li><strong>Primitive Type Support</strong>: Automatically includes Dart core types</li>
-</ul>
-<h2 id="when-to-use">When to Use</h2>
-<ul>
-<li>Unit testing reflection-dependent code</li>
-<li>Development environments where full scanning is unnecessary</li>
-<li>CI pipelines requiring lightweight reflection</li>
-<li>Debugging specific library reflection</li>
-</ul>
-<p>Creates a mock runtime scanner with configurable behavior.</p>
-<p>Parameters:</p>
-<ul>
-<li><code>onInfo</code>: Optional callback for informational messages</li>
-<li><code>onWarning</code>: Optional callback for warning messages</li>
-<li><code>onError</code>: Optional callback for error messages</li>
-<li><code>forceLoadFiles</code>: Additional files to load for scanning (default empty)</li>
-<li><code>libraryGeneratorFactory</code>: Custom generator factory (defaults to <a href="../../jetleaf_build/MockLibraryGenerator-class.html">MockLibraryGenerator</a>)</li>
-<li><code>includeCurrentIsolateLibraries</code>: Whether to scan current isolate (default true)</li>
-</ul>
-<p>Example:</p>
-<pre class="language-dart"><code class="language-dart">final mockScan = MockRuntimeScan(
-  onError: (err) =&gt; Sentry.captureException(err),
-  forceLoadFiles: criticalFiles,
-);
+<p>This scanner follows the same <strong>lifecycle semantics</strong> as production
+scanners:</p>
+<pre class="language-text"><code class="language-text">initialize
+  → discover files &amp; libraries
+  → generate declarations
+  → resolve runtime executors
+  → freeze runtime registry
 </code></pre>
+<p>While behaviorally compatible with production scanners, this
+implementation prioritizes <strong>flexibility and observability</strong> over
+performance and isolation.</p>
+<p>Consumers should rely on <a href="../../jetleaf_build/RuntimeScanner-class.html">RuntimeScanner</a> abstractions rather than
+this concrete type directly.</p>
 </section>
 
 
@@ -112,17 +107,13 @@
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">MockRuntimeScanner({
-  OnLogged? onInfo,
-  OnLogged? onWarning,
-  OnLogged? onError,
+  this.onInfo,
+  this.onWarning,
+  this.onError,
   List&lt;File&gt; forceLoadFiles = const [],
   MockLibraryGeneratorFactory? libraryGeneratorFactory,
   bool includeCurrentIsolateLibraries = true,
-}) : _onInfo = onInfo,
-     _onWarning = onWarning,
-     _onError = onError,
-     _forceLoadFiles = forceLoadFiles,
-     _libraryGeneratorFactory = libraryGeneratorFactory;</code></pre>
+}) : _forceLoadFiles = forceLoadFiles, _libraryGeneratorFactory = libraryGeneratorFactory;</code></pre>
 </section>
 
 
@@ -150,7 +141,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

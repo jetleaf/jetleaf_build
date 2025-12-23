@@ -62,10 +62,13 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns all fields declared in this class (excluding inherited fields).</p>
+  <p>Returns all fields declared in this class, excluding inherited fields.</p>
+<p>Fields include both instance and static fields.
+Each field can be inspected via <a href="../../jetleaf_build/FieldDeclaration-class.html">FieldDeclaration</a> to check
+its type, nullability, and modifiers (<code>final</code>, <code>const</code>, <code>late</code>, <code>static</code>).</p>
 <h3 id="example">Example</h3>
 <pre class="language-dart"><code class="language-dart">for (final field in clazz.getFields()) {
-  print(field.getName());
+  print('${field.getName()} : ${field.getLinkDeclaration().getName()}');
 }
 </code></pre>
 </section>
@@ -102,7 +105,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

@@ -62,7 +62,13 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns <code>true</code> if this is a <code>mixin</code> declaration or a mixin application.</p>
+  <p>Returns <code>true</code> if this declaration is a <code>mixin</code> or a mixin application.</p>
+<p>Mixins are reusable sets of methods and fields that can be applied
+to classes without using inheritance.</p>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code class="language-dart">mixin Logging {}
+print(loggingMixin.getIsMixin()); // true
+</code></pre>
 </section>
 
 
@@ -97,7 +103,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

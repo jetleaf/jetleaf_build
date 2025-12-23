@@ -67,7 +67,10 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the binary content of the asset (same as <code>_contentBytes</code>).</p>
+  <p>Returns the <strong>binary content</strong> of the asset as a <a href="https://api.dart.dev/stable/3.9.2/dart-typed_data/Uint8List-class.html">Uint8List</a>.</p>
+<p>Example:</p>
+<pre class="language-dart"><code class="language-dart">final bytes = asset.getContentBytes(); // &lt;Uint8List of file contents&gt;
+</code></pre>
 </section>
 
 
@@ -103,7 +106,7 @@ Uint8List getContentBytes();</code></pre>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

@@ -62,7 +62,15 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns <code>true</code> if this class is marked <code>base</code>.</p>
+  <p>Returns <code>true</code> if this class is declared as <strong>base</strong>.</p>
+<p>A base class may be extended or implemented <strong>only within the same
+library</strong> unless explicitly permitted. This prevents external
+implementations while still allowing controlled inheritance.</p>
+<h3 id="use-cases">Use cases</h3>
+<ul>
+<li>Framework extension points</li>
+<li>Preventing uncontrolled third-party implementations</li>
+</ul>
 </section>
 
 
@@ -97,7 +105,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

@@ -62,7 +62,11 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns a unique name for the asset, combining the package name and file name.</p>
+  <p>Returns a <strong>unique name for the asset</strong>, combining the package name and
+the base file name (without extension).</p>
+<p>Example:</p>
+<pre class="language-dart"><code class="language-dart">final uniqueName = asset.getUniqueName(); // 'jetleaf_config'
+</code></pre>
 </section>
 
 
@@ -97,7 +101,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

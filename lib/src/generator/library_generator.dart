@@ -17,7 +17,7 @@ import 'dart:mirrors' as mirrors;
 
 import 'package:meta/meta.dart';
 
-import '../declaration/declaration.dart';
+import '../runtime/declaration/declaration.dart';
 import '../runtime/scanner/runtime_scanner_configuration.dart';
 import '../utils/utils.dart';
 
@@ -92,7 +92,7 @@ abstract class LibraryGenerator {
   ///   }
   /// }
   /// ```
-  Future<List<LibraryDeclaration>> generate(List<File> dartFiles);
+  Future<void> generate(List<File> dartFiles);
 
   /// {@macro non_loadable_check}
   @protected

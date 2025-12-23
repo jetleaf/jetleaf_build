@@ -143,20 +143,6 @@ failed during reflection-based scanning.</p>
 
 </dd>
 
-        <dt id="getContext" class="callable">
-  <span class="name"><a href="../jetleaf_build/RuntimeScannerSummary/getContext.html">getContext</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/ConfigurableRuntimeProvider-class.html">ConfigurableRuntimeProvider</a></span>
-  </span>
-  
-
-</dt>
-<dd>
-  Represents a summary of the reflection scan process, containing
-diagnostics and metadata such as build time and scanning context.
-  
-
-</dd>
-
         <dt id="getErrors" class="callable">
   <span class="name"><a href="../jetleaf_build/RuntimeScannerSummary/getErrors.html">getErrors</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
@@ -191,7 +177,20 @@ diagnostics and metadata such as build time and scanning context.
 
 </dt>
 <dd>
-  Informational messages collected during the scan.
+  This retrieves the logs as they were written or collected.
+  
+
+</dd>
+
+        <dt id="getLogsAsIs" class="callable">
+  <span class="name"><a href="../jetleaf_build/RuntimeScannerSummary/getLogsAsIs.html">getLogsAsIs</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  This retrieves the logs as they were written or collected.
   
 
 </dd>
@@ -285,7 +284,7 @@ diagnostics and metadata such as build time and scanning context.
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

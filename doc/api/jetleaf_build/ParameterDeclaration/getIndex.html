@@ -62,7 +62,15 @@
     </section>
     
 <section class="desc markdown">
-  <p>The index of the parameter</p>
+  <p>Returns the zero-based positional index of this parameter within the
+function, method, or constructor declaration.</p>
+<p>For example, in:</p>
+<pre class="language-dart"><code class="language-dart">void example(int a, String b, {bool? flag})
+</code></pre>
+<p><code>a</code> → index <code>0</code><br>
+<code>b</code> → index <code>1</code><br>
+<code>flag</code> (named) may still receive a logical index depending on the
+implementation, but ordering is preserved.</p>
 </section>
 
 
@@ -97,7 +105,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

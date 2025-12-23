@@ -54,27 +54,37 @@
 
     <section class="multi-line-signature">
       
+  <div>
+    <ol class="annotation-list">
+        <li>@<a href="https://api.dart.dev/stable/3.9.2/dart-core/override-constant.html">override</a></li>
+    </ol>
+  </div>
 <span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
 <span class="name ">isPartFile</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="isPartFile-param-file"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span> <span class="parameter-name">file</span></span></li>
 </ol>)
 
-      
+      <div class="features"><span class="feature">inherited</span></div>
 
     </section>
     
 <section class="desc markdown">
-  <p>Checks if a file contains a 'part of' directive</p>
+  <p>Returns <code>true</code> if the given <code>file</code> contains a valid <code>part of</code> directive.</p>
+<p>The file is read synchronously. If the file cannot be read, or if an
+exception occurs, the method returns <code>false</code>.</p>
+<p>This is simply a convenience wrapper around <code>_containsPartOfDirective</code>.</p>
 </section>
 
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">bool isPartFile(File file) {
+  <pre class="language-dart"><code class="language-dart">@override
+bool isPartFile(File file) {
   try {
-    final content = file.readAsStringSync();
-    return content.contains(RegExp(r&#39;^\s*part\s+of\s+&#39;, multiLine: true));
-  } catch (e) {
+    final text = file.readAsStringSync();
+    return _containsPartOfDirective(text);
+  } catch (_) {
+    &#47;&#47; Errors (missing file, unreadable text) are treated as non-part files.
     return false;
   }
 }</code></pre>
@@ -105,7 +115,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

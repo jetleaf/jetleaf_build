@@ -66,12 +66,17 @@
 <section class="desc markdown">
   <p>Invokes this method on the given <code>instance</code>.</p>
 <ul>
-<li>If the method is static, <code>instance</code> must be <code>null</code>.</li>
-<li><code>arguments</code> must be a map where the keys match parameter names.</li>
+<li>If the method is <code>static</code>, <code>instance</code> must be <code>null</code>.</li>
+<li><code>arguments</code> must be a map whose keys correspond to parameter names.</li>
 </ul>
-<p>Throws if the invocation fails or the arguments are invalid.</p>
+<p>The invocation is performed using the resolved runtime linkage
+and may throw if the method cannot be invoked, arguments are
+missing or invalid, or reflection is restricted.</p>
 <h3 id="example">Example</h3>
-<pre class="language-dart"><code class="language-dart">final result = method.invoke(myObject, {'param1': 42, 'param2': 'ok'});
+<pre class="language-dart"><code class="language-dart">final result = method.invoke(myObject, {
+  'param1': 42,
+  'param2': 'ok',
+});
 </code></pre>
 </section>
 
@@ -107,7 +112,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

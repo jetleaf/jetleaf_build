@@ -54,7 +54,7 @@
 
     <section class="multi-line-signature">
       
-      <span class="name ">ConstructorNotFoundException</span>(<wbr><ol class="parameter-list"> <li><span class="parameter" id="-param-type"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">type</span>, </span></li>
+      <span class="name ">ConstructorNotFoundException</span>(<wbr><ol class="parameter-list"> <li><span class="parameter" id="-param-type"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">type</span>, </span></li>
 <li><span class="parameter" id="-param-ctorName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">ctorName</span>, {</span></li>
 <li><span class="parameter" id="-param-cause"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span> <span class="parameter-name">cause</span>, </span></li>
 <li><span class="parameter" id="-param-stack"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/StackTrace-class.html">StackTrace</a>?</span> <span class="parameter-name">stack</span>, </span></li>
@@ -130,7 +130,7 @@ or dependency injection pipelines.</li>
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">ConstructorNotFoundException(String type, String ctorName, {Object? cause, StackTrace? stack}) : super(
+  <pre class="language-dart"><code class="language-dart">ConstructorNotFoundException(Object type, String ctorName, {Object? cause, StackTrace? stack}) : super(
   &#39;Constructor &quot;$ctorName&quot; not found for type $type.&#39;,
   cause: cause,
   stackTrace: stack,
@@ -162,7 +162,7 @@ or dependency injection pipelines.</li>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the getArgument method from the ExecutableArgument class, for the Dart programming language.">
+  <title>getArgument method - ExecutableArgument class - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li><a href="../../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></li>
+    <li class="self-crumb">getArgument abstract method</li>
+  </ol>
+  <div class="self-name">getArgument</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="jetleaf_build&#47;ExecutableArgument-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-method">getArgument</span> abstract method 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+<span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>
+<span class="name ">getArgument</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="getArgument-param-object"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">object</span>, [</span></li>
+<li><span class="parameter" id="getArgument-param-fromNamed"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a>?</span> <span class="parameter-name">fromNamed</span></span></li>
+</ol>])
+
+      
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Retrieves a single argument—either positional or named—based on the lookup
+value provided.</p>
+<p>This unified accessor exists to support dynamic, inspection-driven
+workflows in the JetLeaf runtime, where components may not know in advance
+whether an argument was originally passed positionally or by name.</p>
+<h2 id="lookup-rules">Lookup Rules</h2>
+<p>The meaning of the <code>object</code> parameter depends on the <code>fromNamed</code> flag:</p>
+<h3 id="1-named-argument-lookup-fromnamed--true">1. Named-argument lookup (<code>fromNamed == true</code>)</h3>
+<ul>
+<li><code>object</code> must be a <code>String</code> representing the original name of the
+argument as written at the call site.</li>
+<li>Returns the value associated with that key, or <code>null</code> if the key exists
+but the value is explicitly <code>null</code>.</li>
+<li>Returns <code>null</code> if the argument name was not provided.</li>
+</ul>
+<p>Example:</p>
+<pre class="language-dart"><code class="language-dart">args.getArgument('count', true); // → 5
+</code></pre>
+<h3 id="2-positional-lookup-fromnamed--false">2. Positional lookup (<code>fromNamed == false</code>)</h3>
+<ul>
+<li><code>object</code> must be an <code>int</code> representing the zero-based index of the
+positional argument.</li>
+<li>Returns the positional value at that index.</li>
+<li>Throws <code>RangeError</code> if the index is outside the positional argument list.</li>
+</ul>
+<p>Example:</p>
+<pre class="language-dart"><code class="language-dart">args.getArgument(0, false); // → first positional argument
+</code></pre>
+<h3 id="3-automatic-mode-fromnamed--null">3. Automatic mode (<code>fromNamed == null</code>)</h3>
+<p>When <code>fromNamed</code> is omitted, the lookup mode is inferred automatically:</p>
+<ul>
+<li>If <code>object</code> is a <code>String</code> → named lookup</li>
+<li>If <code>object</code> is an <code>int</code> → positional lookup</li>
+<li>Otherwise → returns <code>null</code></li>
+</ul>
+<p>This mode is frequently used by generative systems, hint processors, and
+reflection layers that cannot assume ahead of time how the argument was
+supplied.</p>
+<h2 id="behavior-guarantees">Behavior Guarantees</h2>
+<ul>
+<li>Does <em>not</em> mutate the argument collection</li>
+<li>Respects all immutability guarantees of <a href="../../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></li>
+<li>Operates strictly on the normalized, internal representation</li>
+</ul>
+<h2 id="typical-usage">Typical Usage</h2>
+<pre class="language-dart"><code class="language-dart">final args = ExecutableArgument.unmodified(
+  {'flag': true},
+  ['hello', 42],
+);
+
+args.getArgument(1);          // → 42
+args.getArgument('flag');     // → true
+args.getArgument('missing');  // → null
+</code></pre>
+<h2 id="when-to-use">When to Use</h2>
+<p>This method is ideal when:</p>
+<ul>
+<li>A hint processor needs to inspect arbitrary argument bindings</li>
+<li>A runtime resolver is reconstructing invocation tokens</li>
+<li>Tooling needs a unified read API independent of argument style</li>
+</ul>
+<p>It should <em>not</em> be used when callers already know whether arguments are
+named or positional—use the dedicated getters in those cases for clarity
+and performance.</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">Object? getArgument(Object object, [bool? fromNamed]);</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></li>
+    <li class="self-crumb">getArgument abstract method</li>
+</ol>
+
+    <h5>ExecutableArgument class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.1.0
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

@@ -144,14 +144,14 @@ void main() async {
 
   group('ConstructorDeclaration Basic Properties', () {
     test('should retrieve all constructors', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SimpleConstructorClass');
+      final testClass = Runtime.findClass<SimpleConstructorClass>();
       
       final constructors = testClass.getConstructors();
       expect(constructors.length, equals(4));
     });
 
     test('should identify constructor types', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SimpleConstructorClass');
+      final testClass = Runtime.findClass<SimpleConstructorClass>();
       
       final constructors = testClass.getConstructors();
       
@@ -170,7 +170,7 @@ void main() async {
     });
 
     test('should identify public vs private constructors', () {
-      final privateClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'PrivateConstructorClass');
+      final privateClass = Runtime.findClass<PrivateConstructorClass>();
       
       final constructors = privateClass.getConstructors();
       
@@ -184,7 +184,7 @@ void main() async {
 
   group('ConstructorDeclaration Parameters', () {
     test('should retrieve constructor parameters', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SimpleConstructorClass');
+      final testClass = Runtime.findClass<SimpleConstructorClass>();
       
       final constructors = testClass.getConstructors();
       final defaultConstructor = constructors.firstWhere((c) => c.getName() == '');
@@ -202,7 +202,7 @@ void main() async {
     });
 
     test('should handle named parameters in constructors', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SimpleConstructorClass');
+      final testClass = Runtime.findClass<SimpleConstructorClass>();
       
       final constructors = testClass.getConstructors();
       final namedConstructor = constructors.firstWhere((c) => c.getName() == 'named');
@@ -219,7 +219,7 @@ void main() async {
     });
 
     test('should handle nullable parameters', () {
-      final nullableClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'NullableConstructorClass');
+      final nullableClass = Runtime.findClass<NullableConstructorClass>();
       
       final constructors = nullableClass.getConstructors();
       final defaultConstructor = constructors.firstWhere((c) => c.getName() == '');
@@ -237,7 +237,7 @@ void main() async {
 
   group('ConstructorDeclaration Invocation', () {
     test('should invoke default constructor', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SimpleConstructorClass');
+      final testClass = Runtime.findClass<SimpleConstructorClass>();
       
       final constructors = testClass.getConstructors();
       final defaultConstructor = constructors.firstWhere((c) => c.getName() == '');
@@ -253,7 +253,7 @@ void main() async {
     });
 
     test('should invoke named constructor', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SimpleConstructorClass');
+      final testClass = Runtime.findClass<SimpleConstructorClass>();
       
       final constructors = testClass.getConstructors();
       final namedConstructor = constructors.firstWhere((c) => c.getName() == 'named');
@@ -269,7 +269,7 @@ void main() async {
     });
 
     test('should invoke factory constructor', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SimpleConstructorClass');
+      final testClass = Runtime.findClass<SimpleConstructorClass>();
       
       final constructors = testClass.getConstructors();
       final factoryConstructor = constructors.firstWhere((c) => c.getName() == 'factory');
@@ -283,7 +283,7 @@ void main() async {
     });
 
     test('should invoke const constructor', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SimpleConstructorClass');
+      final testClass = Runtime.findClass<SimpleConstructorClass>();
       
       final constructors = testClass.getConstructors();
       final constConstructor = constructors.firstWhere((c) => c.getName() == 'constant');
@@ -299,7 +299,7 @@ void main() async {
 
   group('ConstructorDeclaration Edge Cases', () {
     test('should handle redirecting constructors', () {
-      final complexClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComplexConstructorClass');
+      final complexClass = Runtime.findClassByType(ComplexConstructorClass);
       
       final constructors = complexClass.getConstructors();
       final redirectingConstructor = constructors.firstWhere((c) => c.getName() == 'redirecting');
@@ -308,7 +308,7 @@ void main() async {
     });
 
     test('should handle constructors with initializer lists', () {
-      final complexClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComplexConstructorClass');
+      final complexClass = Runtime.findClassByType(ComplexConstructorClass);
       
       final constructors = complexClass.getConstructors();
       final initializerConstructor = constructors.firstWhere((c) => c.getName() == 'withInitializer');
@@ -317,7 +317,7 @@ void main() async {
     });
 
     test('should handle generic constructors', () {
-      final genericClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'GenericConstructorClass');
+      final genericClass = Runtime.findClass<GenericConstructorClass>();
       
       final constructors = genericClass.getConstructors();
       expect(constructors.length, equals(3));
@@ -330,7 +330,7 @@ void main() async {
     });
 
     test('should handle inheritance in constructors', () {
-      final concreteClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ConcreteConstructorClass');
+      final concreteClass = Runtime.findClassByType(ConcreteConstructorClass);
       
       final constructors = concreteClass.getConstructors();
       final defaultConstructor = constructors.firstWhere((c) => c.getName() == '');
@@ -346,7 +346,7 @@ void main() async {
     });
 
     test('should handle record parameters in constructors', () {
-      final recordClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'RecordConstructorClass');
+      final recordClass = Runtime.obtainClassDeclaration(RecordConstructorClass);
       
       final constructors = recordClass.getConstructors();
       final defaultConstructor = constructors.firstWhere((c) => c.getName() == '');

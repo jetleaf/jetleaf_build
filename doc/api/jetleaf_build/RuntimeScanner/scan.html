@@ -55,7 +55,8 @@
     <section class="multi-line-signature">
       
 <span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../jetleaf_build/RuntimeScannerSummary-class.html">RuntimeScannerSummary</a></span>&gt;</span></span>
-<span class="name ">scan</span>(<wbr><ol class="parameter-list"> <li><span class="parameter" id="scan-param-loader"><span class="type-annotation"><a href="../../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">loader</span>, {</span></li>
+<span class="name ">scan</span>(<wbr><ol class="parameter-list"> <li><span class="parameter" id="scan-param-loader"><span class="type-annotation"><a href="../../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">loader</span>, </span></li>
+<li><span class="parameter" id="scan-param-args"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">args</span>, {</span></li>
 <li><span class="parameter" id="scan-param-source"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a>?</span> <span class="parameter-name">source</span>, </span></li>
 </ol>})
 
@@ -87,6 +88,7 @@ print(summary.getErrors());
 <ul>
 <li><code>loader</code> is the configuration for the scan.</li>
 <li><code>source</code> is the root directory to scan. Defaults to <a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory/current.html">Directory.current</a>.</li>
+<li><code>args</code> is the build args to use</li>
 </ul>
 <p>Returns a <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a> that resolves to the final <a href="../../jetleaf_build/RuntimeScannerSummary-class.html">RuntimeScannerSummary</a>.</p>
 </section>
@@ -95,7 +97,7 @@ print(summary.getErrors());
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Future&lt;RuntimeScannerSummary&gt; scan(RuntimeScannerConfiguration loader, {Directory? source});</code></pre>
+  <pre class="language-dart"><code class="language-dart">Future&lt;RuntimeScannerSummary&gt; scan(RuntimeScannerConfiguration loader, List&lt;String&gt; args, {Directory? source});</code></pre>
 </section>
 
 
@@ -123,7 +125,7 @@ print(summary.getErrors());
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

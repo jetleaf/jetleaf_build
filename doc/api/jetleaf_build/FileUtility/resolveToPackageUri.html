@@ -60,12 +60,44 @@
 <li><span class="parameter" id="resolveToPackageUri-param-project"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a>?</span> <span class="parameter-name">project</span></span></li>
 </ol>])
 
-      
+      <div class="features"><span class="feature">inherited</span></div>
 
     </section>
     
 <section class="desc markdown">
-  <p>Resolves a file system path to a package URI.</p>
+  <p>Resolves an absolute file system path into a Dart <code>package:</code> URI, if possible.</p>
+<p>This enables consistent reference formatting when mapping local files into
+package-relative URIs used by the Dart analyzer, JetLeaf runtime systems,
+and asset pipelines.</p>
+<h3 id="resolution-order">Resolution Order</h3>
+<ol>
+<li>
+<p><strong>Search dependency packages:</strong><br>
+If the file resides under a recognized package's <code>lib/</code> directory,
+returns a URI of the form:</p>
+<pre class="language-dart"><code>package:&lt;packageName&gt;/&lt;relativePath&gt;
+</code></pre>
+</li>
+<li>
+<p><strong>Check current project:</strong><br>
+If the file resides under the current project's <code>lib/</code> directory,
+returns:</p>
+<pre class="language-dart"><code>package:&lt;currentPackageName&gt;/&lt;relativePath&gt;
+</code></pre>
+</li>
+<li>
+<p><strong>Otherwise:</strong><br>
+Returns <code>null</code> if no valid package mapping can be determined.</p>
+</li>
+</ol>
+<h3 id="parameters">Parameters</h3>
+<ul>
+<li><code>absoluteFilePath</code> — The absolute path to the file being resolved.</li>
+<li><code>currentPackageName</code> — Name of the user project package.</li>
+<li><code>project</code> — Optional override directory for determining the project's root.</li>
+</ul>
+<h3 id="returns">Returns</h3>
+<p>A <code>package:</code> URI string, or <code>null</code> if the file cannot be mapped.</p>
 </section>
 
 
@@ -128,7 +160,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

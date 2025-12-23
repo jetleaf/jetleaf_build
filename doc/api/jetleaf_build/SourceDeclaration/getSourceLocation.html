@@ -62,9 +62,15 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the source code location (e.g., file path or URI) where this declaration is defined,
-or <code>null</code> if not available in the current reflection context.</p>
-<p>This is optional and implementation-dependent.</p>
+  <p>Returns the URI pointing to the source location where this declaration
+is defined.</p>
+<p>This may be:</p>
+<ul>
+<li>A <code>package:</code> URI</li>
+<li>A <code>dart:</code> URI</li>
+<li><code>null</code> if the declaration is synthetic or source information
+is unavailable</li>
+</ul>
 </section>
 
 
@@ -99,7 +105,7 @@ or <code>null</code> if not available in the current reflection context.</p>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

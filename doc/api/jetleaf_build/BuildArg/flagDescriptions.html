@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the flagDescriptions property from the BuildArg class, for the Dart programming language.">
+  <title>flagDescriptions property - BuildArg class - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li><a href="../../jetleaf_build/BuildArg-class.html">BuildArg</a></li>
+    <li class="self-crumb">flagDescriptions property</li>
+  </ol>
+  <div class="self-name">flagDescriptions</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="jetleaf_build&#47;BuildArg-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-property">flagDescriptions</span> property 
+</h1></div>
+
+    
+      <section class="multi-line-signature">
+        
+        <a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>, <span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span>
+        <span class="name ">flagDescriptions</span>
+        <div class="features"><span class="feature">final</span></div>
+
+      </section>
+      
+<section class="desc markdown">
+  <p>A mapping of <strong>CLI build flags</strong> to their human-readable descriptions.</p>
+<p>This static map provides a quick reference for all recognized
+JetLeaf build-time flags and their corresponding behaviors.</p>
+<p>Format:</p>
+<pre class="language-text"><code class="language-text">'flag / shortFlag' : 'Description of behavior'
+</code></pre>
+<p>Examples:</p>
+<ul>
+<li><code>$FULLY_VERBOSE / $FULLY_VERBOSE_SN</code> → "Enable full logging of all events"</li>
+<li><code>$SKIP_WARNING / $SKIP_WARNING_SN</code> → "Suppress warning logs"</li>
+</ul>
+<p>This map is used internally by the build system to:</p>
+<ul>
+<li>Validate CLI arguments</li>
+<li>Generate usage hints</li>
+<li>Explain flag behavior to users</li>
+</ul>
+</section>
+
+      
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">static final flagDescriptions = &lt;String, String&gt;{
+  &#39;$FULLY_VERBOSE &#47; $FULLY_VERBOSE_SN&#39;: &#39;Enable full logging of all events&#39;,
+  &#39;$LIBRARY_VERBOSE &#47; $LIBRARY_VERBOSE_SN&#39;: &#39;Log library-level events only (default)&#39;,
+  &#39;$IMP_VERBOSE &#47; $IMP_VERBOSE_SN&#39;: &#39;Important-only logging (warnings &amp; errors)&#39;,
+  &#39;$SKIP_WARNING &#47; $SKIP_WARNING_SN&#39;: &#39;Suppress warning logs&#39;,
+  &#39;$SKIP_ERROR &#47; $SKIP_ERROR_SN&#39;: &#39;Suppress error logs&#39;,
+  &#39;$SKIP_INFO &#47; $SKIP_INFO_SN&#39;: &#39;Suppress info logs&#39;,
+  &#39;$SHOW_CYCLE &#47; $SHOW_CYCLE_SN&#39;: &#39;Show cycle detection diagnostics&#39;,
+};</code></pre>
+</section>
+
+
+    
+</div> <!-- /.main-content -->
+<div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+  <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/BuildArg-class.html">BuildArg</a></li>
+    <li class="self-crumb">flagDescriptions property</li>
+</ol>
+
+  <h5>BuildArg class</h5>
+  <div id="dartdoc-sidebar-left-content"></div>
+</div><!--/.sidebar-offcanvas-->
+<div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.1.0
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

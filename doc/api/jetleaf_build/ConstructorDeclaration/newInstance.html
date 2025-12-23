@@ -63,15 +63,17 @@
     </section>
     
 <section class="desc markdown">
-  <p>Creates a new instance of the declaring class using this constructor.</p>
-<p><code>arguments</code> is a map of parameter names to their values.</p>
+  <p>Creates a new instance of the class using this constructor.</p>
+<p><code>arguments</code> is a map where keys are parameter names and values are
+the corresponding values to pass to the constructor.</p>
+<p>Throws if required parameters are missing or if types do not match.</p>
 <h3 id="example">Example</h3>
-<pre class="language-dart"><code class="language-dart">final instance = constructor.newInstance({
-  'name': 'JetLeaf',
-  'version': 1,
+<pre class="language-dart"><code class="language-dart">final person = constructor.newInstance({
+  'name': 'Alice',
+  'age': 30,
 });
+print(person.name); // Alice
 </code></pre>
-<p>Throws if the arguments do not match the constructor's requirements.</p>
 </section>
 
 
@@ -106,7 +108,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

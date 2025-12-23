@@ -62,8 +62,12 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the <a href="../../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a> of this field.</p>
-<p>For example, in <code>int age = 10;</code>, this returns the reflected type for <code>int</code>.</p>
+  <p>Returns the <a href="../../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a> describing this field’s declared type.</p>
+<p>This represents the <strong>fully resolved type metadata</strong> for the field,
+including nullability, generic arguments, variance, and bounds.</p>
+<p>For example, a field declared as <code>List&lt;String&gt;?</code> will return a
+<a href="../../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a> describing <code>List&lt;String&gt;</code> with nullable semantics.</p>
+<p>This is the primary entry point for type-level inspection of a field.</p>
 </section>
 
 
@@ -98,7 +102,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

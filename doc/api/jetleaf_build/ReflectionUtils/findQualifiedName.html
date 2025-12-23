@@ -92,8 +92,7 @@ print(ReflectionUtils.findQualifiedName(user));
   final className = mirrors.MirrorSystem.getName(classMirror.simpleName);
 
   &#47;&#47; Library URI is taken from owner or type location
-  final libraryUri = classMirror.owner?.location?.sourceUri.toString() ??
-      (classMirror.location?.sourceUri.toString() ?? &#39;unknown&#39;);
+  final libraryUri = classMirror.location?.sourceUri.toString() ?? classMirror.owner?.location?.sourceUri.toString() ?? KEYWORD;
 
   return buildQualifiedName(className, libraryUri);
 }</code></pre>
@@ -124,7 +123,7 @@ print(ReflectionUtils.findQualifiedName(user));
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

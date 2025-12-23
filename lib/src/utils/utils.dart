@@ -106,6 +106,14 @@ class RuntimeUtils {
     return _jetLeafFoldersToSkip.hasMatch(path);
   }
 
+  /// Checks if a [uri] points to a built-in Dart library.
+  ///
+  /// Built-in libraries have the `dart:` scheme, e.g., `dart:core`, `dart:io`.
+  ///
+  /// - [uri]: The URI to check.
+  /// - Returns: `true` if the URI represents a built-in Dart library.
+  static bool isBuiltInDartLibrary(Uri uri) => uri.scheme == 'dart';
+
   /// Determines if a JetLeaf package should be skipped during scanning.
   ///
   /// {@macro non_loadable_check}
@@ -138,31 +146,54 @@ class RuntimeUtils {
   /// ```
   /// {@endtemplate}
   static String? getPackageNameFromUri(dynamic uri) {
+    Uri? parsedUri;
+    
     if (uri is String) {
-      try {
-        uri = Uri.parse(uri);
-      } catch (e) {
+      parsedUri = Uri.tryParse(uri);
+    } else if (uri is Uri) {
+      parsedUri = uri;
+    }
+
+    if (parsedUri == null || parsedUri.scheme == 'dart') {
+      return null;
+    }
+
+    // Handle standard 'package:' URIs
+    if (parsedUri.scheme == 'package') {
+      if (parsedUri.pathSegments.isEmpty || parsedUri.pathSegments.first.isEmpty) {
         return null;
+      }
+
+      return parsedUri.pathSegments.first;
+    }
+
+    // Handle 'file:' URIs (e.g., file:///Users/mac/Documents/.../class_test.dart)
+    if (parsedUri.scheme == 'file') {
+      File file = File.fromUri(parsedUri);
+      Directory? currentDir = file.parent;
+
+      // Search upward for the nearest pubspec.yaml
+      while (currentDir != null && currentDir.path != currentDir.parent.path) {
+        final pubspecFile = File('${currentDir.path}${Platform.pathSeparator}pubspec.yaml');
+        
+        if (pubspecFile.existsSync()) {
+          try {
+            // Read lines to find "name: package_name" without needing a YAML parser
+            final lines = pubspecFile.readAsLinesSync();
+            for (var line in lines) {
+              if (line.trim().startsWith('name:')) {
+                return line.replaceFirst('name:', '').trim();
+              }
+            }
+          } catch (_) {
+            return null; // File access or read error
+          }
+        }
+        currentDir = currentDir.parent;
       }
     }
 
-    if (uri is! Uri) {
-      return null;
-    }
-
-    if (uri.scheme == 'dart') {
-      return null;
-    }
-
-    if (uri.scheme != 'package') {
-      return null;
-    }
-
-    if (uri.pathSegments.isEmpty || uri.pathSegments.first.isEmpty) {
-      return null;
-    }
-
-    return uri.pathSegments.first;
+    return null;
   }
 
   /// Resolves a package URI to its file system location.
@@ -184,15 +215,36 @@ class RuntimeUtils {
   /// ```
   /// {@endtemplate}
   static Future<Uri?> resolveUri(Uri uri) async {
+    // 1. Direct file URIs
     if (uri.scheme == "file") {
       return uri;
     }
 
-    if (uri.scheme == "dart" || uri.scheme != "package") {
-      return null;
+    // 2. Resolve package: URIs using Isolate API
+    if (uri.scheme == "package") {
+      return await Isolate.resolvePackageUri(uri);
     }
 
-    return await Isolate.resolvePackageUri(uri);
+    // 3. Resolve dart: URIs (e.g., dart:core/string.dart)
+    if (uri.scheme == "dart") {
+      // Platform.resolvedExecutable gives path/to/sdk/bin/dart
+      // The libraries are located in path/to/sdk/lib/
+      final sdkPath = p.dirname(p.dirname(Platform.resolvedExecutable));
+      final libDir = p.join(sdkPath, 'lib');
+      
+      // Convert 'dart:core/string.dart' to 'core/string.dart'
+      String internalPath = uri.path;
+      
+      // If the path is just 'core', Dart usually maps it to 'core/core.dart'
+      if (!internalPath.contains('/')) {
+        internalPath = '$internalPath/$internalPath.dart';
+      }
+
+      final file = File(p.join(libDir, internalPath));
+      return file.existsSync() ? file.uri : null;
+    }
+
+    return null;
   }
 
   /// Determines if a library should be excluded based on loader configuration.

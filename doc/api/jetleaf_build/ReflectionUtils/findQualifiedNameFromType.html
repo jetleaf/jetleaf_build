@@ -85,7 +85,9 @@ the type object itself, not an instance.</p>
   <pre class="language-dart"><code class="language-dart">static String findQualifiedNameFromType(Type type) {
   final typeMirror = mirrors.reflectType(type);
   final typeName = mirrors.MirrorSystem.getName(typeMirror.simpleName);
-  final libraryUri = typeMirror.location?.sourceUri.toString() ?? &#39;unknown&#39;;
+  final libraryUri = typeMirror.location?.sourceUri.toString()
+    ?? typeMirror.owner?.location?.sourceUri.toString()
+    ?? KEYWORD;
 
   return buildQualifiedName(typeName, libraryUri);
 }</code></pre>
@@ -116,7 +118,7 @@ the type object itself, not an instance.</p>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

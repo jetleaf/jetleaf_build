@@ -50,6 +50,7 @@
     <div>
 <h1><span class="kind-class">MethodDeclaration</span> class 
     <a href="https://dart.dev/language/class-modifiers#abstract" class="feature feature-abstract" title="This type can not be directly constructed.">abstract</a>
+    <a href="https://dart.dev/language/class-modifiers#final" class="feature feature-final" title="This class can neither be extended, implemented, nor mixed in.">final</a>
  
 </h1></div>
 
@@ -89,6 +90,7 @@ print(getter.getIsGetter()); // true
   <dd>
     <ul class="gt-separated dark clazz-relationships">
       <li><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></li>
+        <li><a href="../jetleaf_build/BaseDeclaration-class.html">BaseDeclaration</a></li>
         <li><a href="../jetleaf_build/Declaration-class.html">Declaration</a></li>
         <li><a href="../jetleaf_build/EntityDeclaration-class.html">EntityDeclaration</a></li>
         <li><a href="../jetleaf_build/SourceDeclaration-class.html">SourceDeclaration</a></li>
@@ -100,10 +102,6 @@ print(getter.getIsGetter()); // true
         
         
 
-          <dt>Implementers</dt>
-          <dd><ul class="comma-separated clazz-relationships">
-              <li><a href="../jetleaf_build/StandardMethodDeclaration-class.html">StandardMethodDeclaration</a></li>
-          </ul></dd>
 
         
         
@@ -113,18 +111,6 @@ print(getter.getIsGetter()); // true
     </section>
 
     
-  <section class="summary offset-anchor" id="constructors">
-    <h2>Constructors</h2>
-    <dl class="constructor-summary-list">
-        <dt id="MethodDeclaration.new" class="callable">
-          <span class="name"><a href="../jetleaf_build/MethodDeclaration/MethodDeclaration.html">MethodDeclaration.new</a></span><span class="signature">()</span>
-        </dt>
-        <dd>
-          Represents a method declaration in a Dart class, extension, mixin, or top-level scope.
-            <div class="constructor-modifier features">const</div>
-        </dd>
-    </dl>
-  </section>
     
   <section
       class="summary offset-anchor inherited"
@@ -164,6 +150,19 @@ print(getter.getIsGetter()); // true
       id="instance-methods">
     <h2>Methods</h2>
     <dl class="callables">
+        <dt id="equalizedProperties" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/equalizedProperties.html">equalizedProperties</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Mixin-style contract for value-based equality, <code>hashCode</code>, and <code>toString</code>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
         <dt id="getAnnotations" class="callable inherited">
   <span class="name"><a href="../jetleaf_build/SourceDeclaration/getAnnotations.html">getAnnotations</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/AnnotationDeclaration-class.html">AnnotationDeclaration</a></span>&gt;</span></span>
@@ -172,20 +171,7 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd class="inherited">
-  Returns all annotations applied to this declaration.
-  <div class="features"><span class="feature">inherited</span></div>
-
-</dd>
-
-        <dt id="getDartType" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/EntityDeclaration/getDartType.html">getDartType</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="https://pub.dev/documentation/analyzer/8.4.1/dart_element_type/DartType-class.html">DartType</a>?</span>
-  </span>
-  
-
-</dt>
-<dd class="inherited">
-  The analyzer DartType of the entity for enhanced type operations.
+  Returns all annotations applied to this declaration in source code.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -198,20 +184,7 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd class="inherited">
-  The debug identifier for the entity.
-  <div class="features"><span class="feature">inherited</span></div>
-
-</dd>
-
-        <dt id="getElement" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/EntityDeclaration/getElement.html">getElement</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="https://pub.dev/documentation/analyzer/8.4.1/dart_element_element/Element-class.html">Element</a>?</span>
-  </span>
-  
-
-</dt>
-<dd class="inherited">
-  The analyzer element associated with this declaration.
+  Returns the <strong>stable debug identifier</strong> for this entity.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -224,7 +197,7 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd class="inherited">
-  Returns <code>true</code> if this member is declared <code>abstract</code>.
+  Indicates whether this member is declared as <code>abstract</code>.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -237,7 +210,20 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd>
-  Whether this method is a <code>const</code>.
+  Returns <code>true</code> if this method is declared as <code>const</code>.
+  
+
+</dd>
+
+        <dt id="getIsEntryPoint" class="callable">
+  <span class="name"><a href="../jetleaf_build/MethodDeclaration/getIsEntryPoint.html">getIsEntryPoint</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns <code>true</code> if this method is marked as an application entrypoint.
   
 
 </dd>
@@ -250,7 +236,7 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd>
-  Whether this method is a <code>factory</code>.
+  Returns <code>true</code> if this method is declared as a <code>factory</code>.
   
 
 </dd>
@@ -263,7 +249,7 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd>
-  Whether this method is a <code>getter</code>.
+  Returns <code>true</code> if this method is a Dart <code>getter</code>.
   
 
 </dd>
@@ -276,7 +262,7 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd class="inherited">
-  Checks if this declaration is a public declaration.
+  Indicates whether this declaration is <strong>publicly visible</strong>.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -289,7 +275,7 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd>
-  Whether this method is a <code>setter</code>.
+  Returns <code>true</code> if this method is a Dart <code>setter</code>.
   
 
 </dd>
@@ -302,7 +288,7 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd class="inherited">
-  Returns <code>true</code> if this member is marked <code>static</code>.
+  Indicates whether this member is declared as <code>static</code>.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -315,8 +301,21 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd class="inherited">
-  Checks if a declaration is a synthetic declaration.
+  Indicates whether this declaration is <strong>synthetic</strong>.
   <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getIsTopLevel" class="callable">
+  <span class="name"><a href="../jetleaf_build/MethodDeclaration/getIsTopLevel.html">getIsTopLevel</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns <code>true</code> if this method is declared at the top level.
+  
 
 </dd>
 
@@ -328,7 +327,7 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd class="inherited">
-  Gets the name of the declared element.
+  Returns the simple (unqualified) name of this declaration.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -354,20 +353,7 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd class="inherited">
-  Returns the <a href="../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a> that owns this member.
-  <div class="features"><span class="feature">inherited</span></div>
-
-</dd>
-
-        <dt id="getParentLibrary" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/SourceDeclaration/getParentLibrary.html">getParentLibrary</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a></span>
-  </span>
-  
-
-</dt>
-<dd class="inherited">
-  Returns the <a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a> in which this declaration is defined.
+  Returns a link to the class that declares this member.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -380,7 +366,7 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd>
-  Returns the return type of the method.
+  Returns the return type of the method as a <a href="../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a>.
   
 
 </dd>
@@ -393,8 +379,8 @@ print(getter.getIsGetter()); // true
 
 </dt>
 <dd class="inherited">
-  Returns the source code location (e.g., file path or URI) where this declaration is defined,
-or <code>null</code> if not available in the current reflection context.
+  Returns the URI pointing to the source location where this declaration
+is defined.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -407,21 +393,21 @@ or <code>null</code> if not available in the current reflection context.
 
 </dt>
 <dd class="inherited">
-  Gets the runtime type of the declared element.
+  Returns the Dart <a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a> represented by this declaration.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="hasAnalyzerSupport" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/EntityDeclaration/hasAnalyzerSupport.html">hasAnalyzerSupport</a></span><span class="signature">(<wbr>)
+        <dt id="hasNullableReturn" class="callable">
+  <span class="name"><a href="../jetleaf_build/MethodDeclaration/hasNullableReturn.html">hasNullableReturn</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
   </span>
   
 
 </dt>
-<dd class="inherited">
-  Returns true if this declaration has analyzer information available.
-  <div class="features"><span class="feature">inherited</span></div>
+<dd>
+  Indicates whether this method’s return value may be <code>null</code>.
+  
 
 </dd>
 
@@ -434,6 +420,58 @@ or <code>null</code> if not available in the current reflection context.
 </dt>
 <dd>
   Invokes this method on the given <code>instance</code>.
+  
+
+</dd>
+
+        <dt id="isAsynchronous" class="callable">
+  <span class="name"><a href="../jetleaf_build/MethodDeclaration/isAsynchronous.html">isAsynchronous</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns <code>true</code> if this method is declared as an asynchronous method.
+  
+
+</dd>
+
+        <dt id="isExternal" class="callable">
+  <span class="name"><a href="../jetleaf_build/MethodDeclaration/isExternal.html">isExternal</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Indicates whether this method is declared as <code>external</code>.
+  
+
+</dd>
+
+        <dt id="isFunction" class="callable">
+  <span class="name"><a href="../jetleaf_build/MethodDeclaration/isFunction.html">isFunction</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Indicates whether this method’s return type is a <strong>function type</strong>.
+  
+
+</dd>
+
+        <dt id="isRecord" class="callable">
+  <span class="name"><a href="../jetleaf_build/MethodDeclaration/isRecord.html">isRecord</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Indicates whether this method’s return type is a <strong>record type</strong>.
   
 
 </dd>
@@ -459,7 +497,7 @@ or <code>null</code> if not available in the current reflection context.
 
 </dt>
 <dd class="inherited">
-  Returns a JSON representation of this entity.
+  Serializes this declaration into a JSON-compatible map.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -527,7 +565,7 @@ or <code>null</code> if not available in the current reflection context.
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

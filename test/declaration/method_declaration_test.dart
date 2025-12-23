@@ -269,7 +269,7 @@ void main() async {
 
   group('MethodDeclaration Basic Properties', () {
     test('should identify method types correctly', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final methods = testClass.getMethods();
       
@@ -282,7 +282,7 @@ void main() async {
     });
 
     test('should identify static methods', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final methods = testClass.getMethods();
       
@@ -291,7 +291,7 @@ void main() async {
     });
 
     test('should identify getters and setters', () {
-      final propertyClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'PropertyClass');
+      final propertyClass = Runtime.findClass<PropertyClass>();
       
       final methods = propertyClass.getMethods();
       
@@ -311,7 +311,7 @@ void main() async {
 
   group('MethodDeclaration Parameters', () {
     test('should handle method parameters correctly', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final methods = testClass.getMethods();
       
@@ -334,7 +334,7 @@ void main() async {
     });
 
     test('should handle named parameters', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final methods = testClass.getMethods();
       
@@ -358,7 +358,7 @@ void main() async {
     });
 
     test('should handle generic method parameters', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final methods = testClass.getMethods();
       
@@ -377,7 +377,7 @@ void main() async {
 
   group('MethodDeclaration Invocation', () {
     test('should invoke simple methods correctly', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final instance = MethodTestClass();
       final methods = testClass.getMethods();
@@ -389,7 +389,7 @@ void main() async {
     });
 
     test('should invoke methods with optional parameters', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final instance = MethodTestClass();
       final methods = testClass.getMethods();
@@ -412,7 +412,7 @@ void main() async {
     });
 
     test('should invoke methods with named parameters', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final instance = MethodTestClass();
       final methods = testClass.getMethods();
@@ -428,7 +428,7 @@ void main() async {
     });
 
     test('should invoke generic methods', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final instance = MethodTestClass();
       final methods = testClass.getMethods();
@@ -448,7 +448,7 @@ void main() async {
     });
 
     test('should invoke async methods', () async {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final instance = MethodTestClass();
       final methods = testClass.getMethods();
@@ -460,7 +460,7 @@ void main() async {
     });
 
     test('should handle method exceptions', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final instance = MethodTestClass();
       final methods = testClass.getMethods();
@@ -481,7 +481,7 @@ void main() async {
 
   group('MethodDeclaration Inheritance', () {
     test('should handle inherited methods', () {
-      final derivedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'DerivedMethodClass');
+      final derivedClass = Runtime.findClassByType(DerivedMethodClass);
       
       final methods = derivedClass.getMethods();
       
@@ -491,7 +491,7 @@ void main() async {
     });
 
     test('should handle interface methods', () {
-      final shapeClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'Shape');
+      final shapeClass = Runtime.findClass<Shape>();
       
       final methods = shapeClass.getMethods();
       
@@ -503,7 +503,7 @@ void main() async {
 
   group('MethodDeclaration Return Types', () {
     test('should identify return types correctly', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final methods = testClass.getMethods();
       
@@ -524,7 +524,7 @@ void main() async {
 
   group('MethodDeclaration Factory Methods', () {
     test('should identify factory methods', () {
-      final factoryClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'FactoryClass');
+      final factoryClass = Runtime.findClass<FactoryClass>();
       
       final constructors = factoryClass.getConstructors();
       
@@ -538,7 +538,7 @@ void main() async {
   });
   group('MethodDeclaration Additional Properties', () {
     test('should identify top-level methods', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'TopLevelMethodTest');
+      final testClass = Runtime.findClass<TopLevelMethodTest>();
       
       final methods = testClass.getMethods();
       
@@ -549,7 +549,7 @@ void main() async {
     });
 
     test('should identify entry point methods', () {
-      final entryPointClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'EntryPointTest');
+      final entryPointClass = Runtime.findClass<EntryPointTest>();
       
       final methods = entryPointClass.getMethods();
       
@@ -565,7 +565,7 @@ void main() async {
     });
 
     test('should detect nullable return types', () {
-      final nullableClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'NullableReturnTest');
+      final nullableClass = Runtime.findClass<NullableReturnTest>();
       
       final methods = nullableClass.getMethods();
       
@@ -583,7 +583,7 @@ void main() async {
     });
 
     test('should handle abstract methods', () {
-      final abstractClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'AbstractMethodTest');
+      final abstractClass = Runtime.findClassByType(AbstractMethodTest);
       
       final methods = abstractClass.getMethods();
       
@@ -595,7 +595,7 @@ void main() async {
     });
 
     test('should correctly identify getDebugIdentifier', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final methods = testClass.getMethods();
       final firstMethod = methods.first;
@@ -609,7 +609,7 @@ void main() async {
   group('MethodDeclaration Edge Cases', () {
     test('should handle external methods', () {
       // External methods might not be fully supported in reflection
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ExternalMethodTest');
+      final testClass = Runtime.obtainClassDeclaration(ExternalMethodTest);
       
       final methods = testClass.getMethods();
       final externalMethod = methods.firstWhere((m) => m.getName() == 'externalMethod');
@@ -619,7 +619,7 @@ void main() async {
     });
 
     test('should handle method with varargs-like parameters', () {
-      final varArgsClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'VarArgsMethodTest');
+      final varArgsClass = Runtime.findClassByType(VarArgsMethodTest);
       
       final methods = varArgsClass.getMethods();
       final manyParams = methods.firstWhere((m) => m.getName() == 'manyParams');
@@ -640,7 +640,7 @@ void main() async {
     });
 
     test('should handle operator methods', () {
-      final operatorClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'OperatorTest');
+      final operatorClass = Runtime.findClass<OperatorTest>();
       
       final methods = operatorClass.getMethods();
       
@@ -654,7 +654,7 @@ void main() async {
     });
 
     test('should handle async* and sync* methods', () async {
-      final generatorClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'GeneratorTest');
+      final generatorClass = Runtime.findClassByType(GeneratorTest);
       
       final methods = generatorClass.getMethods();
       
@@ -668,7 +668,7 @@ void main() async {
 
   group('MethodDeclaration Invocation Edge Cases', () {
     test('should handle method with no parameters', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final instance = MethodTestClass();
       final methods = testClass.getMethods();
@@ -678,7 +678,7 @@ void main() async {
     });
 
     test('should handle invocation with wrong parameter types', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final instance = MethodTestClass();
       final methods = testClass.getMethods();
@@ -693,7 +693,7 @@ void main() async {
     });
 
     test('should handle invocation with missing required parameters', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodTestClass');
+      final testClass = Runtime.obtainClassDeclaration(MethodTestClass);
       
       final instance = MethodTestClass();
       final methods = testClass.getMethods();

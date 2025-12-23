@@ -54,37 +54,161 @@
 
     <section class="multi-line-signature">
         
-<span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+<span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/RuntimeScannerSummary-class.html">RuntimeScannerSummary</a></span>&gt;</span></span>
 <span class="name ">runTestScan</span>(<wbr>{<ol class="parameter-list"> <li><span class="parameter" id="runTestScan-param-packagesToExclude"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">packagesToExclude</span> = <span class="default-value">const []</span>, </span></li>
 <li><span class="parameter" id="runTestScan-param-filesToLoad"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">filesToLoad</span> = <span class="default-value">const []</span>, </span></li>
+<li><span class="parameter" id="runTestScan-param-config"><span class="type-annotation"><a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a>?</span> <span class="parameter-name">config</span>, </span></li>
+<li><span class="parameter" id="runTestScan-param-onInfo"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onInfo</span>, </span></li>
+<li><span class="parameter" id="runTestScan-param-onWarning"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onWarning</span>, </span></li>
+<li><span class="parameter" id="runTestScan-param-onError"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onError</span>, </span></li>
+<li><span class="parameter" id="runTestScan-param-args"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">args</span> = <span class="default-value">const []</span>, </span></li>
+<li><span class="parameter" id="runTestScan-param-source"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a>?</span> <span class="parameter-name">source</span>, </span></li>
+<li><span class="parameter" id="runTestScan-param-configuredScanner"><span class="type-annotation"><a href="../jetleaf_build/RuntimeScanner-class.html">RuntimeScanner</a>?</span> <span class="parameter-name">configuredScanner</span>, </span></li>
 </ol>})
 
         
 
     </section>
     
+<section class="desc markdown">
+  <p>Executes a <strong>mock runtime scan</strong> and registers the resulting runtime
+context for testing and validation purposes.</p>
+<p>This utility method is intended for <strong>development, debugging, and
+automated tests</strong>, allowing JetLeaf’s runtime scanner to be executed
+without invoking the full production scanning pipeline.</p>
+<p>Internally, it:</p>
+<ul>
+<li>Instantiates a <a href="../jetleaf_build/MockRuntimeScanner-class.html">MockRuntimeScanner</a></li>
+<li>Configures logging hooks</li>
+<li>Forces the loading of specific source files if requested</li>
+<li>Executes a scan using a customizable <a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></li>
+<li>Registers the produced runtime context into <a href="../jetleaf_build/Runtime.html">Runtime</a></li>
+</ul>
+<p>This makes it possible to test:</p>
+<ul>
+<li>Reflection and mirror extraction</li>
+<li>Runtime hint resolution</li>
+<li>Type and link declaration generation</li>
+<li>Scanner configuration behaviors</li>
+</ul>
+<p>without requiring a full application bootstrap.</p>
+<hr>
+<h3 id="parameters">Parameters</h3>
+<h4 id="packagestoexclude"><code>packagesToExclude</code></h4>
+<p>A list of package names or paths to exclude from the scan.</p>
+<p>This is merged with a default exclusion set that removes:</p>
+<ul>
+<li>Common test infrastructure packages</li>
+<li>Analyzer and tooling dependencies</li>
+<li>Internal Dart SDK utilities</li>
+</ul>
+<p>Excluding these packages significantly improves scan performance and
+reduces noise in test environments.</p>
+<hr>
+<h4 id="filestoload"><code>filesToLoad</code></h4>
+<p>A list of absolute or relative file paths that should be <strong>force-loaded</strong>
+into the mirror system before scanning.</p>
+<p>This is useful when:</p>
+<ul>
+<li>Testing isolated source files</li>
+<li>Verifying behavior for files not reachable through normal imports</li>
+<li>Running focused regression tests</li>
+</ul>
+<p>Each path is resolved to an absolute <a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a> before scanning.</p>
+<hr>
+<h4 id="config"><code>config</code></h4>
+<p>Optional <a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a> used to control scan behavior.</p>
+<p>If omitted, a default configuration is created with:</p>
+<ul>
+<li><code>skipTests: false</code></li>
+<li>A predefined exclusion list</li>
+</ul>
+<p>This allows callers to:</p>
+<ul>
+<li>Enable or disable tree shaking</li>
+<li>Control declaration output</li>
+<li>Customize scan depth and scope</li>
+</ul>
+<hr>
+<h4 id="oninfo-onwarning-onerror"><code>onInfo</code>, <code>onWarning</code>, <code>onError</code></h4>
+<p>Optional logging callbacks used during scanning.</p>
+<p>If not provided, default implementations are used that print messages
+to stdout with clear prefixes:</p>
+<ul>
+<li><code>[MOCK INFO]</code></li>
+<li><code>[MOCK WARNING]</code></li>
+<li><code>[MOCK ERROR]</code></li>
+</ul>
+<p>These hooks make it easy to capture logs during automated tests or
+route messages to a custom logger.</p>
+<hr>
+<h3 id="execution-flow">Execution Flow</h3>
+<ol>
+<li>
+<p>A <a href="../jetleaf_build/MockRuntimeScanner-class.html">MockRuntimeScanner</a> is created with:</p>
+<ul>
+<li>Logging callbacks</li>
+<li>Forced file loading configuration</li>
+<li>A custom library generator factory</li>
+</ul>
+</li>
+<li>
+<p>The scanner executes <code>.scan(...)</code> using the provided or default
+<a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a>.</p>
+</li>
+<li>
+<p>The resulting scan output produces a runtime context.</p>
+</li>
+<li>
+<p>The context is registered globally via <code>Runtime.register</code>, making
+it available for runtime hint resolution, invocation, and testing.</p>
+</li>
+</ol>
+<hr>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code class="language-dart">await runTestScan(
+  filesToLoad: ['lib/models/user.dart'],
+  packagesToExclude: ['my_unused_package'],
+  onInfo: (msg) =&gt; logger.info(msg),
+);
+
+// Runtime is now fully initialized for tests
+</code></pre>
+<hr>
+<h3 id="intended-use-cases">Intended Use Cases</h3>
+<ul>
+<li>Unit tests for runtime scanners</li>
+<li>Integration tests for link generation</li>
+<li>Debugging mirror extraction issues</li>
+<li>Validating hint-driven execution paths</li>
+</ul>
+<hr>
+<h3 id="see-also">See Also</h3>
+<ul>
+<li><a href="../jetleaf_build/MockRuntimeScanner-class.html">MockRuntimeScanner</a></li>
+<li><a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></li>
+<li><a href="../jetleaf_build/Runtime.html">Runtime</a></li>
+<li><a href="../jetleaf_build/InternalMockLibraryGenerator-class.html">InternalMockLibraryGenerator</a></li>
+</ul>
+</section>
 
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Future&lt;void&gt; runTestScan({List&lt;String&gt; packagesToExclude = const [], List&lt;String&gt; filesToLoad = const []}) async {
-  final scan = await MockRuntimeScanner(
-    onInfo: (msg) =&gt; print(&#39;[MOCK INFO] $msg&#39;),
-    onWarning: (msg) =&gt; print(&#39;[MOCK WARNING] $msg&#39;),
-    onError: (msg) =&gt; print(&#39;[MOCK ERROR] $msg&#39;),
-    forceLoadFiles: filesToLoad.map((file) =&gt; File(file).absolute).toList(),
-    libraryGeneratorFactory: (params) =&gt; InternalMockLibraryGenerator(
-      mirrorSystem: params.mirrorSystem,
-      forceLoadedMirrors: params.forceLoadedMirrors,
-      onInfo: (msg) =&gt; print(&#39;[MOCK INFO] $msg&#39;),
-      onWarning: (msg) =&gt; print(&#39;[MOCK WARNING] $msg&#39;),
-      onError: (msg) =&gt; print(&#39;[MOCK ERROR] $msg&#39;),
-      configuration: params.configuration,
-      packages: params.packages
-    )
-  ).scan(RuntimeScannerConfiguration(
-    skipTests: true,
+  <pre class="language-dart"><code class="language-dart">Future&lt;RuntimeScannerSummary&gt; runTestScan({
+  List&lt;String&gt; packagesToExclude = const [],
+  List&lt;String&gt; filesToLoad = const [],
+  RuntimeScannerConfiguration? config,
+  OnLogged? onInfo,
+  OnLogged? onWarning,
+  OnLogged? onError,
+  List&lt;String&gt; args = const [],
+  Directory? source,
+  RuntimeScanner? configuredScanner
+}) async {
+  final defaultConfig = RuntimeScannerConfiguration(
+    skipTests: false,
     packagesToExclude: [
       &quot;test&quot;,
       &quot;lints&quot;,
@@ -104,8 +228,22 @@
     ],
     &#47;&#47; enableTreeShaking: true,
     &#47;&#47; writeDeclarationsToFiles: true
-  ));
-  Runtime.register(scan.getContext());
+  );
+
+  final scanner = configuredScanner ?? MockRuntimeScanner(
+    onInfo: onInfo ?? (msg, overwrite) =&gt; print(&#39;[MOCK INFO] ${overwrite ? &#39;\r$msg&#39; : msg}&#39;),
+    onWarning: onWarning ?? (msg, overwrite) =&gt; print(&#39;[MOCK WARNING] ${overwrite ? &#39;\r$msg&#39; : msg}&#39;),
+    onError: onError ?? (msg, overwrite) =&gt; print(&#39;[MOCK ERROR] ${overwrite ? &#39;\r$msg&#39; : msg}&#39;),
+    forceLoadFiles: filesToLoad.map((file) =&gt; File(file).absolute).toList(),
+    libraryGeneratorFactory: (params) =&gt; InternalMockLibraryGenerator(
+      mirrorSystem: params.mirrorSystem,
+      forceLoadedMirrors: params.forceLoadedMirrors,
+      configuration: params.configuration,
+      packages: params.packages
+    )
+  );
+
+  return await scanner.scan(config ?? defaultConfig, args, source: source);
 }</code></pre>
 </section>
 
@@ -133,7 +271,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

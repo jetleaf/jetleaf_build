@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the loadPackageConfig method from the AbstractFileUtility class, for the Dart programming language.">
+  <title>loadPackageConfig method - AbstractFileUtility class - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li><a href="../../jetleaf_build/AbstractFileUtility-class.html">AbstractFileUtility</a></li>
+    <li class="self-crumb">loadPackageConfig method</li>
+  </ol>
+  <div class="self-name">loadPackageConfig</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="jetleaf_build&#47;AbstractFileUtility-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-method">loadPackageConfig</span> method 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+  <div>
+    <ol class="annotation-list">
+        <li>@<a href="https://pub.dev/documentation/meta/1.17.0/meta/protected-constant.html">protected</a></li>
+    </ol>
+  </div>
+<span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+<span class="name ">loadPackageConfig</span>(<wbr>[<ol class="parameter-list single-line"> <li><span class="parameter" id="loadPackageConfig-param-source"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a>?</span> <span class="parameter-name">source</span></span></li>
+</ol>])
+
+      
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Loads the package configuration from <code>.dart_tool/package_config.json</code>.</p>
+<p>This method populates <code>packageConfigCache</code> with a parsed list of
+<code>PackageConfigEntry</code> objects representing every package known to the
+current Dart toolchain.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>
+<p>If <code>packageConfigCache</code> is already loaded, the method returns immediately
+without re-reading the configuration.</p>
+</li>
+<li>
+<p>If the configuration file does not exist, a warning is emitted and
+<code>packageConfigCache</code> is set to an empty list.</p>
+</li>
+<li>
+<p>If the file exists but cannot be parsed, an error is logged and the
+configuration is treated as empty.</p>
+</li>
+<li>
+<p><code>source</code> may override the root directory from which the <code>.dart_tool</code>
+folder is resolved; by default, <code>Directory.current</code> is used.</p>
+</li>
+</ul>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">@protected
+Future&lt;void&gt; loadPackageConfig([Directory? source]) async {
+  if (packageConfigCache != null) return;
+
+  final packageConfigFile = File(p.join(source?.path ?? Directory.current.path, &#39;.dart_tool&#39;, &#39;package_config.json&#39;));
+  final packageConfigDir = packageConfigFile.parent.path;
+
+  if (!await packageConfigFile.exists()) {
+    onWarning(&#39;Warning: .dart_tool&#47;package_config.json not found. Cannot resolve package URIs for dependencies.&#39;, true);
+    packageConfigCache = [];
+    return;
+  }
+
+  try {
+    final content = await packageConfigFile.readAsString();
+    final json = jsonDecode(content);
+    final packagesJson = json[&#39;packages&#39;] as List&lt;dynamic&gt;;
+    packageConfigCache = packagesJson.map((e) =&gt; PackageConfigEntry.fromJson(e as Map&lt;String, dynamic&gt;, packageConfigDir)).toList();
+  } catch (e) {
+    onError(&#39;Error reading or parsing package_config.json: $e&#39;, true);
+    packageConfigCache = [];
+  }
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/AbstractFileUtility-class.html">AbstractFileUtility</a></li>
+    <li class="self-crumb">loadPackageConfig method</li>
+</ol>
+
+    <h5>AbstractFileUtility class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.1.0
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

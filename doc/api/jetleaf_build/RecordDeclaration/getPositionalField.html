@@ -63,7 +63,17 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the positional field at the given <code>index</code>, or <code>null</code> if out of bounds.</p>
+  <p>Returns the positional field at the specified <code>index</code>.</p>
+<p>Positional fields are indexed starting from <code>0</code>, in the order they are
+declared within the record. Named fields are not considered by this
+accessor.</p>
+<p>If the index is out of bounds, this method safely returns <code>null</code>.</p>
+<h3 id="parameters">Parameters</h3>
+<ul>
+<li><code>index</code> — The zero-based index of the positional field.</li>
+</ul>
+<h3 id="returns">Returns</h3>
+<p>The positional <a href="../../jetleaf_build/RecordFieldDeclaration-class.html">RecordFieldDeclaration</a>, or <code>null</code> if the index is invalid.</p>
 </section>
 
 
@@ -98,7 +108,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

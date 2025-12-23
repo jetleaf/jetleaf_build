@@ -55,47 +55,65 @@
     <section class="multi-line-signature">
       
 <span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
-<span class="name ">scanAllDependenciesForDartFiles</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="scanAllDependenciesForDartFiles-param-dartFiles"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span>&gt;</span></span> <span class="parameter-name">dartFiles</span>, </span></li>
+<span class="name ">scanAllDependenciesForDartFiles</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="scanAllDependenciesForDartFiles-param-located"><span class="type-annotation"><a href="../../jetleaf_build/LocatedFiles-class.html">LocatedFiles</a></span> <span class="parameter-name">located</span>, </span></li>
 <li><span class="parameter" id="scanAllDependenciesForDartFiles-param-filesToScan"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">filesToScan</span>, </span></li>
 <li><span class="parameter" id="scanAllDependenciesForDartFiles-param-filesToExclude"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">filesToExclude</span></span></li>
 </ol>)
 
-      
+      <div class="features"><span class="feature">inherited</span></div>
 
     </section>
     
 <section class="desc markdown">
-  <p>Scans ALL dependencies for Dart files unless explicitly excluded by user</p>
+  <p>Scans <strong>all dependency packages</strong> for Dart files using the same filtering
+logic as project scanning, extended with package-level inclusion/exclusion
+configuration and JetLeaf dependency detection.</p>
+<h3 id="package-level-logic">Package-Level Logic</h3>
+<ul>
+<li>Packages listed in <code>packagesToExclude</code> → <strong>skipped</strong></li>
+<li>If <code>packagesToScan</code> is non-empty → scan only listed packages</li>
+<li>A dependency is considered a “JetLeaf package” if any of its dependencies
+match <code>jetleafPackages</code> or begin with <code>PackageNames.MAIN</code></li>
+</ul>
+<h3 id="parameters">Parameters</h3>
+<ul>
+<li><code>located</code> — The <a href="../../jetleaf_build/LocatedFiles-class.html">LocatedFiles</a> where discovered <code>.dart</code> files are added.</li>
+<li><code>filesToScan</code> — User-specified inclusion list.</li>
+<li><code>filesToExclude</code> — User-specified exclusion list.</li>
+</ul>
 </section>
 
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Future&lt;void&gt; scanAllDependenciesForDartFiles(Set&lt;File&gt; dartFiles, Set&lt;String&gt; filesToScan, Set&lt;String&gt; filesToExclude) async {
-  if (_packageConfig == null) {
-    await _loadPackageConfig();
+  <pre class="language-dart"><code class="language-dart">Future&lt;void&gt; scanAllDependenciesForDartFiles(LocatedFiles located, Set&lt;String&gt; filesToScan, Set&lt;String&gt; filesToExclude) async {
+  if (packageConfigCache == null) {
+    await loadPackageConfig();
   }
 
-  if (_packageConfig == null) {
+  if (packageConfigCache == null) {
     return;
   }
 
-  for (final pkg in _packageConfig!) {
+  for (final pkg in packageConfigCache!) {
     final packageName = pkg.name;
     final packageRoot = Directory(pkg.absoluteRootPath);
 
-    &#47;&#47; Only exclude if user explicitly excludes this package
-    final bool excludePackage = _configuration.packagesToExclude.contains(packageName);
+    if (!await packageRoot.exists()) continue;
+
+    &#47;&#47; Skip if user excluded the package
+    if (configuration.packagesToExclude.contains(packageName)) {
+      onInfo(&#39;Skipping excluded package: $packageName&#39;, true);
+      continue;
+    }
 
     &#47;&#47; If user specified packages to scan, only include those. Otherwise include all.
-    final bool includePackage = _configuration.packagesToScan.isEmpty || _configuration.packagesToScan.contains(packageName);
+    final bool includePackage = configuration.packagesToScan.isEmpty || configuration.packagesToScan.contains(packageName);
 
-    if (includePackage &amp;&amp; !excludePackage &amp;&amp; await packageRoot.exists()) {
-      _onInfo(&#39;Scanning package: $packageName&#39;);
-      await _scanDirectoryForDartFiles(packageRoot, dartFiles, filesToScan, filesToExclude);
-    } else if (excludePackage) {
-      _onInfo(&#39;Skipping excluded package: $packageName&#39;);
+    if (includePackage) {
+      onInfo(&#39;Scanning package: $packageName&#39;, true);
+      await _scanDirectoryForDartFiles(packageRoot, located, filesToScan, filesToExclude, packageName, packageRoot);
     }
   }
 }</code></pre>
@@ -126,7 +144,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

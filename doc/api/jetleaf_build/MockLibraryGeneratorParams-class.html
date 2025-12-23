@@ -78,7 +78,7 @@ Example:</p>
     <h2>Constructors</h2>
     <dl class="constructor-summary-list">
         <dt id="MockLibraryGeneratorParams.new" class="callable">
-          <span class="name"><a href="../jetleaf_build/MockLibraryGeneratorParams/MockLibraryGeneratorParams.html">MockLibraryGeneratorParams.new</a></span><span class="signature">({<span class="parameter" id="-param-mirrorSystem"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a></span> <span class="parameter-name">mirrorSystem</span>, </span><span class="parameter" id="-param-forceLoadedMirrors"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/LibraryMirror-class.html">LibraryMirror</a></span>&gt;</span></span> <span class="parameter-name">forceLoadedMirrors</span>, </span><span class="parameter" id="-param-onInfo"><span>required</span> <span class="type-annotation">void</span> <span class="parameter-name">onInfo</span>(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span>), </span><span class="parameter" id="-param-onWarning"><span>required</span> <span class="type-annotation">void</span> <span class="parameter-name">onWarning</span>(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span>), </span><span class="parameter" id="-param-onError"><span>required</span> <span class="type-annotation">void</span> <span class="parameter-name">onError</span>(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span>), </span><span class="parameter" id="-param-configuration"><span>required</span> <span class="type-annotation"><a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">configuration</span>, </span><span class="parameter" id="-param-packages"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/Package-class.html">Package</a></span>&gt;</span></span> <span class="parameter-name">packages</span></span>})</span>
+          <span class="name"><a href="../jetleaf_build/MockLibraryGeneratorParams/MockLibraryGeneratorParams.html">MockLibraryGeneratorParams.new</a></span><span class="signature">({<span class="parameter" id="-param-mirrorSystem"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a></span> <span class="parameter-name">mirrorSystem</span>, </span><span class="parameter" id="-param-forceLoadedMirrors"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/LibraryMirror-class.html">LibraryMirror</a></span>&gt;</span></span> <span class="parameter-name">forceLoadedMirrors</span>, </span><span class="parameter" id="-param-configuration"><span>required</span> <span class="type-annotation"><a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">configuration</span>, </span><span class="parameter" id="-param-packages"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/Package-class.html">Package</a></span>&gt;</span></span> <span class="parameter-name">packages</span></span>})</span>
         </dt>
         <dd>
           Configuration parameters for creating a <a href="../jetleaf_build/MockLibraryGenerator-class.html">MockLibraryGenerator</a>.
@@ -135,42 +135,6 @@ Example:</p>
 </dt>
 <dd>
   The mirror system to use for reflection operations.
-  <div class="features"><span class="feature">final</span></div>
-
-</dd>
-
-        <dt id="onError" class="property">
-  <span class="name"><a href="../jetleaf_build/MockLibraryGeneratorParams/onError.html">onError</a></span>
-  <span class="signature">&#8594; void Function<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span>)</span></span>
-  
-
-</dt>
-<dd>
-  Callback for error messages during generation.
-  <div class="features"><span class="feature">final</span></div>
-
-</dd>
-
-        <dt id="onInfo" class="property">
-  <span class="name"><a href="../jetleaf_build/MockLibraryGeneratorParams/onInfo.html">onInfo</a></span>
-  <span class="signature">&#8594; void Function<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span>)</span></span>
-  
-
-</dt>
-<dd>
-  Callback for informational messages during generation.
-  <div class="features"><span class="feature">final</span></div>
-
-</dd>
-
-        <dt id="onWarning" class="property">
-  <span class="name"><a href="../jetleaf_build/MockLibraryGeneratorParams/onWarning.html">onWarning</a></span>
-  <span class="signature">&#8594; void Function<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span>)</span></span>
-  
-
-</dt>
-<dd>
-  Callback for warning messages during generation.
   <div class="features"><span class="feature">final</span></div>
 
 </dd>
@@ -284,7 +248,7 @@ Example:</p>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

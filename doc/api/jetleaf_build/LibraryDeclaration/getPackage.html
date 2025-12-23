@@ -62,7 +62,13 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the <a href="../../jetleaf_build/Package-class.html">Package</a> that this library is part of.</p>
+  <p>Returns the <a href="../../jetleaf_build/Package-class.html">Package</a> that contains this library.</p>
+<p>This allows resolving relative URIs and accessing package-specific
+configuration, dependencies, or metadata.</p>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code class="language-dart">final pkg = myLibrary.getPackage();
+print(pkg.getName()); // "my_app"
+</code></pre>
 </section>
 
 
@@ -97,7 +103,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

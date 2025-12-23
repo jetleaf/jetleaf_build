@@ -67,8 +67,14 @@
     </section>
     
 <section class="desc markdown">
-  <p>Whether this field is <code>static</code>.</p>
-<p>Overrides <a href="../../jetleaf_build/MemberDeclaration/getIsStatic.html">MemberDeclaration.getIsStatic</a> to ensure field-specific behavior.</p>
+  <p>Indicates whether this field is declared as <code>static</code>.</p>
+<p>Static fields belong to the enclosing type itself rather than to
+individual instances. As a result, they must be accessed without
+an instance reference.</p>
+<p>This overrides <a href="../../jetleaf_build/MemberDeclaration/getIsStatic.html">MemberDeclaration.getIsStatic</a> to enforce
+field-specific semantics.</p>
+<h3 id="returns">Returns</h3>
+<p><code>true</code> if the field is static; otherwise, <code>false</code>.</p>
 </section>
 
 
@@ -104,7 +110,7 @@ bool getIsStatic();</code></pre>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

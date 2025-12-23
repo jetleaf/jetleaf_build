@@ -123,7 +123,7 @@ void main() async {
 
   group('FieldDeclaration Basic Properties', () {
     test('should correctly identify field modifiers', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'FieldTestClass');
+      final testClass = Runtime.findClassByType(FieldTestClass);
       
       final fields = testClass.getFields();
       
@@ -148,7 +148,7 @@ void main() async {
     });
 
     test('should correctly identify nullable fields', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'FieldTestClass');
+      final testClass = Runtime.findClassByType(FieldTestClass);
       
       final fields = testClass.getFields();
       
@@ -165,7 +165,7 @@ void main() async {
 
   group('FieldDeclaration Access Control', () {
     test('should identify public vs private fields', () {
-      final privateClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'PrivateFieldClass');
+      final privateClass = Runtime.findClass<PrivateFieldClass>();
       
       final fields = privateClass.getFields();
       
@@ -177,7 +177,7 @@ void main() async {
     });
 
     test('should not include inherited fields directly', () {
-      final inheritedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'InheritanceFieldClass');
+      final inheritedClass = Runtime.findClassByType(InheritanceFieldClass);
       
       final fields = inheritedClass.getFields();
       
@@ -188,10 +188,13 @@ void main() async {
     });
 
     test('should include inherited fields directly', () {
-      final inheritedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'InheritanceFieldClass');
-      final superClass = Runtime.getAllClasses().firstWhere((c) => c.getQualifiedName() == inheritedClass.getSuperClass()?.getPointerQualifiedName());
+      final inheritedClass = Runtime.findClassByType(InheritanceFieldClass);
       
-      final fields = [...inheritedClass.getFields(), ...superClass.getFields()];
+      final fields = [...inheritedClass.getFields()];
+
+      if (inheritedClass.getSuperClass() case final superClass?) {
+        fields.addAll(Runtime.findClassByType(superClass.getPointerType()).getFields());
+      }
       
       // Should have both inherited and own fields
       expect(fields.any((f) => f.getName() == 'inheritedField'), isTrue);
@@ -202,7 +205,7 @@ void main() async {
 
   group('FieldDeclaration Type Information', () {
     test('should handle generic field types', () {
-      final genericClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'GenericFieldClass');
+      final genericClass = Runtime.findClassByType(GenericFieldClass);
       
       final fields = genericClass.getFields();
       
@@ -214,7 +217,7 @@ void main() async {
     });
 
     test('should handle complex nested types', () {
-      final complexClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComplexTypeFieldClass');
+      final complexClass = Runtime.findClassByType(ComplexTypeFieldClass);
       
       final fields = complexClass.getFields();
       
@@ -230,7 +233,7 @@ void main() async {
     });
 
     test('should handle collection field types', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'FieldTestClass');
+      final testClass = Runtime.findClassByType(FieldTestClass);
       
       final fields = testClass.getFields();
       
@@ -247,7 +250,7 @@ void main() async {
 
   group('FieldDeclaration Value Access', () {
     test('should be able to read field values', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'FieldTestClass');
+      final testClass = Runtime.findClassByType(FieldTestClass);
       
       final instance = FieldTestClass(
         'finalValue',
@@ -271,7 +274,7 @@ void main() async {
     });
 
     test('should be able to write to mutable fields', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'FieldTestClass');
+      final testClass = Runtime.findClassByType(FieldTestClass);
       
       final instance = FieldTestClass(
         'finalValue',
@@ -294,7 +297,7 @@ void main() async {
     });
 
     test('should not allow writing to final fields', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'FieldTestClass');
+      final testClass = Runtime.findClassByType(FieldTestClass);
       
       final instance = FieldTestClass(
         'finalValue',
@@ -317,7 +320,7 @@ void main() async {
 
   group('FieldDeclaration Static Fields', () {
     test('should handle static field access', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'FieldTestClass');
+      final testClass = Runtime.findClassByType(FieldTestClass);
       
       final staticFields = testClass.getFields().where((field) => field.getIsStatic());
       expect(staticFields.length, equals(2));
@@ -330,7 +333,7 @@ void main() async {
     });
 
     test('should handle const static fields', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'FieldTestClass');
+      final testClass = Runtime.findClassByType(FieldTestClass);
       
       final staticFields = testClass.getFields().where((field) => field.getIsStatic());
       final constField = staticFields.firstWhere((f) => f.getName() == 'constField');
@@ -343,7 +346,7 @@ void main() async {
 
   group('FieldDeclaration Late Fields', () {
     test('should handle late initialization', () {
-      final lateClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'LateInitClass');
+      final lateClass = Runtime.obtainClassDeclaration(LateInitClass);
       
       final instance = LateInitClass();
       final fields = lateClass.getFields();
@@ -359,7 +362,7 @@ void main() async {
 
   group('FieldDeclaration Default Values', () {
     test('should handle fields with default values', () {
-      final defaultValueClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'DefaultValueClass');
+      final defaultValueClass = Runtime.obtainClassDeclaration(DefaultValueClass());
       
       final instance = DefaultValueClass();
       final fields = defaultValueClass.getFields();

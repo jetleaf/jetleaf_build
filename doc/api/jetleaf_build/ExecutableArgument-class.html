@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the ExecutableArgument class from the jetleaf_build library, for the Dart programming language.">
+  <title>ExecutableArgument class - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../static-assets/styles.css?v1">
+  <link rel="icon" href="../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../index.html">jetleaf_build</a></li>
+    <li><a href="../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li class="self-crumb">ExecutableArgument class</li>
+  </ol>
+  <div class="self-name">ExecutableArgument</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="jetleaf_build&#47;jetleaf_build-library-sidebar.html"
+    data-below-sidebar="jetleaf_build&#47;ExecutableArgument-class-sidebar.html">
+    <div>
+<h1><span class="kind-class">ExecutableArgument</span> class 
+    <a href="https://dart.dev/language/class-modifiers#abstract" class="feature feature-abstract" title="This type can not be directly constructed.">abstract</a>
+    <a href="https://dart.dev/language/class-modifiers#interface" class="feature feature-interface" title="This class can only be implemented (not extended or mixed in).">interface</a>
+ 
+</h1></div>
+
+    
+<section class="desc markdown">
+  <p>Represents a fully normalized and transport-safe view of arguments passed
+to an executable entity (constructor, method, function, or tear-off).</p>
+<p>The <a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a> interface abstracts away how arguments were
+originally supplied and exposes a stable representation consisting of:</p>
+<ul>
+<li><strong>Ordered positional arguments</strong></li>
+<li><strong>Named arguments</strong>, keyed using both string names and symbol names</li>
+</ul>
+<p>This abstraction is used throughout the JetLeaf runtime reflection and
+hint-processing pipeline to unify how arguments are captured, inspected,
+transformed, or re-invoked.</p>
+<h2 id="purpose">Purpose</h2>
+<p>Reflection APIs, hint systems, and runtime resolvers often need to:</p>
+<ul>
+<li>Reconstruct invocation contexts</li>
+<li>Forward argument sets to new execution paths (AOT, JIT, hints, or mirrors)</li>
+<li>Normalize arguments so that they can be serialized or compared</li>
+</ul>
+<p><a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a> provides a single contract that allows all components
+in the system to work with argument collections safely and consistently.</p>
+<h2 id="positional-vs-named-arguments">Positional vs. Named Arguments</h2>
+<p>Positional arguments preserve the <strong>exact order</strong> in which the caller
+supplied them. Named arguments preserve:</p>
+<ul>
+<li>Their <strong>string name</strong> (preferred for userland reflection)</li>
+<li>Their <strong>symbol key</strong> (required for low-level <code>dart:mirrors</code> invocation)</li>
+</ul>
+<p>Implementations ensure that these two representations remain aligned.</p>
+<h2 id="immutability--consistency">Immutability &amp; Consistency</h2>
+<p>While implementations may store arguments in any internal representation,
+callers should treat the returned collections as read-only snapshots.
+Runtime resolvers and hint processors rely on argument immutability to
+ensure deterministic behavior.</p>
+<h2 id="creation">Creation</h2>
+<p>The static factory <a href="../jetleaf_build/ExecutableArgument/unmodified.html">ExecutableArgument.unmodified</a> constructs a normalized
+argument container used by most parts of the runtime system.</p>
+<p>Example:</p>
+<pre class="language-dart"><code class="language-dart">final args = ExecutableArgument.inEqualized(
+  {'count': 3},
+  [42, true],
+);
+
+print(args.getPositionalArguments()); // [42, true]
+print(args.getNamedArguments());      // { 'count': 3 }
+print(args.getSymbolizedNamedArguments());
+// { #count: 3 }
+</code></pre>
+<p>Implementations (such as <code>_UnmodifableExecutableArgument</code>) must guarantee
+that both the string-keyed and symbol-keyed named argument maps represent
+the same underlying values.</p>
+</section>
+
+
+
+    
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="instance-properties">
+    <h2>Properties</h2>
+    <dl class="properties">
+        <dt id="hashCode" class="property inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/hashCode.html">hashCode</a></span>
+  <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  The hash code for this object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="runtimeType" class="property inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/runtimeType.html">runtimeType</a></span>
+  <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  A representation of the runtime type of the object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-methods">
+    <h2>Methods</h2>
+    <dl class="callables">
+        <dt id="getArgument" class="callable">
+  <span class="name"><a href="../jetleaf_build/ExecutableArgument/getArgument.html">getArgument</a></span><span class="signature">(<wbr><span class="parameter" id="getArgument-param-object"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">object</span>, [</span><span class="parameter" id="getArgument-param-fromNamed"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a>?</span> <span class="parameter-name">fromNamed</span></span>])
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>
+  </span>
+  
+
+</dt>
+<dd>
+  Retrieves a single argument—either positional or named—based on the lookup
+value provided.
+  
+
+</dd>
+
+        <dt id="getNamedArguments" class="callable">
+  <span class="name"><a href="../jetleaf_build/ExecutableArgument/getNamedArguments.html">getNamedArguments</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>, <span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns a map of <strong>named arguments</strong> keyed by their string names.
+  
+
+</dd>
+
+        <dt id="getPositionalArguments" class="callable">
+  <span class="name"><a href="../jetleaf_build/ExecutableArgument/getPositionalArguments.html">getPositionalArguments</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns the list of <strong>positional arguments</strong> in the order they were
+provided to the original call site.
+  
+
+</dd>
+
+        <dt id="getSymbolizedNamedArguments" class="callable">
+  <span class="name"><a href="../jetleaf_build/ExecutableArgument/getSymbolizedNamedArguments.html">getSymbolizedNamedArguments</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Symbol-class.html">Symbol</a></span>, <span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns a map of <strong>named arguments</strong> keyed using <a href="https://api.dart.dev/stable/3.9.2/dart-core/Symbol-class.html">Symbol</a> objects.
+  
+
+</dd>
+
+        <dt id="noSuchMethod" class="callable inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Invocation-class.html">Invocation</a></span> <span class="parameter-name">invocation</span></span>)
+    <span class="returntype parameter">&#8594; dynamic</span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Invoked when a nonexistent method or property is accessed.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="toString" class="callable inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/toString.html">toString</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  A string representation of this object.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="operators">
+    <h2>Operators</h2>
+    <dl class="callables">
+        <dt id="operator ==" class="callable inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  The equality operator.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+    
+  <section class="summary offset-anchor" id="static-methods">
+    <h2>Static Methods</h2>
+    <dl class="callables">
+        <dt id="named" class="callable">
+  <span class="name"><a href="../jetleaf_build/ExecutableArgument/named.html">named</a></span><span class="signature">(<wbr><span class="parameter" id="named-param-named"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>, <span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span> <span class="parameter-name">named</span></span>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Creates an <a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a> containing <strong>only named arguments</strong>.
+  
+
+</dd>
+
+        <dt id="none" class="callable">
+  <span class="name"><a href="../jetleaf_build/ExecutableArgument/none.html">none</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns a singleton or empty representation of <a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a>
+that contains <strong>no positional or named arguments</strong>.
+  
+
+</dd>
+
+        <dt id="optional" class="callable">
+  <span class="name"><a href="../jetleaf_build/ExecutableArgument/optional.html">optional</a></span><span class="signature">(<wbr>{<span class="parameter" id="optional-param-named"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>, <span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span>?</span> <span class="parameter-name">named</span>, </span><span class="parameter" id="optional-param-positional"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span>?</span> <span class="parameter-name">positional</span></span>})
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Creates an <a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a> with <strong>optional positional and named
+arguments</strong>, defaulting to empty collections when omitted.
+  
+
+</dd>
+
+        <dt id="positional" class="callable">
+  <span class="name"><a href="../jetleaf_build/ExecutableArgument/positional.html">positional</a></span><span class="signature">(<wbr><span class="parameter" id="positional-param-positional"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span> <span class="parameter-name">positional</span></span>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Creates an <a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a> containing <strong>only positional arguments</strong>.
+  
+
+</dd>
+
+        <dt id="unmodified" class="callable">
+  <span class="name"><a href="../jetleaf_build/ExecutableArgument/unmodified.html">unmodified</a></span><span class="signature">(<wbr><span class="parameter" id="unmodified-param-named"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>, <span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span> <span class="parameter-name">named</span>, </span><span class="parameter" id="unmodified-param-positional"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span> <span class="parameter-name">positional</span></span>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Creates an <a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a> from explicitly supplied named and
+positional arguments, ensuring both representations are internally
+aligned and normalized.
+  
+
+</dd>
+
+    </dl>
+  </section>
+    
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../index.html">jetleaf_build</a></li>
+    <li><a href="../jetleaf_build/">jetleaf_build</a></li>
+    <li class="self-crumb">ExecutableArgument class</li>
+</ol>
+
+    <h5>jetleaf_build library</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.1.0
+  </span>
+  
+</footer>
+
+
+<script src="../static-assets/highlight.pack.js?v1"></script>
+<script src="../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

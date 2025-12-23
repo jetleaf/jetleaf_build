@@ -62,7 +62,17 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns <code>true</code> if this class is marked <code>sealed</code>.</p>
+  <p>Returns <code>true</code> if this class is declared as <strong>sealed</strong>.</p>
+<p>A sealed class restricts which other classes may extend or implement it.
+Only classes declared in the same library are permitted as subtypes,
+enabling the compiler and tooling to reason exhaustively about
+all possible subclasses.</p>
+<h3 id="use-cases">Use cases</h3>
+<ul>
+<li>Exhaustive <code>switch</code> / pattern matching</li>
+<li>Closed class hierarchies</li>
+<li>Safer domain modeling</li>
+</ul>
 </section>
 
 
@@ -97,7 +107,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

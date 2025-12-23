@@ -70,6 +70,17 @@ abstract base class Void {
   /// This is a lightweight helper around the `_PACKAGE_URI` constant and always
   /// returns the same parsed URI instance.
   static Uri getUri() => Uri.parse(_PACKAGE_URI);
+
+  /// Internal keyword representing the JetLeaf **void marker type**.
+  ///
+  /// This is the canonical keyword used by JetLeaf to identify the [Void] type
+  /// in reflection, generics, and metadata operations.
+  ///
+  /// Example:
+  /// ```dart
+  /// final voidKeyword = Void.KEYWORD; // "void"
+  /// ```
+  static const String KEYWORD = "void";
 }
 
 /// {@template jetleaf_dynamic_base}
@@ -122,4 +133,26 @@ abstract base class Dynamic {
   /// This is a lightweight helper around the `_PACKAGE_URI` constant and always
   /// returns the same parsed URI instance.
   static Uri getUri() => Uri.parse(_PACKAGE_URI);
+
+  /// Internal keyword representing the JetLeaf **dynamic marker type**.
+  ///
+  /// This is the canonical keyword used by JetLeaf to identify the [Dynamic] type
+  /// in reflection, generics, and runtime type resolution.
+  ///
+  /// Example:
+  /// ```dart
+  /// final dynamicKeyword = Dynamic.KEYWORD; // "dynamic"
+  /// ```
+  static const String KEYWORD = "dynamic";
+
+  /// Checks if the given [K] or [type] is dynamic
+  /// 
+  /// This is used to know what to do in case where the result of the response should be typed or not.
+  static bool isDynamic<K>([Type? type]) {
+    if (type case final type?) {
+      return type.toString() == Dynamic.KEYWORD || type.runtimeType.toString() == Dynamic.KEYWORD;
+    }
+
+    return K.toString() == Dynamic.KEYWORD || K.runtimeType.toString() == Dynamic.KEYWORD;
+  }
 }

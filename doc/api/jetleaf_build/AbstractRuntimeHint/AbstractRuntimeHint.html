@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the AbstractRuntimeHint.new constructor from Class AbstractRuntimeHint from the jetleaf_build library, for the Dart programming language.">
+  <title>AbstractRuntimeHint.new constructor - AbstractRuntimeHint - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li><a href="../../jetleaf_build/AbstractRuntimeHint-class.html">AbstractRuntimeHint<span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></a></li>
+    <li class="self-crumb">AbstractRuntimeHint.new const constructor</li>
+  </ol>
+  <div class="self-name">AbstractRuntimeHint.new</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar="jetleaf_build&#47;AbstractRuntimeHint-class-sidebar.html"
+      data-below-sidebar="">
+      <div>
+<h1><span class="kind-constructor">AbstractRuntimeHint&lt;<wbr><span class="type-parameter">T</span>&gt;</span> constructor 
+</h1></div>
+
+    <section class="multi-line-signature">
+      const
+      <span class="name ">AbstractRuntimeHint&lt;<wbr><span class="type-parameter">T</span>&gt;</span>(<wbr>)
+    </section>
+    
+<section class="desc markdown">
+  <p>A generic, opt-in base class for implementing strongly typed
+<a href="../../jetleaf_build/RuntimeHint-class.html">RuntimeHint</a> providers.</p>
+<p><code>AbstractRuntimeHint&lt;T&gt;</code> standardizes the process of associating a hint
+implementation with a specific runtime type <code>T</code>. By combining:</p>
+<ul>
+<li><strong>Generic type binding</strong></li>
+<li><strong>Automatic type reporting</strong></li>
+<li><strong>Default no-operation behavior</strong></li>
+</ul>
+<p>this class provides an ergonomic starting point for implementers who want
+to override JetLeaf’s runtime behavior only for particular types.</p>
+<h2 id="purpose">Purpose</h2>
+<p>JetLeaf relies on <em>hint-driven execution</em> to selectively override runtime
+operations such as:</p>
+<ul>
+<li>Instance creation</li>
+<li>Method invocation</li>
+<li>Field access</li>
+<li>Field mutation</li>
+</ul>
+<p>Each hint decides whether it wants to handle a given request. If it does
+not, the runtime continues evaluating other hints or falls back to the
+default execution strategy.</p>
+<p><code>AbstractRuntimeHint&lt;T&gt;</code> makes it trivial to build hints that activate only
+when the target instance or requested type matches <code>T</code>.</p>
+<h2 id="generic-binding">Generic Binding</h2>
+<p>The <code>@Generic(AbstractRuntimeHint)</code> annotation ensures that JetLeaf’s
+build system captures the type argument <code>T</code> at compile time. This allows
+code generators, resolvers, and dispatch layers to:</p>
+<ul>
+<li>Associate the hint with its target type</li>
+<li>Produce optimized invocation paths</li>
+<li>Avoid reflective type inference or mirror lookups</li>
+</ul>
+<h2 id="default-behavior">Default Behavior</h2>
+<p>All RuntimeHint methods in this class return <code>Hint.notExecuted()</code>.</p>
+<p>This has two advantages:</p>
+<ol>
+<li><strong>Minimal boilerplate.</strong> Implementers override only the hooks they need.</li>
+<li><strong>Predictable fallback behavior.</strong> If a hint does not explicitly handle
+something, it safely declines without interfering with other runtime
+logic.</li>
+</ol>
+<h2 id="example">Example</h2>
+<pre class="language-dart"><code class="language-dart">class UserHint extends AbstractRuntimeHint&lt;User&gt; {
+  @override
+  Hint getFieldValue(Object instance, String name) {
+    if (instance is User &amp;&amp; name == 'isAdmin') {
+      return Hint.executed(true);
+    }
+    return super.getFieldValue(instance, name);
+  }
+}
+</code></pre>
+<h2 id="intended-use-cases">Intended Use Cases</h2>
+<ul>
+<li>AOT or build-time generated runtime adapters</li>
+<li>Lightweight overrides for domain models</li>
+<li>Instrumentation, diagnostics, and profiling layers</li>
+<li>Intercepting reflective behavior for performance optimizations</li>
+</ul>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">const AbstractRuntimeHint();</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/AbstractRuntimeHint-class.html">AbstractRuntimeHint<span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></a></li>
+    <li class="self-crumb">AbstractRuntimeHint.new const constructor</li>
+</ol>
+
+    <h5>AbstractRuntimeHint class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-left-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.1.0
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

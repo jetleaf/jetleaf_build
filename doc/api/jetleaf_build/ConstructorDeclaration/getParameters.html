@@ -63,7 +63,14 @@
     
 <section class="desc markdown">
   <p>Returns all parameters required by this constructor.</p>
-<p>Includes positional, named, and optional parameters in declaration order.</p>
+<p>This includes positional, named, and optional parameters in the order
+they are declared. Use this method to inspect constructor requirements
+before attempting instantiation.</p>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code class="language-dart">for (final param in constructor.getParameters()) {
+  print('${param.getName()} : ${param.getType().getName()}');
+}
+</code></pre>
 </section>
 
 
@@ -98,7 +105,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

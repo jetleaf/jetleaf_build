@@ -53,16 +53,22 @@
 </h1></div>
     <section class="multi-line-signature">
         <span class="name ">OnLogged</span> =
-     <span class="returntype">void Function<span class="signature">(<span class="parameter" id="param-message"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">message</span></span>)</span></span>
+     <span class="returntype">void Function<span class="signature">(<span class="parameter" id="param-message"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">message</span>, </span><span class="parameter" id="param-overwrite"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">overwrite</span></span>)</span></span>
 
     </section>
 
     
+<section class="desc markdown">
+  <p>Signature for logging callbacks used to report runtime scanning messages.</p>
+<pre class="language-dart"><code class="language-dart">void logInfo(String msg) =&gt; print('[INFO] $msg');
+final scanner = DefaultRuntimeScan(onInfo: logInfo);
+</code></pre>
+</section>
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">typedef OnLogged = void Function(String message);</code></pre>
+  <pre class="language-dart"><code class="language-dart">typedef OnLogged = void Function(String message, bool overwrite);</code></pre>
 </section>
 
   </div> <!-- /.main-content -->
@@ -88,7 +94,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

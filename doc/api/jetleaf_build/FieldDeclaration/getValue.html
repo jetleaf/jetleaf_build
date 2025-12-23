@@ -63,12 +63,16 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the value of this field on the given <code>instance</code>.</p>
+  <p>Returns the runtime value of this field from the given <code>instance</code>.</p>
 <ul>
-<li>If the field is static, <code>instance</code> must be <code>null</code>.</li>
-<li>If the field is instance-based, <code>instance</code> must be a valid object.</li>
+<li>For <strong>static fields</strong>, <code>instance</code> must be <code>null</code>.</li>
+<li>For <strong>instance fields</strong>, <code>instance</code> must be a valid object of the
+declaring type.</li>
 </ul>
-<p>Throws if the field cannot be read.</p>
+<p>This method performs reflective access and may throw if the field
+is inaccessible or unreadable.</p>
+<h3 id="returns">Returns</h3>
+<p>The current value stored in the field.</p>
 </section>
 
 
@@ -103,7 +107,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

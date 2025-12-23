@@ -110,14 +110,10 @@ export 'src/argument/executable_argument.dart';
 export 'src/builder/runtime_builder.dart';
 export 'src/builder/build_arg.dart';
 
-export 'src/declaration/declaration.dart';
-export 'src/declaration/package_content.dart';
-
-export 'src/generative/generative.dart';
-
 export 'src/helpers/base.dart' hide equals, toString, toStringWith;
 export 'src/helpers/equals_and_hash_code.dart';
 export 'src/helpers/to_string.dart';
+export 'src/helpers/qualified_name.dart';
 
 export 'src/file_utility/abstract_file_utility.dart';
 export 'src/file_utility/file_utility.dart';
@@ -126,23 +122,52 @@ export 'src/file_utility/located_files.dart';
 export 'src/runner/run_scan.dart';
 export 'src/runner/test_scan.dart';
 
-export 'src/generator/tree_shaker/tree_shaker.dart';
 export 'src/generator/library_generator.dart';
 export 'src/generator/mock_library_generator.dart';
 export 'src/generator/default_library_generator.dart';
+
+export 'src/runtime/declaration/declaration.dart'
+  hide StandardAnnotationDeclaration,
+  StandardAnnotationFieldDeclaration,
+  StandardClassDeclaration,
+  StandardConstructorDeclaration,
+  StandardDeclaration,
+  StandardEntityDeclaration,
+  StandardEnumDeclaration,
+  StandardEnumFieldDeclaration,
+  StandardFieldDeclaration,
+  StandardFunctionDeclaration,
+  StandardLibraryDeclaration,
+  StandardLinkDeclaration,
+  StandardMethodDeclaration,
+  StandardMixinDeclaration,
+  StandardParameterDeclaration,
+  StandardRecordDeclaration,
+  StandardRecordFieldDeclaration,
+  StandardSourceDeclaration,
+  StandardClosureDeclaration,
+  MaterialAsset,
+  DEFAULT_ENCODING,
+  MaterialPackage;
+
+export 'src/runtime/provider/runtime_provider.dart'
+  hide addRuntimeAsset,
+  addRuntimeAssets,
+  addRuntimePackage,
+  addRuntimePackages,
+  addRuntimeSourceLibrary,
+  setRuntimeLibraryTag,
+  setRuntimeResolver,
+  freezeRuntimeLibrary,
+  createBuiltInPackage,
+  createDefaultPackage,
+  StringExte;
 
 export 'src/runtime/hint/default_runtime_hint_descriptor.dart';
 export 'src/runtime/hint/abstract_runtime_hint.dart';
 export 'src/runtime/hint/runtime_hint.dart';
 export 'src/runtime/hint/runtime_hint_provider.dart';
 export 'src/runtime/hint/runtime_hint_descriptor.dart';
-
-export 'src/runtime/provider/configurable_runtime_provider.dart';
-export 'src/runtime/provider/meta_runtime_provider.dart';
-export 'src/runtime/provider/runtime_metadata_provider.dart';
-export 'src/runtime/provider/runtime_provider.dart';
-export 'src/runtime/provider/standard_runtime_provider.dart';
-import 'src/runtime/provider/runtime_provider.dart';
 
 export 'src/runtime/executor/aot/aot_runtime_executor.dart';
 export 'src/runtime/executor/jit/jit_runtime_executor.dart';
@@ -151,7 +176,6 @@ export 'src/runtime/executor/runtime_executor.dart';
 export 'src/runtime/executor/resolving/runtime_executor_resolving.dart';
 
 export 'src/runtime/scanner/application_runtime_scanner.dart';
-export 'src/runtime/scanner/configurable_runtime_scanner_summary.dart';
 export 'src/runtime/scanner/default_runtime_scanner_summary.dart';
 export 'src/runtime/scanner/mock_runtime_scanner.dart';
 export 'src/runtime/scanner/runtime_scanner.dart';
@@ -164,37 +188,11 @@ export 'src/utils/reflection_utils.dart';
 export 'src/utils/utils.dart' hide StringX;
 export 'src/utils/must_avoid.dart';
 export 'src/utils/constant.dart' hide IterableExtension;
-export 'src/utils/type_discovery.dart';
+
+export 'src/system/system.dart';
+export 'src/system/system_detector.dart' hide StandardSystemDetector;
+export 'src/system/properties.dart';
 
 export 'src/annotations.dart';
 export 'src/exceptions.dart';
 export 'src/classes.dart';
-
-/// A global reference to the active runtime provider in the JetLeaf framework.
-///
-/// `GLOBAL_RUNTIME_PROVIDER` holds the current instance of [RuntimeProvider], which
-/// is responsible for managing runtime services, dependency injection,
-/// and configuration throughout the lifecycle of a JetLeaf application.
-///
-/// This variable is typically initialized during the application bootstrap
-/// phase, before any runtime-dependent logic is executed. Once set, it allows
-/// any part of the application, including dynamically loaded modules or
-/// generated code, to access core services such as logging, configuration,
-/// and runtime scanning.
-///
-/// Example usage:
-/// ```dart
-/// if (GLOBAL_RUNTIME_PROVIDER != null) {
-///   final logger = GLOBAL_RUNTIME_PROVIDER!.get<Logger>();
-///   logger.info('Application started successfully.');
-/// }
-/// ```
-///
-/// ⚠️ Caution: Since this variable is nullable (`RuntimeProvider?`), any
-/// access should handle the case where it has not been initialized yet to
-/// avoid null pointer exceptions.
-///
-/// Consider using dependency injection or the provided accessor methods
-/// to safely retrieve runtime services instead of directly referencing
-/// `GLOBAL_RUNTIME_PROVIDER` in production code.
-RuntimeProvider? GLOBAL_RUNTIME_PROVIDER;

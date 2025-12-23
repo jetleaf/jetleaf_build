@@ -62,7 +62,12 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns <code>true</code> if the parameter has a default value.</p>
+  <p>Returns <code>true</code> if this parameter declares a default value.</p>
+<p>Applies only to optional parameters:</p>
+<pre class="language-dart"><code class="language-dart">void f([int x = 3])   // true
+void f({int y = 5})   // true
+void f(int z)         // false
+</code></pre>
 </section>
 
 
@@ -97,7 +102,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

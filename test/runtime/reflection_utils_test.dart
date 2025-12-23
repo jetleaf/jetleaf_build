@@ -179,4 +179,70 @@ void main() {
       expect(ReflectionUtils.isThisAFunction(typedFunc), isTrue);
     });
   });
+  
+  // New tests for extractClassName
+  group('extractClassName', () {
+    test('extracts class name from package URI', () {
+      final qualified = 'package:my_app/models/user.dart.User';
+      final className = ReflectionUtils.extractClassName(qualified);
+      expect(className, equals('User'));
+    });
+
+    test('extracts class name from dart:core type', () {
+      final qualified = 'dart:core.String';
+      final className = ReflectionUtils.extractClassName(qualified);
+      expect(className, equals('String'));
+    });
+
+    test('returns input if no dot exists', () {
+      final qualified = 'SimpleClass';
+      final className = ReflectionUtils.extractClassName(qualified);
+      expect(className, equals('SimpleClass'));
+    });
+
+    test('works with generic types in qualified names', () {
+      final qualified = 'package:my_app/models/list.dart.List<String>';
+      final className = ReflectionUtils.extractClassName(qualified);
+      expect(className, equals('List<String>'));
+    });
+
+    test('works with multiple dots in library path', () {
+      final qualified = 'package:my_app/src/models/user.dart.Admin';
+      final className = ReflectionUtils.extractClassName(qualified);
+      expect(className, equals('Admin'));
+    });
+  });
+
+    // New tests for extractLibraryUri
+  group('extractLibraryUri', () {
+    test('extracts library URI from package-qualified name', () {
+      final qualified = 'package:my_app/models/user.dart.User';
+      final uri = ReflectionUtils.extractLibraryUri(qualified);
+      expect(uri, equals('package:my_app/models/user.dart'));
+    });
+
+    test('extracts library URI from dart:core type', () {
+      final qualified = 'dart:core.String';
+      final uri = ReflectionUtils.extractLibraryUri(qualified);
+      expect(uri, equals('dart:core'));
+    });
+
+    test('returns input if no dot exists', () {
+      final qualified = 'SimpleClass';
+      final uri = ReflectionUtils.extractLibraryUri(qualified);
+      expect(uri, equals('SimpleClass'));
+    });
+
+    test('works with multiple dots in library path', () {
+      final qualified = 'package:my_app/src/models/user.dart.Admin';
+      final uri = ReflectionUtils.extractLibraryUri(qualified);
+      expect(uri, equals('package:my_app/src/models/user.dart'));
+    });
+
+    test('works with generic types', () {
+      final qualified = 'package:my_app/models/list.dart.List<String>';
+      final uri = ReflectionUtils.extractLibraryUri(qualified);
+      expect(uri, equals('package:my_app/models/list.dart'));
+    });
+  });
 }

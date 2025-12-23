@@ -62,7 +62,12 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns <code>true</code> if the parameter is optional (either named or positional).</p>
+  <p>Returns <code>true</code> if this parameter is optional, including:</p>
+<ul>
+<li>optional positional parameters (<code>[int x]</code>)</li>
+<li>optional named parameters (<code>int x</code>)</li>
+</ul>
+<p>This property is the logical opposite of <a href="../../jetleaf_build/ParameterDeclaration/getIsRequired.html">getIsRequired</a>.</p>
 </section>
 
 
@@ -97,7 +102,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

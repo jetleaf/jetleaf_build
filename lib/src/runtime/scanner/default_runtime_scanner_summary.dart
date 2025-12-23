@@ -12,8 +12,7 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
-import '../provider/configurable_runtime_provider.dart';
-import 'configurable_runtime_scanner_summary.dart';
+import 'runtime_scanner_summary.dart';
 
 /// {@template default_runtime_scan_summary}
 /// A default implementation of [ConfigurableRuntimeScannerSummary] that
@@ -36,11 +35,11 @@ import 'configurable_runtime_scanner_summary.dart';
 /// ```
 /// {@endtemplate}
 class DefaultRuntimeScannerSummary extends ConfigurableRuntimeScannerSummary {
-  late ConfigurableRuntimeProvider _context;
   late DateTime _buildTime;
   late List<String> _errors;
   late List<String> _warnings;
   late List<String> _infos;
+  final List<String> _all = [];
   late Map<String, String> _generatedFiles;
 
   /// {@macro default_runtime_scan_summary}
@@ -50,9 +49,6 @@ class DefaultRuntimeScannerSummary extends ConfigurableRuntimeScannerSummary {
     _infos = <String>[];
     _generatedFiles = <String, String>{};
   }
-
-  @override
-  ConfigurableRuntimeProvider getContext() => _context;
 
   @override
   DateTime getBuildTime() => _buildTime;
@@ -67,11 +63,6 @@ class DefaultRuntimeScannerSummary extends ConfigurableRuntimeScannerSummary {
   List<String> getInfos() => _infos;
 
   @override
-  void setContext(ConfigurableRuntimeProvider context) {
-    _context = context;
-  }
-
-  @override
   void setBuildTime(DateTime buildTime) {
     _buildTime = buildTime;
   }
@@ -80,6 +71,14 @@ class DefaultRuntimeScannerSummary extends ConfigurableRuntimeScannerSummary {
   void addErrors(List<String> errors) {
     _errors.addAll(errors);
   }
+
+  @override
+  void addAll(List<String> logs) {
+    _all.addAll(logs);
+  }
+
+  @override
+  List<String> getLogsAsIs() => _all;
 
   @override
   void addWarnings(List<String> warnings) {

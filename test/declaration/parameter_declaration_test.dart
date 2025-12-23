@@ -194,7 +194,7 @@ void main() async {
 
   group('ParameterDeclaration Basic Properties', () {
     test('should correctly identify nullable vs non-nullable parameters', () {
-      final nullableClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'NullableParamClass');
+      final nullableClass = Runtime.findClass<NullableParamClass>();
       
       final constructor = nullableClass.getConstructors().first;
       final params = constructor.getParameters();
@@ -209,7 +209,7 @@ void main() async {
     });
 
     test('should handle optional positional parameters', () {
-      final simpleClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SimpleParamClass');
+      final simpleClass = Runtime.obtainClassDeclaration(SimpleParamClass);
       
       final constructor = simpleClass.getConstructors().first;
       final params = constructor.getParameters();
@@ -227,7 +227,7 @@ void main() async {
     });
 
     test('should handle named parameters correctly', () {
-      final complexClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComplexParamClass');
+      final complexClass = Runtime.obtainClassDeclaration(ComplexParamClass);
       
       final constructor = complexClass.getConstructors().first;
       final params = constructor.getParameters();
@@ -251,7 +251,7 @@ void main() async {
 
   group('ParameterDeclaration Type Information', () {
     test('should handle generic type parameters', () {
-      final genericClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'GenericParamClass');
+      final genericClass = Runtime.findClass<GenericParamClass>();
       
       final constructor = genericClass.getConstructors().first;
       final params = constructor.getParameters();
@@ -265,7 +265,7 @@ void main() async {
     });
 
     test('should handle complex nested types', () {
-      final nullableClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'NullableParamClass');
+      final nullableClass = Runtime.findClass<NullableParamClass>();
       
       final methods = nullableClass.getMethods();
       final complexMethod = methods.firstWhere((m) => m.getName() == 'methodWithComplexNullability');
@@ -280,7 +280,7 @@ void main() async {
     });
 
     test('should handle function type parameters', () {
-      final functionClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'FunctionParamClass');
+      final functionClass = Runtime.obtainClassDeclaration(FunctionParamClass);
       
       final constructor = functionClass.getConstructors().first;
       final params = constructor.getParameters();
@@ -294,7 +294,7 @@ void main() async {
     });
 
     test('should handle record type parameters', () {
-      final recordClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'RecordParamClass');
+      final recordClass = Runtime.obtainClassDeclaration(RecordParamClass);
       
       final constructor = recordClass.getConstructors().first;
       final params = constructor.getParameters();
@@ -310,7 +310,7 @@ void main() async {
 
   group('ParameterDeclaration Default Values', () {
     test('should detect default values in parameters', () {
-      final simpleClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SimpleParamClass');
+      final simpleClass = Runtime.obtainClassDeclaration(SimpleParamClass);
       
       final methods = simpleClass.getMethods();
       final method = methods.firstWhere((m) => m.getName() == 'methodWithDefaults');
@@ -326,7 +326,7 @@ void main() async {
     });
 
     test('should handle complex default values', () {
-      final complexClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComplexParamClass');
+      final complexClass = Runtime.obtainClassDeclaration(ComplexParamClass);
       
       final constructor = complexClass.getConstructors().first;
       final params = constructor.getParameters();
@@ -339,7 +339,7 @@ void main() async {
 
   group('ParameterDeclaration Inheritance', () {
     test('should handle parameters in inheritance chain', () {
-      final superClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SuperParamClass');
+      final superClass = Runtime.obtainClassDeclaration(SuperParamClass);
       
       final constructor = superClass.getConstructors().first;
       final params = constructor.getParameters();
@@ -355,7 +355,7 @@ void main() async {
     });
 
     test('should handle super constructor parameters', () {
-      final superConstructorClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SuperConstructorParamClass');
+      final superConstructorClass = Runtime.obtainClassDeclaration(SuperConstructorParamClass);
       
       final constructor = superConstructorClass.getConstructors().first;
       final params = constructor.getParameters();
@@ -369,7 +369,7 @@ void main() async {
 
   group('ParameterDeclaration Constructor Variations', () {
     test('should handle different constructor types', () {
-      final variationsClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ConstructorParamVariations');
+      final variationsClass = Runtime.obtainClassDeclaration(ConstructorParamVariations);
       
       final constructors = variationsClass.getConstructors();
       expect(constructors.length, equals(5));
@@ -401,7 +401,7 @@ void main() async {
 
   group('ParameterDeclaration Complex Scenarios', () {
     test('should handle varargs-like parameters', () {
-      final varArgsClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'VarArgsParamClass');
+      final varArgsClass = Runtime.findClassByType(VarArgsParamClass);
       
       final constructor = varArgsClass.getConstructors().first;
       final params = constructor.getParameters();
@@ -424,7 +424,7 @@ void main() async {
     });
 
     test('should handle interface implementation parameters', () {
-      final interfaceClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'InterfaceParamClass');
+      final interfaceClass = Runtime.findClass<InterfaceParamClass>();
       
       final methods = interfaceClass.getMethods();
       final compareToMethod = methods.firstWhere((m) => m.getName() == 'compareTo');
@@ -436,7 +436,7 @@ void main() async {
     });
 
     test('should handle operator parameters', () {
-      final interfaceClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'InterfaceParamClass');
+      final interfaceClass = Runtime.findClass<InterfaceParamClass>();
       
       final methods = interfaceClass.getMethods();
       final greaterMethod = methods.firstWhere((m) => m.getName() == '>');

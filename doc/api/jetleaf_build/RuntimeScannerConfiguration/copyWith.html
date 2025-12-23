@@ -70,6 +70,10 @@
 <li><span class="parameter" id="copyWith-param-enableTreeShaking"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a>?</span> <span class="parameter-name">enableTreeShaking</span>, </span></li>
 <li><span class="parameter" id="copyWith-param-writeDeclarationsToFiles"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a>?</span> <span class="parameter-name">writeDeclarationsToFiles</span>, </span></li>
 <li><span class="parameter" id="copyWith-param-outputPath"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">outputPath</span>, </span></li>
+<li><span class="parameter" id="copyWith-param-forceLoadLibraries"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a>?</span> <span class="parameter-name">forceLoadLibraries</span>, </span></li>
+<li><span class="parameter" id="copyWith-param-assetExtensionsToSearch"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span>?</span> <span class="parameter-name">assetExtensionsToSearch</span>, </span></li>
+<li><span class="parameter" id="copyWith-param-assetExtensionsToIgnoreSearch"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span>?</span> <span class="parameter-name">assetExtensionsToIgnoreSearch</span>, </span></li>
+<li><span class="parameter" id="copyWith-param-searchAssetExtensionsInProjectOnly"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a>?</span> <span class="parameter-name">searchAssetExtensionsInProjectOnly</span>, </span></li>
 </ol>})
 
       
@@ -104,6 +108,10 @@ final newConfig = config.copyWith(reload: true, outputPath: 'lib/generated');
   bool? enableTreeShaking,
   bool? writeDeclarationsToFiles,
   String? outputPath,
+  bool? forceLoadLibraries,
+  List&lt;String&gt;? assetExtensionsToSearch,
+  List&lt;String&gt;? assetExtensionsToIgnoreSearch,
+  bool? searchAssetExtensionsInProjectOnly
 }) {
   return RuntimeScannerConfiguration(
     reload: reload ?? this.reload,
@@ -121,6 +129,10 @@ final newConfig = config.copyWith(reload: true, outputPath: 'lib/generated');
     enableTreeShaking: enableTreeShaking ?? this.enableTreeShaking,
     writeDeclarationsToFiles: writeDeclarationsToFiles ?? this.writeDeclarationsToFiles,
     outputPath: outputPath ?? this.outputPath,
+    forceLoadLibraries: forceLoadLibraries ?? this.forceLoadLibraries,
+    assetExtensionsToSearch: assetExtensionsToSearch ?? this.assetExtensionsToSearch,
+    assetExtensionsToIgnoreSearch: assetExtensionsToIgnoreSearch ?? this.assetExtensionsToIgnoreSearch,
+    searchAssetExtensionsInProjectOnly: searchAssetExtensionsInProjectOnly ?? this.searchAssetExtensionsInProjectOnly
   );
 }</code></pre>
 </section>
@@ -150,7 +162,7 @@ final newConfig = config.copyWith(reload: true, outputPath: 'lib/generated');
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

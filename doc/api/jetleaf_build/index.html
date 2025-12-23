@@ -59,11 +59,119 @@
     </div>
 
     
+<section class="desc markdown">
+  <p>🏗 <strong>JetLeaf Build</strong></p>
+<p>The JetLeaf Build library provides a comprehensive set of tools and
+runtime utilities for code generation, runtime scanning, reflection,
+and AOT/JIT support. It is designed to facilitate modular application
+development, automated code generation, and runtime configuration
+within the JetLeaf ecosystem.</p>
+<h2 id="-core-modules">🔑 Core Modules</h2>
+<h3 id="declarations--generative-tools">Declarations &amp; Generative Tools</h3>
+<ul>
+<li><code>declaration.dart</code>, <code>generative.dart</code> — manage code declarations
+and generative constructs.</li>
+</ul>
+<h3 id="helpers">Helpers</h3>
+<ul>
+<li><code>base.dart</code>, <code>equals_and_hash_code.dart</code>, <code>to_string.dart</code> — utility
+functions for object equality, string representations, and core helpers.</li>
+</ul>
+<h3 id="runners">Runners</h3>
+<ul>
+<li><code>run_scan.dart</code>, <code>test_scan.dart</code> — scan codebases for runtime or
+test analysis.</li>
+</ul>
+<h3 id="runtime-generators">Runtime Generators</h3>
+<ul>
+<li><code>application_library_generator.dart</code> — generates application libraries.</li>
+<li><code>declaration_file_writer.dart</code> — writes code declarations to files.</li>
+<li><code>library_generator.dart</code>, <code>mock_library_generator.dart</code> — library and mock generation.</li>
+<li><code>tree_shaker.dart</code> — removes unused declarations for optimized builds.</li>
+</ul>
+<h3 id="runtime-hints">Runtime Hints</h3>
+<ul>
+<li><code>runtime_hint.dart</code>, <code>runtime_hint_descriptor.dart</code>, <code>runtime_hint_processor.dart</code>
+— provide metadata and processing hooks for runtime optimizations.</li>
+</ul>
+<h3 id="runtime-providers">Runtime Providers</h3>
+<ul>
+<li><code>runtime_provider.dart</code>, <code>standard_runtime_provider.dart</code>,
+<code>configurable_runtime_provider.dart</code>, <code>meta_runtime_provider.dart</code>,
+<code>runtime_metadata_provider.dart</code> — manage runtime services and
+dependency injection.</li>
+</ul>
+<h3 id="runtime-resolvers">Runtime Resolvers</h3>
+<ul>
+<li><code>runtime_resolver.dart</code>, <code>jit_runtime_resolver.dart</code>, <code>aot_runtime_resolver.dart</code>,
+<code>fallback_runtime_resolver.dart</code> — resolve runtime dependencies for
+JIT or AOT contexts.</li>
+</ul>
+<h3 id="runtime-scanners">Runtime Scanners</h3>
+<ul>
+<li><code>runtime_scanner.dart</code>, <code>application_runtime_scanner.dart</code>,
+<code>mock_runtime_scanner.dart</code>, <code>runtime_scanner_summary.dart</code> — scan
+application code and generate runtime metadata.</li>
+</ul>
+<h3 id="utilities">Utilities</h3>
+<ul>
+<li><code>dart_type_resolver.dart</code>, <code>file_utility.dart</code>, <code>generic_type_parser.dart</code>,
+<code>reflection_utils.dart</code>, <code>utils.dart</code> — type parsing, file operations,
+and reflection utilities.</li>
+</ul>
+<h3 id="meta-and-discovery">Meta and Discovery</h3>
+<ul>
+<li><code>meta_table.dart</code>, <code>type_discovery.dart</code> — manage metadata and
+type discovery across the application.</li>
+</ul>
+<h3 id="annotations-constants--exceptions">Annotations, Constants &amp; Exceptions</h3>
+<ul>
+<li><code>annotations.dart</code>, <code>constant.dart</code>, <code>exceptions.dart</code> — support
+declarative metadata, constants, and runtime exceptions.</li>
+</ul>
+<h2 id="-global-runtime-provider">🌐 Global Runtime Provider</h2>
+<pre class="language-dart"><code class="language-dart">/// A global reference to the active runtime provider in the JetLeaf framework.
+RuntimeProvider? GLOBAL_RUNTIME_PROVIDER;
+</code></pre>
+<p><code>GLOBAL_RUNTIME_PROVIDER</code> holds the current instance of <a href="../jetleaf_build/RuntimeProvider-class.html">RuntimeProvider</a>,
+which manages runtime services, dependency injection, and configuration
+throughout the JetLeaf application lifecycle.</p>
+<p>Typically initialized during application bootstrap. Provides access to
+core services such as logging, configuration, and runtime scanning:</p>
+<pre class="language-dart"><code class="language-dart">if (GLOBAL_RUNTIME_PROVIDER != null) {
+  final logger = GLOBAL_RUNTIME_PROVIDER!.get&lt;Logger&gt;();
+  logger.info('Application started successfully.');
+}
+</code></pre>
+<p>⚠️ Caution: This variable is nullable, so handle cases where it is
+uninitialized to avoid null pointer exceptions.</p>
+<p>Prefer using dependency injection or runtime service accessors in
+production code rather than directly referencing
+<code>GLOBAL_RUNTIME_PROVIDER</code>.</p>
+</section>
 
 
     <section class="summary offset-anchor" id="classes">
       <h2>Classes</h2>
       <dl>
+          <dt id="AbstractFileUtility">
+  <span class="name "><a href="../jetleaf_build/AbstractFileUtility-class.html">AbstractFileUtility</a></span> 
+
+</dt>
+<dd>
+  A foundational utility class providing shared logic, configuration access,<br>
+and resolution helpers for file-system driven runtime analysis.
+</dd>
+
+          <dt id="AbstractRuntimeHint">
+  <span class="name "><a href="../jetleaf_build/AbstractRuntimeHint-class.html">AbstractRuntimeHint</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> 
+
+</dt>
+<dd>
+  A generic, opt-in base class for implementing strongly typed
+<a href="../jetleaf_build/RuntimeHint-class.html">RuntimeHint</a> providers.
+</dd>
+
           <dt id="AnnotationDeclaration">
   <span class="name "><a href="../jetleaf_build/AnnotationDeclaration-class.html">AnnotationDeclaration</a></span> 
 
@@ -80,23 +188,14 @@
   Represents a field of an annotation.
 </dd>
 
-          <dt id="AotRuntimeResolver">
-  <span class="name "><a href="../jetleaf_build/AotRuntimeResolver-class.html">AotRuntimeResolver</a></span> 
+          <dt id="AotRuntimeExecutor">
+  <span class="name "><a href="../jetleaf_build/AotRuntimeExecutor-class.html">AotRuntimeExecutor</a></span> 
 
 </dt>
 <dd>
-  A concrete implementation of <a href="../jetleaf_build/RuntimeResolver-class.html">RuntimeResolver</a> that operates using
-a <a href="../jetleaf_build/RuntimeHintDescriptor-class.html">RuntimeHintDescriptor</a> registry.
-</dd>
-
-          <dt id="ApplicationLibraryGenerator">
-  <span class="name "><a href="../jetleaf_build/ApplicationLibraryGenerator-class.html">ApplicationLibraryGenerator</a></span> 
-
-</dt>
-<dd>
-  Enhanced reflection generator that integrates analyzer capabilities directly
-into declaration classes for perfect generic type handling and accurate
-assignability checking.
+  An <a href="../jetleaf_build/RuntimeExecutor-class.html">RuntimeExecutor</a> implementation that leverages Ahead-of-Time (AOT)
+generative hints to perform instance creation, method invocation, and
+field access at runtime without relying on mirrors or dynamic reflection.
 </dd>
 
           <dt id="ApplicationRuntimeScanner">
@@ -104,8 +203,9 @@ assignability checking.
 
 </dt>
 <dd>
-  A default implementation of <a href="../jetleaf_build/RuntimeScanner-class.html">RuntimeScanner</a> that supports scanning,
-logging, and context tracking.
+  A runtime scanner responsible for analyzing <strong>application-level Dart code</strong>
+and generating runtime metadata required for reflection, asset discovery,
+and package resolution.
 </dd>
 
           <dt id="Asset">
@@ -113,15 +213,7 @@ logging, and context tracking.
 
 </dt>
 <dd>
-  🍃 JetLeaf Framework - Represents a non-Dart static resource (e.g., HTML, CSS, images).
-</dd>
-
-          <dt id="AssetImplementation">
-  <span class="name "><a href="../jetleaf_build/AssetImplementation-class.html">AssetImplementation</a></span> 
-
-</dt>
-<dd>
-  A concrete, immutable implementation of the <a href="../jetleaf_build/Asset-class.html">Asset</a> interface.
+  Represents a non-Dart static resource (e.g., HTML, CSS, images).
 </dd>
 
           <dt id="Author">
@@ -130,6 +222,22 @@ logging, and context tracking.
 </dt>
 <dd>
   Annotation to describe the author of a declaration.
+</dd>
+
+          <dt id="BaseDeclaration">
+  <span class="name "><a href="../jetleaf_build/BaseDeclaration-class.html">BaseDeclaration</a></span> 
+
+</dt>
+<dd>
+  Base abstraction for all JetLeaf declaration models.
+</dd>
+
+          <dt id="BuildArg">
+  <span class="name "><a href="../jetleaf_build/BuildArg-class.html">BuildArg</a></span> 
+
+</dt>
+<dd>
+  Centralized parser and accessor for <strong>build-time command-line arguments</strong>.
 </dd>
 
           <dt id="ClassDeclaration">
@@ -142,13 +250,22 @@ fields, methods, constructors, superclasses, mixins, interfaces, and
 declaration-level modifiers (abstract, sealed, etc.).
 </dd>
 
-          <dt id="ConfigurableRuntimeProvider">
-  <span class="name "><a href="../jetleaf_build/ConfigurableRuntimeProvider-class.html">ConfigurableRuntimeProvider</a></span> 
+          <dt id="ClassReference">
+  <span class="name "><a href="../jetleaf_build/ClassReference-class.html">ClassReference</a></span> 
 
 </dt>
 <dd>
-  A mutable context used to collect and assemble metadata during the
-framework’s initialization or AOT compilation phase.
+  A <strong>lightweight class reference</strong> containing minimal structural information
+about a Dart class.
+</dd>
+
+          <dt id="ClosureDeclaration">
+  <span class="name "><a href="../jetleaf_build/ClosureDeclaration-class.html">ClosureDeclaration</a></span> 
+
+</dt>
+<dd>
+  Represents a <strong>closure or anonymous function</strong> as a class-like declaration
+within the JetLeaf reflection system.
 </dd>
 
           <dt id="ConfigurableRuntimeScannerSummary">
@@ -182,26 +299,34 @@ modifiers (<code>const</code>, <code>factory</code>), and the ability to create 
 
 </dt>
 <dd>
-  Represents any top-level or member declaration in Dart code,
-such as a class, method, field, enum, typedef, etc., and exposes
-its metadata for reflection.
+  A named, typed declaration representing a concrete program element.
 </dd>
 
-          <dt id="DeclarationFileWriter">
-  <span class="name "><a href="../jetleaf_build/DeclarationFileWriter-class.html">DeclarationFileWriter</a></span> 
+          <dt id="DefaultLibraryGenerator">
+  <span class="name "><a href="../jetleaf_build/DefaultLibraryGenerator-class.html">DefaultLibraryGenerator</a></span> 
 
 </dt>
 <dd>
-  Writes generated declarations to separate files organized by packages.
+  Default implementation of <a href="../jetleaf_build/LibraryGenerator-class.html">LibraryGenerator</a> responsible for producing
+<strong>runtime declaration metadata</strong> from Dart libraries using the VM
+mirror system and source-code analysis.
 </dd>
 
-          <dt id="DefaultRuntimeHintDescriptors">
-  <span class="name "><a href="../jetleaf_build/DefaultRuntimeHintDescriptors-class.html">DefaultRuntimeHintDescriptors</a></span> 
+          <dt id="DefaultRuntimeExecutor">
+  <span class="name "><a href="../jetleaf_build/DefaultRuntimeExecutor-class.html">DefaultRuntimeExecutor</a></span> 
 
 </dt>
 <dd>
-  A concrete, mutable implementation of <a href="../jetleaf_build/RuntimeHintDescriptor-class.html">RuntimeHintDescriptor</a> that stores
-<a href="../jetleaf_build/RuntimeHint-class.html">RuntimeHint</a>s in an in-memory map.
+  A robust runtime executor that coordinates between two resolver strategies
+to handle dynamic operations on objects, methods, and fields at runtime.
+</dd>
+
+          <dt id="DefaultRuntimeHintDescriptor">
+  <span class="name "><a href="../jetleaf_build/DefaultRuntimeHintDescriptor-class.html">DefaultRuntimeHintDescriptor</a></span> 
+
+</dt>
+<dd>
+  A concrete implementation of <a href="../jetleaf_build/RuntimeHintDescriptor-class.html">RuntimeHintDescriptor</a> that stores hints in a simple list.
 </dd>
 
           <dt id="DefaultRuntimeScannerSummary">
@@ -214,13 +339,21 @@ holds the results of a Runtime scan including the build context,
 timestamp, and all reported messages (errors, warnings, and info).
 </dd>
 
+          <dt id="Dynamic">
+  <span class="name "><a href="../jetleaf_build/Dynamic-class.html">Dynamic</a></span> 
+
+</dt>
+<dd>
+  Abstract base class representing a <strong>dynamic or unconstrained type</strong> within
+the JetLeaf type system.
+</dd>
+
           <dt id="EntityDeclaration">
   <span class="name "><a href="../jetleaf_build/EntityDeclaration-class.html">EntityDeclaration</a></span> 
 
 </dt>
 <dd>
-  An abstract base class that defines a reflective entity in the system,
-providing a common identifier useful for debugging, logging, or inspection.
+  A uniquely identifiable declaration representing a <strong>runtime entity</strong>.
 </dd>
 
           <dt id="EnumDeclaration">
@@ -240,22 +373,13 @@ enum entry names, metadata, and declared members (fields, methods).
   Abstract base class representing a field (value) within an enum declaration.
 </dd>
 
-          <dt id="ExtensionDeclaration">
-  <span class="name "><a href="../jetleaf_build/ExtensionDeclaration-class.html">ExtensionDeclaration</a></span> 
+          <dt id="ExecutableArgument">
+  <span class="name "><a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></span> 
 
 </dt>
 <dd>
-  Represents a Dart <code>extension</code> declaration at runtime.
-</dd>
-
-          <dt id="FallbackRuntimeResolver">
-  <span class="name "><a href="../jetleaf_build/FallbackRuntimeResolver-class.html">FallbackRuntimeResolver</a></span> 
-
-</dt>
-<dd>
-  A composite <a href="../jetleaf_build/RuntimeResolver-class.html">RuntimeResolver</a> that delegates resolution to a primary
-resolver, and falls back to a secondary resolver (typically mirror-based)
-if the primary does not support the operation.
+  Represents a fully normalized and transport-safe view of arguments passed
+to an executable entity (constructor, method, function, or tear-off).
 </dd>
 
           <dt id="FieldDeclaration">
@@ -271,7 +395,16 @@ if the primary does not support the operation.
 
 </dt>
 <dd>
-  Utility class for file system operations related to Dart projects.
+  A utility class providing file-system and package-resolution helpers
+for Dart and JetLeaf runtime environments.
+</dd>
+
+          <dt id="FunctionDeclaration">
+  <span class="name "><a href="../jetleaf_build/FunctionDeclaration-class.html">FunctionDeclaration</a></span> 
+
+</dt>
+<dd>
+  Specialized LinkDeclaration for function type references.
 </dd>
 
           <dt id="GenerativeAsset">
@@ -314,12 +447,13 @@ if the primary does not support the operation.
   Represents the parsed structure of a generic type.
 </dd>
 
-          <dt id="InstanceArgument">
-  <span class="name "><a href="../jetleaf_build/InstanceArgument-class.html">InstanceArgument</a></span> 
+          <dt id="Hint">
+  <span class="name "><a href="../jetleaf_build/Hint-class.html">Hint</a></span> 
 
 </dt>
 <dd>
-  
+  Represents the outcome of a runtime hint operation within the JetLeaf
+execution pipeline.
 </dd>
 
           <dt id="InternalMockLibraryGenerator">
@@ -333,12 +467,12 @@ For users who want to test their application, they can use the <code>MockLibrary
 to bootstrap their application.
 </dd>
 
-          <dt id="JitRuntimeResolver">
-  <span class="name "><a href="../jetleaf_build/JitRuntimeResolver-class.html">JitRuntimeResolver</a></span> 
+          <dt id="JitRuntimeExecutor">
+  <span class="name "><a href="../jetleaf_build/JitRuntimeExecutor-class.html">JitRuntimeExecutor</a></span> 
 
 </dt>
 <dd>
-  A reflection-based implementation of <a href="../jetleaf_build/RuntimeResolver-class.html">RuntimeResolver</a> using <code>dart:mirrors</code>.
+  A reflection-based implementation of <a href="../jetleaf_build/RuntimeExecutor-class.html">RuntimeExecutor</a> using <code>dart:mirrors</code>.
 </dd>
 
           <dt id="LibraryDeclaration">
@@ -346,8 +480,8 @@ to bootstrap their application.
 
 </dt>
 <dd>
-  Represents a Dart library, providing access to its URI, the
-containing package, and all top-level declarations inside it.
+  Represents a <strong>Dart library declaration</strong> within JetLeaf’s reflection
+and generation system.
 </dd>
 
           <dt id="LibraryGenerator">
@@ -366,14 +500,32 @@ containing package, and all top-level declarations inside it.
   Abstract base class for type references in reflection systems.
 </dd>
 
+          <dt id="LocatedFiles">
+  <span class="name "><a href="../jetleaf_build/LocatedFiles-class.html">LocatedFiles</a></span> 
+
+</dt>
+<dd>
+  A <strong>file–classification and scheduling model</strong> used by JetLeaf to
+efficiently control <em>what gets processed</em> during a build.
+</dd>
+
+          <dt id="MaterialLibrary">
+  <span class="name "><a href="../jetleaf_build/MaterialLibrary-class.html">MaterialLibrary</a></span> 
+
+</dt>
+<dd>
+  A <strong>centralized, immutable registry of materialized Dart libraries</strong>
+within the JetLeaf reflection and generation system. This is the <strong>backbone registry</strong> of JetLeaf’s reflection
+system. It materializes raw libraries into a frozen, queryable structure
+that enables fast, deterministic, and cross-domain type resolution.
+</dd>
+
           <dt id="MemberDeclaration">
   <span class="name "><a href="../jetleaf_build/MemberDeclaration-class.html">MemberDeclaration</a></span> 
 
 </dt>
 <dd>
-  Represents a member (method, field, or constructor) declared within a class,
-exposing information about the owning class, whether it is static or abstract,
-and any inherited metadata from <a href="../jetleaf_build/SourceDeclaration-class.html">SourceDeclaration</a>.
+  A source-level declaration that is <strong>owned by a class</strong>.
 </dd>
 
           <dt id="MethodDeclaration">
@@ -415,7 +567,8 @@ using Dart's mirrors API without filesystem operations.
 
 </dt>
 <dd>
-  A lightweight mock implementation of <a href="../jetleaf_build/RuntimeScanner-class.html">RuntimeScanner</a> for testing and development.
+  A <strong>mock implementation</strong> of <a href="../jetleaf_build/RuntimeScanner-class.html">RuntimeScanner</a> designed for testing,
+experimentation, and controlled runtime scanning scenarios.
 </dd>
 
           <dt id="Package">
@@ -423,7 +576,8 @@ using Dart's mirrors API without filesystem operations.
 
 </dt>
 <dd>
-  🍃 JetLeaf Framework - Represents a Dart package within the runtime context.
+  Represents a <strong>Dart package</strong> within the JetLeaf reflection and
+code generation system.
 </dd>
 
           <dt id="PackageConfigEntry">
@@ -431,31 +585,7 @@ using Dart's mirrors API without filesystem operations.
 
 </dt>
 <dd>
-  Represents an entry from the <code>.dart_tool/package_config.json</code> file.
-</dd>
-
-          <dt id="PackageContent">
-  <span class="name "><a href="../jetleaf_build/PackageContent-class.html">PackageContent</a></span> 
-
-</dt>
-<dd>
-  Represents the complete content and metadata of a Dart package.
-</dd>
-
-          <dt id="PackageContentImpl">
-  <span class="name "><a href="../jetleaf_build/PackageContentImpl-class.html">PackageContentImpl</a></span> 
-
-</dt>
-<dd>
-  Concrete implementation of <a href="../jetleaf_build/PackageContent-class.html">PackageContent</a> with mutable state.
-</dd>
-
-          <dt id="PackageImplementation">
-  <span class="name "><a href="../jetleaf_build/PackageImplementation-class.html">PackageImplementation</a></span> 
-
-</dt>
-<dd>
-  A concrete, immutable implementation of the <a href="../jetleaf_build/Package-class.html">Package</a> interface.
+  Represents a single entry in a parsed <code>package_config.json</code> file.
 </dd>
 
           <dt id="PackageNames">
@@ -474,6 +604,15 @@ throughout the <strong>Jetleaf framework</strong>.
 <dd>
   Represents a parameter in a constructor or method, with metadata about
 its name, type, position (named or positional), and default value.
+</dd>
+
+          <dt id="QualifiedName">
+  <span class="name "><a href="../jetleaf_build/QualifiedName-class.html">QualifiedName</a></span> 
+
+</dt>
+<dd>
+  Defines a contract for objects that expose a <strong>fully-qualified, stable name</strong>
+within the JetLeaf type and metadata system.
 </dd>
 
           <dt id="RecordDeclaration">
@@ -518,12 +657,31 @@ JetLeaf reflection system.
 resolvers should be generated.
 </dd>
 
-          <dt id="ResourceDeclaration">
-  <span class="name "><a href="../jetleaf_build/ResourceDeclaration-class.html">ResourceDeclaration</a></span> 
+          <dt id="RuntimeBuilder">
+  <span class="name "><a href="../jetleaf_build/RuntimeBuilder-class.html">RuntimeBuilder</a></span> 
 
 </dt>
 <dd>
-  Abstract base class for declarations of external resources in reflection systems.
+  Centralized build-time logging and execution context manager for JetLeaf.
+</dd>
+
+          <dt id="RuntimeExecutor">
+  <span class="name "><a href="../jetleaf_build/RuntimeExecutor-class.html">RuntimeExecutor</a></span> 
+
+</dt>
+<dd>
+  Defines an interface for executing runtime operations in a Dart environment,
+providing a high-level abstraction for dynamic object creation, method invocation,
+and field manipulation.
+</dd>
+
+          <dt id="RuntimeExecutorResolving">
+  <span class="name "><a href="../jetleaf_build/RuntimeExecutorResolving-class.html">RuntimeExecutorResolving</a></span> 
+
+</dt>
+<dd>
+  An abstract base class responsible for orchestrating the <strong>runtime resolution</strong>
+of types, methods, and fields across multiple libraries.
 </dd>
 
           <dt id="RuntimeHint">
@@ -531,7 +689,8 @@ resolvers should be generated.
 
 </dt>
 <dd>
-  A hint that defines how to interact with a specific type <code>Object</code> through reflection-like operations.
+  A contract for providing runtime-level behavioral overrides to the JetLeaf
+execution system.
 </dd>
 
           <dt id="RuntimeHintDescriptor">
@@ -539,25 +698,16 @@ resolvers should be generated.
 
 </dt>
 <dd>
-  Abstract interface which provides all the <a href="../jetleaf_build/RuntimeHint-class.html">RuntimeHint</a>s that
-are registered with JetLeaf's reflection system.
+  An abstract descriptor that represents a collection of <a href="../jetleaf_build/RuntimeHint-class.html">RuntimeHint</a> instances.
 </dd>
 
-          <dt id="RuntimeHintProcessor">
-  <span class="name "><a href="../jetleaf_build/RuntimeHintProcessor-class.html">RuntimeHintProcessor</a></span> 
+          <dt id="RuntimeHintProvider">
+  <span class="name "><a href="../jetleaf_build/RuntimeHintProvider-class.html">RuntimeHintProvider</a></span> 
 
 </dt>
 <dd>
-  An abstract interface that users can implement to configure the
-<a href="../jetleaf_build/RuntimeHintDescriptor-class.html">RuntimeHintDescriptor</a> registry.
-</dd>
-
-          <dt id="RuntimeMetadataProvider">
-  <span class="name "><a href="../jetleaf_build/RuntimeMetadataProvider-class.html">RuntimeMetadataProvider</a></span> 
-
-</dt>
-<dd>
-  A contract for providing access to reflection metadata in JetLeaf.
+  A factory interface responsible for producing concrete <a href="../jetleaf_build/RuntimeHint-class.html">RuntimeHint</a>
+instances.
 </dd>
 
           <dt id="RuntimeProvider">
@@ -565,24 +715,8 @@ are registered with JetLeaf's reflection system.
 
 </dt>
 <dd>
-  Represents a runtime reflection context for a Dart application,
-providing access to libraries, packages, assets, and metadata.
-</dd>
-
-          <dt id="RuntimeResolver">
-  <span class="name "><a href="../jetleaf_build/RuntimeResolver-class.html">RuntimeResolver</a></span> 
-
-</dt>
-<dd>
-  An interface that portrays how any code is handled in JetLeaf's reflection system.
-</dd>
-
-          <dt id="RuntimeResolving">
-  <span class="name "><a href="../jetleaf_build/RuntimeResolving-class.html">RuntimeResolving</a></span> 
-
-</dt>
-<dd>
-  Orchestrates the runtime resolution process for JetLeaf reflection.
+  A <strong>runtime-backed extension</strong> of <a href="../jetleaf_build/MaterialLibrary-class.html">MaterialLibrary</a> that exposes
+environment-level metadata and execution capabilities.
 </dd>
 
           <dt id="RuntimeScanner">
@@ -624,200 +758,37 @@ diagnostics and metadata such as build time and scanning context.
 
 </dt>
 <dd>
-  Represents any top-level or member declaration in Dart code,
-such as a class, method, field, enum, typedef, etc., and exposes
-its metadata for reflection.
+  A declaration that originates directly from <strong>source-level Dart code</strong>.
 </dd>
 
-          <dt id="StandardAnnotationDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardAnnotationDeclaration-class.html">StandardAnnotationDeclaration</a></span> 
+          <dt id="SourceLibrary">
+  <span class="name "><a href="../jetleaf_build/SourceLibrary-class.html">SourceLibrary</a></span> 
 
 </dt>
 <dd>
-  A standard implementation of <a href="../jetleaf_build/AnnotationDeclaration-class.html">AnnotationDeclaration</a> that provides
-reflection metadata about an annotation applied to a declaration.
+  A <strong>first-class representation of a Dart library’s source code</strong> within
+the JetLeaf framework. <a href="../jetleaf_build/SourceLibrary-class.html">SourceLibrary</a> is the <strong>canonical source-level library abstraction</strong> in
+JetLeaf. It bridges file systems, packages, analyzers, and generators while
+remaining lightweight, stable, and environment-agnostic.
 </dd>
 
-          <dt id="StandardAnnotationFieldDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardAnnotationFieldDeclaration-class.html">StandardAnnotationFieldDeclaration</a></span> 
+          <dt id="SystemDetector">
+  <span class="name "><a href="../jetleaf_build/SystemDetector-class.html">SystemDetector</a></span> 
 
 </dt>
 <dd>
-  Enhanced annotation field metadata
+  Strategy interface for detecting and creating SystemEnvironment instances.
 </dd>
 
-          <dt id="StandardClassDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardClassDeclaration-class.html">StandardClassDeclaration</a></span> 
+          <dt id="SystemProperties">
+  <span class="name "><a href="../jetleaf_build/SystemProperties-class.html">SystemProperties</a></span> 
 
 </dt>
 <dd>
-  A standard implementation of <a href="../jetleaf_build/ClassDeclaration-class.html">ClassDeclaration</a> that provides runtime
-metadata and reflection capabilities for Dart classes.
-</dd>
-
-          <dt id="StandardConstructorDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardConstructorDeclaration-class.html">StandardConstructorDeclaration</a></span> 
-
-</dt>
-<dd>
-  A standard implementation of <a href="../jetleaf_build/ConstructorDeclaration-class.html">ConstructorDeclaration</a> that provides
-metadata and instantiation logic for class constructors.
-</dd>
-
-          <dt id="StandardDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardDeclaration-class.html">StandardDeclaration</a></span> 
-
-</dt>
-<dd>
-  
-</dd>
-
-          <dt id="StandardEntityDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardEntityDeclaration-class.html">StandardEntityDeclaration</a></span> 
-
-</dt>
-<dd>
-  Concrete implementation of <a href="../jetleaf_build/EntityDeclaration-class.html">EntityDeclaration</a> providing standard reflection metadata.
-</dd>
-
-          <dt id="StandardEnumDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardEnumDeclaration-class.html">StandardEnumDeclaration</a></span> 
-
-</dt>
-<dd>
-  A standard implementation of <a href="../jetleaf_build/EnumDeclaration-class.html">EnumDeclaration</a> that provides reflection
-metadata about an enum declaration in a Dart program.
-</dd>
-
-          <dt id="StandardEnumFieldDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardEnumFieldDeclaration-class.html">StandardEnumFieldDeclaration</a></span> 
-
-</dt>
-<dd>
-  Concrete implementation of <a href="../jetleaf_build/EnumFieldDeclaration-class.html">EnumFieldDeclaration</a> representing an enum value.
-</dd>
-
-          <dt id="StandardExtensionDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardExtensionDeclaration-class.html">StandardExtensionDeclaration</a></span> 
-
-</dt>
-<dd>
-  A standard implementation of <a href="../jetleaf_build/ExtensionDeclaration-class.html">ExtensionDeclaration</a> that represents metadata
-about a Dart extension in a reflected form.
-</dd>
-
-          <dt id="StandardFieldDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardFieldDeclaration-class.html">StandardFieldDeclaration</a></span> 
-
-</dt>
-<dd>
-  A standard implementation of <a href="../jetleaf_build/FieldDeclaration-class.html">FieldDeclaration</a> that provides metadata and
-runtime access to class fields in a reflective system.
-</dd>
-
-          <dt id="StandardLibraryDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardLibraryDeclaration-class.html">StandardLibraryDeclaration</a></span> 
-
-</dt>
-<dd>
-  A standard implementation of <a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a> that provides access to
-all top-level declarations in a Dart library.
-</dd>
-
-          <dt id="StandardLinkDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardLinkDeclaration-class.html">StandardLinkDeclaration</a></span> 
-
-</dt>
-<dd>
-  A standard implementation of <a href="../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a> for representing links to
-other types.
-</dd>
-
-          <dt id="StandardMethodDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardMethodDeclaration-class.html">StandardMethodDeclaration</a></span> 
-
-</dt>
-<dd>
-  A standard implementation of <a href="../jetleaf_build/MethodDeclaration-class.html">MethodDeclaration</a> representing a method,
-constructor, getter, or setter in a Dart class or library.
-</dd>
-
-          <dt id="StandardMixinDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardMixinDeclaration-class.html">StandardMixinDeclaration</a></span> 
-
-</dt>
-<dd>
-  A standard implementation of <a href="../jetleaf_build/MixinDeclaration-class.html">MixinDeclaration</a> that provides reflection
-metadata about a Dart mixin declaration.
-</dd>
-
-          <dt id="StandardParameterDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardParameterDeclaration-class.html">StandardParameterDeclaration</a></span> 
-
-</dt>
-<dd>
-  A standard implementation of <a href="../jetleaf_build/ParameterDeclaration-class.html">ParameterDeclaration</a> used to represent metadata
-about a parameter in a Dart function, method, or constructor.
-</dd>
-
-          <dt id="StandardRecordDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardRecordDeclaration-class.html">StandardRecordDeclaration</a></span> 
-
-</dt>
-<dd>
-  A standard implementation of <a href="../jetleaf_build/RecordDeclaration-class.html">RecordDeclaration</a> used to represent Dart <a href="https://api.dart.dev/stable/3.9.2/dart-core/Record-class.html">Record</a> types,
-including their positional and named fields, type arguments, annotations,
-and parent library metadata.
-</dd>
-
-          <dt id="StandardRecordFieldDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardRecordFieldDeclaration-class.html">StandardRecordFieldDeclaration</a></span> 
-
-</dt>
-<dd>
-  Represents an individual field within a Dart record type, either positional or named.
-</dd>
-
-          <dt id="StandardRuntimeProvider">
-  <span class="name "><a href="../jetleaf_build/StandardRuntimeProvider-class.html">StandardRuntimeProvider</a></span> 
-
-</dt>
-<dd>
-  Default mutable implementation of <a href="../jetleaf_build/ConfigurableRuntimeProvider-class.html">ConfigurableRuntimeProvider</a>.
-</dd>
-
-          <dt id="StandardSourceDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardSourceDeclaration-class.html">StandardSourceDeclaration</a></span> 
-
-</dt>
-<dd>
-  Concrete implementation of <a href="../jetleaf_build/SourceDeclaration-class.html">SourceDeclaration</a> representing source-level declarations.
-</dd>
-
-          <dt id="StandardTypeDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardTypeDeclaration-class.html">StandardTypeDeclaration</a></span> 
-
-</dt>
-<dd>
-  A standard implementation of <a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a> for representing common Dart types,
-such as primitive types, classes, enums, typedefs, and records.
-</dd>
-
-          <dt id="StandardTypedefDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardTypedefDeclaration-class.html">StandardTypedefDeclaration</a></span> 
-
-</dt>
-<dd>
-  Standard implementation of <a href="../jetleaf_build/TypedefDeclaration-class.html">TypedefDeclaration</a> used by JetLeaf's reflection system.
-</dd>
-
-          <dt id="StandardTypeVariableDeclaration">
-  <span class="name "><a href="../jetleaf_build/StandardTypeVariableDeclaration-class.html">StandardTypeVariableDeclaration</a></span> 
-
-</dt>
-<dd>
-  A standard implementation of <a href="../jetleaf_build/TypeVariableDeclaration-class.html">TypeVariableDeclaration</a> for representing
-type variables in Dart, such as <code>T</code> in <code>List&lt;T&gt;</code> or <code>E</code> in <code>Map&lt;K, V&gt;</code>.
+  The <a href="../jetleaf_build/SystemProperties-class.html">SystemProperties</a> interface provides a clean, method-based API
+for querying the runtime environment. Unlike direct property access,
+all system state is exposed via methods to enforce immutability
+and ensure consistent naming conventions.
 </dd>
 
           <dt id="ToStringOptions">
@@ -828,48 +799,21 @@ type variables in Dart, such as <code>T</code> in <code>List&lt;T&gt;</code> or 
   Configuration options for customizing <code>toString</code> output in JetLeaf objects.
 </dd>
 
-          <dt id="TreeShaker">
-  <span class="name "><a href="../jetleaf_build/TreeShaker-class.html">TreeShaker</a></span> 
+          <dt id="UnresolvedClass">
+  <span class="name "><a href="../jetleaf_build/UnresolvedClass-class.html">UnresolvedClass</a></span> 
 
 </dt>
 <dd>
-  Performs tree-shaking analysis to determine which classes are actually used
-by the user's code, either directly or indirectly through dependencies.
+  Represents a <strong>class whose type could not be fully resolved</strong> at runtime.
 </dd>
 
-          <dt id="TypeDeclaration">
-  <span class="name "><a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a></span> 
+          <dt id="Void">
+  <span class="name "><a href="../jetleaf_build/Void-class.html">Void</a></span> 
 
 </dt>
 <dd>
-  Represents metadata information about any Dart type — including classes,
-enums, typedefs, generic types like <code>List&lt;int&gt;</code>, and even nullable types.
-</dd>
-
-          <dt id="TypedefDeclaration">
-  <span class="name "><a href="../jetleaf_build/TypedefDeclaration-class.html">TypedefDeclaration</a></span> 
-
-</dt>
-<dd>
-  Represents a reflected Dart <code>typedef</code>, which is a type alias for a
-function type, class type, or any other complex type.
-</dd>
-
-          <dt id="TypeDiscovery">
-  <span class="name "><a href="../jetleaf_build/TypeDiscovery-class.html">TypeDiscovery</a></span> 
-
-</dt>
-<dd>
-  A powerful type discovery system that can find any declaration using various search criteria.
-</dd>
-
-          <dt id="TypeVariableDeclaration">
-  <span class="name "><a href="../jetleaf_build/TypeVariableDeclaration-class.html">TypeVariableDeclaration</a></span> 
-
-</dt>
-<dd>
-  Represents a reflected type variable, such as <code>T</code> in a generic class
-declaration like <code>class MyClass&lt;T extends num&gt;</code>.
+  Abstract base class representing a <strong>marker or placeholder type</strong> in the
+JetLeaf type system.
 </dd>
 
       </dl>
@@ -883,15 +827,8 @@ declaration like <code>class MyClass&lt;T extends num&gt;</code>.
 
 </dt>
 <dd>
-  Defines the kind of a reflected type within the JetLeaf reflection system.
-</dd>
-
-          <dt id="TypeVariance">
-  <span class="name "><a href="../jetleaf_build/TypeVariance.html">TypeVariance</a></span> 
-
-</dt>
-<dd>
-  Represents the variance annotations for generic type parameters in Dart.
+  Enumerates the different <strong>kinds of Dart types</strong> recognized by JetLeaf’s
+reflection and type resolution system.
 </dd>
 
       </dl>
@@ -924,63 +861,83 @@ properties defined in <a href="../jetleaf_build/EqualsAndHashCode/equalizedPrope
     <section class="summary offset-anchor" id="extensions">
       <h2>Extensions</h2>
       <dl>
-          <dt id="AssetExtension">
-  <span class="name "><a href="../jetleaf_build/AssetExtension.html">AssetExtension</a></span>
-  on <a href="../jetleaf_build/Asset-class.html">Asset</a>
+          <dt id="StdExtension">
+  <span class="name "><a href="../jetleaf_build/StdExtension.html">StdExtension</a></span>
+  on <a href="https://api.dart.dev/stable/3.9.2/dart-io/Stdout-class.html">Stdout</a>
   
 
 </dt>
 <dd>
-  Extension methods for <a href="../jetleaf_build/Asset-class.html">Asset</a> objects.
+  Extension to simulate Java's <code>System.out</code> and <code>System.err</code> utilities in Dart.
 </dd>
 
-          <dt id="SortByPublic">
-  <span class="name "><a href="../jetleaf_build/SortByPublic.html">SortByPublic</a></span>
-  on <a href="https://api.dart.dev/stable/3.9.2/dart-core/Iterable-class.html">Iterable</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span>
+          <dt id="SystemExtension">
+  <span class="name "><a href="../jetleaf_build/SystemExtension.html">SystemExtension</a></span>
+  on _System
   
 
 </dt>
 <dd>
-  Extension providing sorting capabilities for collections of <a href="../jetleaf_build/Declaration-class.html">Declaration</a> objects.
+  Extension on <code>InternalSystemContext</code> that provides access to system-level
+and environment-related properties similar to Java's <code>System.getProperties()</code>
+and <code>System.getenv()</code>.
 </dd>
 
-          <dt id="TypeDeclarationExtension">
-  <span class="name "><a href="../jetleaf_build/TypeDeclarationExtension.html">TypeDeclarationExtension</a></span>
-  on <a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a>
+          <dt id="UnresolvedClassExtension">
+  <span class="name "><a href="../jetleaf_build/UnresolvedClassExtension.html">UnresolvedClassExtension</a></span>
+  on <a href="https://api.dart.dev/stable/3.9.2/dart-core/Iterable-class.html">Iterable</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/UnresolvedClass-class.html">UnresolvedClass</a></span>&gt;</span>
   
 
 </dt>
 <dd>
-  Extension providing type casting and declaration resolution for <a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a>.
+  🔹 Extension: <code>UnresolvedClassExtension</code>
 </dd>
 
       </dl>
     </section>
 
+    <section class="summary offset-anchor" id="constants">
+      <h2>Constants</h2>
+      <dl class="properties">
+          <dt id="MUST_AVOID_PACKAGE" class="constant">
+    <span class="name "><a href="../jetleaf_build/MUST_AVOID_PACKAGE-constant.html">MUST_AVOID_PACKAGE</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Constant representing the package name that must be avoided during import
+checks. Used by <a href="../jetleaf_build/forgetPackage.html">forgetPackage</a> to detect and filter forbidden references.
+  
+
+</dd>
+
+      </dl>
+    </section>
 
     <section class="summary offset-anchor" id="properties">
       <h2>Properties</h2>
       <dl class="properties">
-          <dt id="GLOBAL_RUNTIME_PROVIDER" class="property">
-  <span class="name"><a href="../jetleaf_build/GLOBAL_RUNTIME_PROVIDER.html">GLOBAL_RUNTIME_PROVIDER</a></span>
-  <span class="signature">&#8596; <a href="../jetleaf_build/RuntimeProvider-class.html">RuntimeProvider</a>?</span>
+          <dt id="Runtime" class="property">
+  <span class="name"><a href="../jetleaf_build/Runtime.html">Runtime</a></span>
+  <span class="signature">&#8594; <a href="../jetleaf_build/RuntimeProvider-class.html">RuntimeProvider</a></span>
   
 
 </dt>
 <dd>
-  A global reference to the active runtime provider in the JetLeaf framework.
-  <div class="features"><span class="feature">getter/setter pair</span></div>
+  🔹 JetLeaf Runtime Singleton
+  <div class="features"><span class="feature">final</span></div>
 
 </dd>
 
-          <dt id="Runtime" class="property">
-  <span class="name"><a href="../jetleaf_build/Runtime.html">Runtime</a></span>
-  <span class="signature">&#8594; _MetaRuntimeProvider</span>
+          <dt id="System" class="property">
+  <span class="name"><a href="../jetleaf_build/System.html">System</a></span>
+  <span class="signature">&#8594; _System</span>
   
 
 </dt>
 <dd>
-  A central, globally accessible proxy for runtime metadata in JetLeaf.
+  Internal system facade for the JetLeaf framework.
   <div class="features"><span class="feature">final</span></div>
 
 </dd>
@@ -991,6 +948,34 @@ properties defined in <a href="../jetleaf_build/EqualsAndHashCode/equalizedPrope
     <section class="summary offset-anchor" id="functions">
       <h2>Functions</h2>
       <dl class="callables">
+          <dt id="forgetPackage" class="callable">
+  <span class="name"><a href="../jetleaf_build/forgetPackage.html">forgetPackage</a></span><span class="signature">(<wbr><span class="parameter" id="forgetPackage-param-text"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">text</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns <code>true</code> if the provided <code>text</code> contains a reference to a package
+that should be excluded.
+  
+
+</dd>
+
+          <dt id="getNonNecessaryPackages" class="callable">
+  <span class="name"><a href="../jetleaf_build/getNonNecessaryPackages.html">getNonNecessaryPackages</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns a list of package names that are considered <strong>non-essential</strong> for
+runtime analysis and should generally be excluded from scanning.
+  
+
+</dd>
+
           <dt id="hashCode" class="callable">
   <span class="name"><a href="../jetleaf_build/hashCode.html">hashCode</a></span><span class="signature">(<wbr><span class="parameter" id="hashCode-param-current"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">current</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/int-class.html">int</a></span>
@@ -1005,40 +990,42 @@ properties defined in <a href="../jetleaf_build/EqualsAndHashCode/equalizedPrope
 </dd>
 
           <dt id="resolvePublicDartType" class="callable">
-  <span class="name"><a href="../jetleaf_build/resolvePublicDartType.html">resolvePublicDartType</a></span><span class="signature">(<wbr><span class="parameter" id="resolvePublicDartType-param-uri"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">uri</span>, </span><span class="parameter" id="resolvePublicDartType-param-className"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">className</span></span>)
+  <span class="name"><a href="../jetleaf_build/resolvePublicDartType.html">resolvePublicDartType</a></span><span class="signature">(<wbr><span class="parameter" id="resolvePublicDartType-param-uri"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">uri</span>, </span><span class="parameter" id="resolvePublicDartType-param-className"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">className</span>, [</span><span class="parameter" id="resolvePublicDartType-param-mirror"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/DeclarationMirror-class.html">DeclarationMirror</a>?</span> <span class="parameter-name">mirror</span></span>])
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a>?</span>
   </span>
   
 
 </dt>
 <dd>
-  
+  Resolves a <strong>public Dart platform type</strong> using a library URI and class name.
   
 
 </dd>
 
           <dt id="runScan" class="callable">
-  <span class="name"><a href="../jetleaf_build/runScan.html">runScan</a></span><span class="signature">(<wbr>[<span class="parameter" id="runScan-param-source"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a>?</span> <span class="parameter-name">source</span></span>])
-    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/RuntimeProvider-class.html">RuntimeProvider</a></span>&gt;</span></span>
+  <span class="name"><a href="../jetleaf_build/runScan.html">runScan</a></span><span class="signature">(<wbr>{<span class="parameter" id="runScan-param-source"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a>?</span> <span class="parameter-name">source</span>, </span><span class="parameter" id="runScan-param-config"><span class="type-annotation"><a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a>?</span> <span class="parameter-name">config</span>, </span><span class="parameter" id="runScan-param-forceLoadLibraries"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">forceLoadLibraries</span> = <span class="default-value">false</span>, </span><span class="parameter" id="runScan-param-onInfo"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onInfo</span>, </span><span class="parameter" id="runScan-param-onWarning"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onWarning</span>, </span><span class="parameter" id="runScan-param-onError"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onError</span>, </span><span class="parameter" id="runScan-param-args"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">args</span> = <span class="default-value">const []</span>, </span><span class="parameter" id="runScan-param-configuredScanner"><span class="type-annotation"><a href="../jetleaf_build/RuntimeScanner-class.html">RuntimeScanner</a>?</span> <span class="parameter-name">configuredScanner</span>, </span><span class="parameter" id="runScan-param-overrideConfig"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">overrideConfig</span> = <span class="default-value">false</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/RuntimeScannerSummary-class.html">RuntimeScannerSummary</a></span>&gt;</span></span>
   </span>
   
 
 </dt>
 <dd>
-  Executes a runtime scan using the <code>ApplicationRuntimeScanner</code>.
+  Executes a <strong>full application runtime scan</strong>, builds a runtime context,
+and registers it globally.
   
 
 </dd>
 
           <dt id="runTestScan" class="callable">
-  <span class="name"><a href="../jetleaf_build/runTestScan.html">runTestScan</a></span><span class="signature">(<wbr>{<span class="parameter" id="runTestScan-param-packagesToExclude"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">packagesToExclude</span> = <span class="default-value">const []</span>, </span><span class="parameter" id="runTestScan-param-filesToLoad"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">filesToLoad</span> = <span class="default-value">const []</span></span>})
-    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  <span class="name"><a href="../jetleaf_build/runTestScan.html">runTestScan</a></span><span class="signature">(<wbr>{<span class="parameter" id="runTestScan-param-packagesToExclude"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">packagesToExclude</span> = <span class="default-value">const []</span>, </span><span class="parameter" id="runTestScan-param-filesToLoad"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">filesToLoad</span> = <span class="default-value">const []</span>, </span><span class="parameter" id="runTestScan-param-config"><span class="type-annotation"><a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a>?</span> <span class="parameter-name">config</span>, </span><span class="parameter" id="runTestScan-param-onInfo"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onInfo</span>, </span><span class="parameter" id="runTestScan-param-onWarning"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onWarning</span>, </span><span class="parameter" id="runTestScan-param-onError"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onError</span>, </span><span class="parameter" id="runTestScan-param-args"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">args</span> = <span class="default-value">const []</span>, </span><span class="parameter" id="runTestScan-param-source"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a>?</span> <span class="parameter-name">source</span>, </span><span class="parameter" id="runTestScan-param-configuredScanner"><span class="type-annotation"><a href="../jetleaf_build/RuntimeScanner-class.html">RuntimeScanner</a>?</span> <span class="parameter-name">configuredScanner</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/RuntimeScannerSummary-class.html">RuntimeScannerSummary</a></span>&gt;</span></span>
   </span>
   
 
 </dt>
 <dd>
-  
+  Executes a <strong>mock runtime scan</strong> and registers the resulting runtime
+context for testing and validation purposes.
   
 
 </dd>
@@ -1049,34 +1036,6 @@ properties defined in <a href="../jetleaf_build/EqualsAndHashCode/equalizedPrope
     <section class="summary offset-anchor" id="typedefs">
       <h2>Typedefs</h2>
       <dl>
-          
-  <dt id="GetValueCreator" class="callable">
-    <span class="name"><a href="../jetleaf_build/GetValueCreator.html">GetValueCreator</a></span><span class="signature">
-      <span class="returntype parameter">= <a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>? Function<span class="signature">(<span class="parameter" id="param-instance"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">instance</span>, </span><span class="parameter" id="param-name"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">name</span></span>)</span></span>
-    </span>
-    
-
-  </dt>
-  <dd>
-    Typedef for a function that gets the value of a field on an instance of type <code>Object</code>.
-    
-
-  </dd>
-
-          
-  <dt id="InvokeMethodCreator" class="callable">
-    <span class="name"><a href="../jetleaf_build/InvokeMethodCreator.html">InvokeMethodCreator</a></span><span class="signature">
-      <span class="returntype parameter">= <a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>? Function<span class="signature">(<span class="parameter" id="param-instance"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">instance</span>, </span><span class="parameter" id="param-method"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">method</span>, </span><span class="parameter" id="param-args"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span> <span class="parameter-name">args</span>, </span><span class="parameter" id="param-namedArgs"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>, <span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span> <span class="parameter-name">namedArgs</span></span>)</span></span>
-    </span>
-    
-
-  </dt>
-  <dd>
-    Typedef for a function that invokes a method on an instance of type <code>Object</code>.
-    
-
-  </dd>
-
           
   <dt id="MockLibraryGeneratorFactory" class="callable">
     <span class="name"><a href="../jetleaf_build/MockLibraryGeneratorFactory.html">MockLibraryGeneratorFactory</a></span><span class="signature">
@@ -1092,43 +1051,30 @@ properties defined in <a href="../jetleaf_build/EqualsAndHashCode/equalizedPrope
   </dd>
 
           
-  <dt id="NewInstanceCreator" class="callable">
-    <span class="name"><a href="../jetleaf_build/NewInstanceCreator.html">NewInstanceCreator</a></span><span class="signature">
-      <span class="returntype parameter">= <a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a> Function<span class="signature">(<span class="parameter" id="param-name"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">name</span>, </span><span class="parameter" id="param-args"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span> <span class="parameter-name">args</span>, </span><span class="parameter" id="param-namedArgs"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>, <span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span> <span class="parameter-name">namedArgs</span></span>)</span></span>
-    </span>
-    
-
-  </dt>
-  <dd>
-    Typedef for a function that creates a new instance of type <code>Object</code>.
-    
-
-  </dd>
-
-          
   <dt id="OnLogged" class="callable">
     <span class="name"><a href="../jetleaf_build/OnLogged.html">OnLogged</a></span><span class="signature">
-      <span class="returntype parameter">= void Function<span class="signature">(<span class="parameter" id="param-message"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">message</span></span>)</span></span>
+      <span class="returntype parameter">= void Function<span class="signature">(<span class="parameter" id="param-message"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">message</span>, </span><span class="parameter" id="param-overwrite"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">overwrite</span></span>)</span></span>
     </span>
     
 
   </dt>
   <dd>
-    
+    Signature for logging callbacks used to report runtime scanning messages.
     
 
   </dd>
 
           
-  <dt id="SetValueCreator" class="callable">
-    <span class="name"><a href="../jetleaf_build/SetValueCreator.html">SetValueCreator</a></span><span class="signature">
-      <span class="returntype parameter">= void Function<span class="signature">(<span class="parameter" id="param-instance"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">instance</span>, </span><span class="parameter" id="param-name"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">name</span>, </span><span class="parameter" id="param-value"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span> <span class="parameter-name">value</span></span>)</span></span>
+  <dt id="TryOutsideIsolate" class="callable">
+    <span class="name"><a href="../jetleaf_build/TryOutsideIsolate.html">TryOutsideIsolate</a></span><span class="signature">
+      <span class="returntype parameter">= <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a> Function<span class="signature">(<span class="parameter" id="param-file"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span> <span class="parameter-name">file</span>, </span><span class="parameter" id="param-uri"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Uri-class.html">Uri</a></span> <span class="parameter-name">uri</span></span>)</span></span>
     </span>
     
 
   </dt>
   <dd>
-    Typedef for a function that sets the value of a field on an instance of type <code>Object</code>.
+    Signature for a callback used to determine whether a file should be
+processed <em>outside</em> an isolate.
     
 
   </dd>
@@ -1139,6 +1085,14 @@ properties defined in <a href="../jetleaf_build/EqualsAndHashCode/equalizedPrope
     <section class="summary offset-anchor" id="exceptions">
       <h2>Exceptions / Errors</h2>
       <dl>
+          <dt id="ArgumentResolutionException">
+  <span class="name "><a href="../jetleaf_build/ArgumentResolutionException-class.html">ArgumentResolutionException</a></span> 
+
+</dt>
+<dd>
+  Base class for exceptions thrown during <strong>argument resolution</strong>.
+</dd>
+
           <dt id="BuildException">
   <span class="name "><a href="../jetleaf_build/BuildException-class.html">BuildException</a></span> 
 
@@ -1146,6 +1100,15 @@ properties defined in <a href="../jetleaf_build/EqualsAndHashCode/equalizedPrope
 <dd>
   An exception thrown when a <strong>build-time or configuration-time failure</strong>
 occurs within the Jetleaf framework.
+</dd>
+
+          <dt id="ClassNotFoundException">
+  <span class="name "><a href="../jetleaf_build/ClassNotFoundException-class.html">ClassNotFoundException</a></span> 
+
+</dt>
+<dd>
+  A runtime exception in <strong>JetLeaf</strong> thrown when a requested class
+cannot be found by the runtime provider.
 </dd>
 
           <dt id="ConstructorNotFoundException">
@@ -1182,6 +1145,15 @@ for a given type during resolution.
 analysis or reflection-based processing.
 </dd>
 
+          <dt id="ImmaterialClassException">
+  <span class="name "><a href="../jetleaf_build/ImmaterialClassException-class.html">ImmaterialClassException</a></span> 
+
+</dt>
+<dd>
+  Thrown when a class <strong>exists</strong> but cannot be materialized into a
+concrete <a href="../jetleaf_build/ClassDeclaration-class.html">ClassDeclaration</a> by JetLeaf.
+</dd>
+
           <dt id="MethodNotFoundException">
   <span class="name "><a href="../jetleaf_build/MethodNotFoundException-class.html">MethodNotFoundException</a></span> 
 
@@ -1191,13 +1163,49 @@ analysis or reflection-based processing.
 on a given type during dynamic resolution.
 </dd>
 
-          <dt id="MirrorResolutionException">
-  <span class="name "><a href="../jetleaf_build/MirrorResolutionException-class.html">MirrorResolutionException</a></span> 
+          <dt id="MissingRequiredNamedParameterException">
+  <span class="name "><a href="../jetleaf_build/MissingRequiredNamedParameterException-class.html">MissingRequiredNamedParameterException</a></span> 
 
 </dt>
 <dd>
-  Exception thrown for <strong>mirror/reflection-related failures</strong> within the
-Jetleaf framework.
+  Thrown when a <strong>required named parameter</strong> is missing during runtime method
+or constructor invocation.
+</dd>
+
+          <dt id="MissingRequiredPositionalParameterException">
+  <span class="name "><a href="../jetleaf_build/MissingRequiredPositionalParameterException-class.html">MissingRequiredPositionalParameterException</a></span> 
+
+</dt>
+<dd>
+  Thrown when a <strong>required positional parameter</strong> is missing during
+runtime method or constructor invocation.
+</dd>
+
+          <dt id="PrivateConstructorInvocationException">
+  <span class="name "><a href="../jetleaf_build/PrivateConstructorInvocationException-class.html">PrivateConstructorInvocationException</a></span> 
+
+</dt>
+<dd>
+  Exception thrown when a developer attempts to invoke a <strong>private constructor</strong>
+dynamically, which is not allowed by JetLeaf.
+</dd>
+
+          <dt id="PrivateFieldAccessException">
+  <span class="name "><a href="../jetleaf_build/PrivateFieldAccessException-class.html">PrivateFieldAccessException</a></span> 
+
+</dt>
+<dd>
+  Exception thrown when attempting to <strong>access a private field or getter/setter</strong>
+on a type during runtime resolution.
+</dd>
+
+          <dt id="PrivateMethodInvocationException">
+  <span class="name "><a href="../jetleaf_build/PrivateMethodInvocationException-class.html">PrivateMethodInvocationException</a></span> 
+
+</dt>
+<dd>
+  Exception thrown when a developer attempts to invoke a <strong>private method</strong>
+dynamically, which is not allowed by JetLeaf.
 </dd>
 
           <dt id="RuntimeException">
@@ -1223,6 +1231,43 @@ resolution and evaluation subsystem.
 </dt>
 <dd>
   Base class for all throwable exceptions in JetLeaf.
+</dd>
+
+          <dt id="TooFewPositionalArgumentException">
+  <span class="name "><a href="../jetleaf_build/TooFewPositionalArgumentException-class.html">TooFewPositionalArgumentException</a></span> 
+
+</dt>
+<dd>
+  Thrown when a runtime invocation receives <strong>fewer positional arguments</strong>
+than the target function or constructor requires.
+</dd>
+
+          <dt id="TooManyPositionalArgumentException">
+  <span class="name "><a href="../jetleaf_build/TooManyPositionalArgumentException-class.html">TooManyPositionalArgumentException</a></span> 
+
+</dt>
+<dd>
+  Thrown when a runtime invocation receives <strong>more positional arguments</strong>
+than the target function or constructor accepts.
+</dd>
+
+          <dt id="UnexpectedArgumentException">
+  <span class="name "><a href="../jetleaf_build/UnexpectedArgumentException-class.html">UnexpectedArgumentException</a></span> 
+
+</dt>
+<dd>
+  Thrown when an invocation receives an argument that <strong>does not correspond
+to any declared parameter</strong>, usually a named parameter that the target
+method or constructor does not define.
+</dd>
+
+          <dt id="UnresolvedTypeInstantiationException">
+  <span class="name "><a href="../jetleaf_build/UnresolvedTypeInstantiationException-class.html">UnresolvedTypeInstantiationException</a></span> 
+
+</dt>
+<dd>
+  Exception thrown when JetLeaf is unable to instantiate a class or resolve a
+constructor because the <strong>runtime type is unresolved</strong>.
 </dd>
 
           <dt id="UnsupportedRuntimeOperationException">
@@ -1252,7 +1297,8 @@ environment limitations</strong>.
     <h5><span class="package-name">jetleaf_build</span> <span class="package-kind">package</span></h5>
     <ol>
       <li class="section-title">Libraries</li>
-      <li><a href="../jetleaf_build/">jetleaf_build</a></li>
+      <li class="section-subtitle">Build &amp; Runtime</li>
+        <li class="section-subitem"><a href="../jetleaf_build/">jetleaf_build</a></li>
 </ol>
 
   </div>
@@ -1263,7 +1309,7 @@ environment limitations</strong>.
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

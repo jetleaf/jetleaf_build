@@ -54,7 +54,7 @@
 
     <section class="multi-line-signature">
       
-<span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/int-class.html">int</a>?</span>
+<span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/int-class.html">int</a></span>
 <span class="name ">getPosition</span>(<wbr>)
 
       
@@ -62,14 +62,18 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the positional index of the field (starting at 0), or <code>null</code> if named.</p>
+  <p>Returns the positional index of this field within the record.</p>
+<p>Positional fields return a zero-based index reflecting their declaration
+order. Named fields always return <code>-1</code>.</p>
+<h3 id="returns">Returns</h3>
+<p>The positional index, or <code>-1</code> if the field is named.</p>
 </section>
 
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">int? getPosition();</code></pre>
+  <pre class="language-dart"><code class="language-dart">int getPosition();</code></pre>
 </section>
 
 
@@ -97,7 +101,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

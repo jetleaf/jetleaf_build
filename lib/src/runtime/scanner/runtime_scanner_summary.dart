@@ -12,8 +12,6 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
-import '../provider/configurable_runtime_provider.dart';
-
 /// {@template runtime_scanner_summary}
 /// Represents a summary of the reflection scan process, containing
 /// diagnostics and metadata such as build time and scanning context.
@@ -33,7 +31,7 @@ import '../provider/configurable_runtime_provider.dart';
 /// {@endtemplate}
 abstract interface class RuntimeScannerSummary {
   /// {@macro runtime_scanner_summary}
-  ConfigurableRuntimeProvider getContext();
+  const RuntimeScannerSummary();
 
   /// {@template runtime_scanner_summary.build_time}
   /// Returns the timestamp when the scan completed.
@@ -67,6 +65,11 @@ abstract interface class RuntimeScannerSummary {
   /// {@endtemplate}
   List<String> getInfos();
 
+  /// {@template runtime_scanner_summary.infos}
+  /// This retrieves the logs as they were written or collected.
+  /// {@endtemplate}
+  List<String> getLogsAsIs();
+
   /// {@template runtime_scanner_summary.generated_files}
   /// Returns the list of dart files generated during the scan.
   /// 
@@ -74,4 +77,64 @@ abstract interface class RuntimeScannerSummary {
   /// files are alive in the [ReflectionContext]
   /// {@endtemplate}
   Map<String, String> getGeneratedFiles();
+}
+
+/// {@template configurable_runtime_scanner_summary}
+/// An extension of [RuntimeScannerSummary] that allows mutating
+/// its state during or after the scanning process.
+///
+/// This is intended for internal use during the scanning operation,
+/// before being passed to consumers as an immutable [RuntimeScannerSummary].
+///
+/// ## Example
+/// ```dart
+/// final summary = MyConfigurableRuntimeScannerSummary();
+/// summary.setBuildTime(DateTime.now());
+/// summary.addError("Failed to scan class X");
+/// summary.addInfo("Scanning completed.");
+/// ```
+/// {@endtemplate}
+abstract class ConfigurableRuntimeScannerSummary implements RuntimeScannerSummary {
+  /// {@template configurable_runtime_scanner_summary.set_build_time}
+  /// Sets the build time when the scan was performed.
+  ///
+  /// This is important for reproducibility and logging.
+  /// {@endtemplate}
+  void setBuildTime(DateTime buildTime);
+
+  /// {@template configurable_runtime_scanner_summary.add_error}
+  /// Appends an error message to the summary.
+  ///
+  /// Should be used when an irrecoverable issue occurs.
+  /// {@endtemplate}
+  void addErrors(List<String> errors);
+
+  /// {@template configurable_runtime_scanner_summary.add_warning}
+  /// Appends a warning message to the summary.
+  ///
+  /// Used for non-fatal issues discovered during scanning.
+  /// {@endtemplate}
+  void addWarnings(List<String> warnings);
+
+  /// {@template configurable_runtime_scanner_summary.add_info}
+  /// Appends an informational message to the summary.
+  ///
+  /// Useful for recording insights, performance data, or discovered types.
+  /// {@endtemplate}
+  void addInfos(List<String> infos);
+
+  /// {@template configurable_runtime_scanner_summary.add_info}
+  /// Appends the entire logs to the summary.
+  ///
+  /// Useful for recording insights, performance data, or discovered types.
+  /// {@endtemplate}
+  void addAll(List<String> logs);
+
+  /// {@template configurable_runtime_scanner_summary.add_generated_files}
+  /// Appends a list of generated files to the summary.
+  ///
+  /// These files are to be added to the user's code or consumed by the scanner to make sure that these
+  /// files are alive in the [ReflectionContext]
+  /// {@endtemplate}
+  void addGeneratedFiles(Map<String, String> files);
 }

@@ -50,6 +50,7 @@
     <div>
 <h1><span class="kind-class">EnumDeclaration</span> class 
     <a href="https://dart.dev/language/class-modifiers#abstract" class="feature feature-abstract" title="This type can not be directly constructed.">abstract</a>
+    <a href="https://dart.dev/language/class-modifiers#final" class="feature feature-final" title="This class can neither be extended, implemented, nor mixed in.">final</a>
  
 </h1></div>
 
@@ -57,8 +58,6 @@
 <section class="desc markdown">
   <p>Represents a reflected Dart <code>enum</code> type, providing access to its
 enum entry names, metadata, and declared members (fields, methods).</p>
-<p>This interface combines both <a href="../jetleaf_build/SourceDeclaration-class.html">SourceDeclaration</a> and <a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a>,
-and allows you to inspect enums dynamically at runtime.</p>
 <h3 id="example">Example</h3>
 <pre class="language-dart"><code class="language-dart">final type = reflector.reflectType(MyEnum).asEnumType();
 
@@ -79,9 +78,11 @@ for (final member in type!.getMembers()) {
   <dd>
     <ul class="gt-separated dark clazz-relationships">
       <li><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></li>
+        <li><a href="../jetleaf_build/BaseDeclaration-class.html">BaseDeclaration</a></li>
         <li><a href="../jetleaf_build/Declaration-class.html">Declaration</a></li>
         <li><a href="../jetleaf_build/EntityDeclaration-class.html">EntityDeclaration</a></li>
-        <li><a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a></li>
+        <li><a href="../jetleaf_build/SourceDeclaration-class.html">SourceDeclaration</a></li>
+        <li><a href="../jetleaf_build/ClassDeclaration-class.html">ClassDeclaration</a></li>
       <li>EnumDeclaration</li>
     </ul>
   </dd>
@@ -95,16 +96,8 @@ for (final member in type!.getMembers()) {
   </dd>
         
 
-          <dt>Implementers</dt>
-          <dd><ul class="comma-separated clazz-relationships">
-              <li><a href="../jetleaf_build/StandardEnumDeclaration-class.html">StandardEnumDeclaration</a></li>
-          </ul></dd>
 
         
-  <dt>Available extensions</dt>
-  <dd><ul class="comma-separated clazz-relationships">
-      <li><a href="../jetleaf_build/TypeDeclarationExtension.html">TypeDeclarationExtension</a></li>
-  </ul></dd>
         
 
 
@@ -112,19 +105,6 @@ for (final member in type!.getMembers()) {
     </section>
 
     
-  <section class="summary offset-anchor" id="constructors">
-    <h2>Constructors</h2>
-    <dl class="constructor-summary-list">
-        <dt id="EnumDeclaration.new" class="callable">
-          <span class="name"><a href="../jetleaf_build/EnumDeclaration/EnumDeclaration.html">EnumDeclaration.new</a></span><span class="signature">()</span>
-        </dt>
-        <dd>
-          Represents a reflected Dart <code>enum</code> type, providing access to its
-enum entry names, metadata, and declared members (fields, methods).
-            <div class="constructor-modifier features">const</div>
-        </dd>
-    </dl>
-  </section>
     
   <section
       class="summary offset-anchor inherited"
@@ -132,7 +112,7 @@ enum entry names, metadata, and declared members (fields, methods).
     <h2>Properties</h2>
     <dl class="properties">
         <dt id="hashCode" class="property inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/hashCode.html">hashCode</a></span>
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/hashCode.html">hashCode</a></span>
   <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/int-class.html">int</a></span>
   
 
@@ -164,105 +144,16 @@ enum entry names, metadata, and declared members (fields, methods).
       id="instance-methods">
     <h2>Methods</h2>
     <dl class="callables">
-        <dt id="asClass" class="callable">
-  <span class="name"><a href="../jetleaf_build/TypeDeclarationExtension/asClass.html">asClass</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/ClassDeclaration-class.html">ClassDeclaration</a>?</span>
+        <dt id="equalizedProperties" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/equalizedProperties.html">equalizedProperties</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span>
   </span>
   
 
 </dt>
-<dd>
-      <p class="from-extension">
-        <span>Available on <a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a>,
-        provided by the <a href="../jetleaf_build/TypeDeclarationExtension.html">TypeDeclarationExtension</a> extension</span>
-      </p>
-  Safely casts to <a href="../jetleaf_build/ClassDeclaration-class.html">ClassDeclaration</a> if possible.
-  
-
-</dd>
-
-        <dt id="asEnum" class="callable">
-  <span class="name"><a href="../jetleaf_build/TypeDeclarationExtension/asEnum.html">asEnum</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/EnumDeclaration-class.html">EnumDeclaration</a>?</span>
-  </span>
-  
-
-</dt>
-<dd>
-      <p class="from-extension">
-        <span>Available on <a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a>,
-        provided by the <a href="../jetleaf_build/TypeDeclarationExtension.html">TypeDeclarationExtension</a> extension</span>
-      </p>
-  Safely casts to <a href="../jetleaf_build/EnumDeclaration-class.html">EnumDeclaration</a> if possible.
-  
-
-</dd>
-
-        <dt id="asMixin" class="callable">
-  <span class="name"><a href="../jetleaf_build/TypeDeclarationExtension/asMixin.html">asMixin</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/MixinDeclaration-class.html">MixinDeclaration</a>?</span>
-  </span>
-  
-
-</dt>
-<dd>
-      <p class="from-extension">
-        <span>Available on <a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a>,
-        provided by the <a href="../jetleaf_build/TypeDeclarationExtension.html">TypeDeclarationExtension</a> extension</span>
-      </p>
-  Safely casts to <a href="../jetleaf_build/MixinDeclaration-class.html">MixinDeclaration</a> if possible.
-  
-
-</dd>
-
-        <dt id="asRecord" class="callable">
-  <span class="name"><a href="../jetleaf_build/TypeDeclarationExtension/asRecord.html">asRecord</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/RecordDeclaration-class.html">RecordDeclaration</a>?</span>
-  </span>
-  
-
-</dt>
-<dd>
-      <p class="from-extension">
-        <span>Available on <a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a>,
-        provided by the <a href="../jetleaf_build/TypeDeclarationExtension.html">TypeDeclarationExtension</a> extension</span>
-      </p>
-  Safely casts to <a href="../jetleaf_build/RecordDeclaration-class.html">RecordDeclaration</a> if possible.
-  
-
-</dd>
-
-        <dt id="asTypedef" class="callable">
-  <span class="name"><a href="../jetleaf_build/TypeDeclarationExtension/asTypedef.html">asTypedef</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/TypedefDeclaration-class.html">TypedefDeclaration</a>?</span>
-  </span>
-  
-
-</dt>
-<dd>
-      <p class="from-extension">
-        <span>Available on <a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a>,
-        provided by the <a href="../jetleaf_build/TypeDeclarationExtension.html">TypeDeclarationExtension</a> extension</span>
-      </p>
-  Safely casts to <a href="../jetleaf_build/TypedefDeclaration-class.html">TypedefDeclaration</a> if possible.
-  
-
-</dd>
-
-        <dt id="asTypeVariable" class="callable">
-  <span class="name"><a href="../jetleaf_build/TypeDeclarationExtension/asTypeVariable.html">asTypeVariable</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/TypeVariableDeclaration-class.html">TypeVariableDeclaration</a>?</span>
-  </span>
-  
-
-</dt>
-<dd>
-      <p class="from-extension">
-        <span>Available on <a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a>,
-        provided by the <a href="../jetleaf_build/TypeDeclarationExtension.html">TypeDeclarationExtension</a> extension</span>
-      </p>
-  Safely casts to <a href="../jetleaf_build/TypeVariableDeclaration-class.html">TypeVariableDeclaration</a> if possible.
-  
+<dd class="inherited">
+  Mixin-style contract for value-based equality, <code>hashCode</code>, and <code>toString</code>.
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
@@ -274,69 +165,104 @@ enum entry names, metadata, and declared members (fields, methods).
 
 </dt>
 <dd class="inherited">
-  Returns all annotations applied to this declaration.
+  Returns all annotations applied to this declaration in source code.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="getDartType" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/EntityDeclaration/getDartType.html">getDartType</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="https://pub.dev/documentation/analyzer/8.4.1/dart_element_type/DartType-class.html">DartType</a>?</span>
+        <dt id="getConstructors" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getConstructors.html">getConstructors</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/ConstructorDeclaration-class.html">ConstructorDeclaration</a></span>&gt;</span></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  The analyzer DartType of the entity for enhanced type operations.
+  Returns all constructors declared in this class.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
         <dt id="getDebugIdentifier" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/getDebugIdentifier.html">getDebugIdentifier</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getDebugIdentifier.html">getDebugIdentifier</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  The debug identifier for the entity.
+  Returns the <strong>stable debug identifier</strong> for this entity.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="getDeclaration" class="callable">
-  <span class="name"><a href="../jetleaf_build/TypeDeclarationExtension/getDeclaration.html">getDeclaration</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/SourceDeclaration-class.html">SourceDeclaration</a>?</span>
-  </span>
-  
-
-</dt>
-<dd>
-      <p class="from-extension">
-        <span>Available on <a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a>,
-        provided by the <a href="../jetleaf_build/TypeDeclarationExtension.html">TypeDeclarationExtension</a> extension</span>
-      </p>
-  Resolves the most specific declaration type.
-  
-
-</dd>
-
-        <dt id="getElement" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/EntityDeclaration/getElement.html">getElement</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="https://pub.dev/documentation/analyzer/8.4.1/dart_element_element/Element-class.html">Element</a>?</span>
+        <dt id="getField" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getField.html">getField</a></span><span class="signature">(<wbr><span class="parameter" id="getField-param-fieldName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">fieldName</span></span>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/FieldDeclaration-class.html">FieldDeclaration</a>?</span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  The analyzer element associated with this declaration.
+  Returns a field by its <code>fieldName</code>, or <code>null</code> if no field with that name exists.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getFields" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getFields.html">getFields</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/FieldDeclaration-class.html">FieldDeclaration</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns all fields declared in this class, excluding inherited fields.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getHasInterfaces" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getHasInterfaces.html">getHasInterfaces</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns <code>true</code> if this class implements one or more interfaces.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getInstanceFields" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getInstanceFields.html">getInstanceFields</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/FieldDeclaration-class.html">FieldDeclaration</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns all instance fields declared in this class or mixin.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getInstanceMethods" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getInstanceMethods.html">getInstanceMethods</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/MethodDeclaration-class.html">MethodDeclaration</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns all instance methods declared in this class or mixin.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
         <dt id="getInterfaces" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/getInterfaces.html">getInterfaces</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getInterfaces.html">getInterfaces</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a></span>&gt;</span></span>
   </span>
   
@@ -348,15 +274,67 @@ enum entry names, metadata, and declared members (fields, methods).
 
 </dd>
 
-        <dt id="getIsNullable" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/getIsNullable.html">getIsNullable</a></span><span class="signature">(<wbr>)
+        <dt id="getIsAbstract" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getIsAbstract.html">getIsAbstract</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  Returns <code>true</code> if the type is nullable, such as <code>'String?'</code> or <code>'int?'</code>.
+  Returns <code>true</code> if this class is marked <code>abstract</code>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getIsBase" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getIsBase.html">getIsBase</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns <code>true</code> if this class is declared as <strong>base</strong>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getIsFinal" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getIsFinal.html">getIsFinal</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns <code>true</code> if this class is declared as <strong>final</strong>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getIsInterface" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getIsInterface.html">getIsInterface</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns <code>true</code> if this class is declared as an <strong>interface</strong>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getIsMixin" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getIsMixin.html">getIsMixin</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns <code>true</code> if this declaration is a <code>mixin</code> or a mixin application.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -369,7 +347,33 @@ enum entry names, metadata, and declared members (fields, methods).
 
 </dt>
 <dd class="inherited">
-  Checks if this declaration is a public declaration.
+  Indicates whether this declaration is <strong>publicly visible</strong>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getIsRecord" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getIsRecord.html">getIsRecord</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns <code>true</code> if this class represents a <strong>record class</strong>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getIsSealed" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getIsSealed.html">getIsSealed</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns <code>true</code> if this class is declared as <strong>sealed</strong>.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -382,39 +386,78 @@ enum entry names, metadata, and declared members (fields, methods).
 
 </dt>
 <dd class="inherited">
-  Checks if a declaration is a synthetic declaration.
+  Indicates whether this declaration is <strong>synthetic</strong>.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
         <dt id="getKind" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/getKind.html">getKind</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getKind.html">getKind</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="../jetleaf_build/TypeKind.html">TypeKind</a></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  Returns the <a href="../jetleaf_build/TypeKind.html">TypeKind</a> of this type, indicating whether it is a class, enum, mixin, etc.
+  Returns the <a href="../jetleaf_build/TypeKind.html">TypeKind</a> describing what kind of type this declaration represents.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="getMembers" class="callable">
-  <span class="name"><a href="../jetleaf_build/EnumDeclaration/getMembers.html">getMembers</a></span><span class="signature">(<wbr>)
+        <dt id="getLibrary" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getLibrary.html">getLibrary</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns the <a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a> in which this class is declared.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getMembers" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getMembers.html">getMembers</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/MemberDeclaration-class.html">MemberDeclaration</a></span>&gt;</span></span>
   </span>
   
 
 </dt>
-<dd>
-  Returns all members (fields and methods) declared in this enum.
+<dd class="inherited">
+  Returns all members declared in this class, including fields, methods, and constructors.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getMethod" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getMethod.html">getMethod</a></span><span class="signature">(<wbr><span class="parameter" id="getMethod-param-methodName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">methodName</span></span>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/MethodDeclaration-class.html">MethodDeclaration</a>?</span>
+  </span>
   
+
+</dt>
+<dd class="inherited">
+  Returns a method by its <code>methodName</code>, or <code>null</code> if no method with that name exists.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getMethods" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getMethods.html">getMethods</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/MethodDeclaration-class.html">MethodDeclaration</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns all methods declared in this class, excluding inherited methods.
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
         <dt id="getMixins" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/getMixins.html">getMixins</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getMixins.html">getMixins</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a></span>&gt;</span></span>
   </span>
   
@@ -434,59 +477,46 @@ enum entry names, metadata, and declared members (fields, methods).
 
 </dt>
 <dd class="inherited">
-  Gets the name of the declared element.
+  Returns the simple (unqualified) name of this declaration.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
         <dt id="getPackageUri" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/getPackageUri.html">getPackageUri</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getPackageUri.html">getPackageUri</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  Returns the package URI where this type is declared.
-  <div class="features"><span class="feature">inherited</span></div>
-
-</dd>
-
-        <dt id="getParentLibrary" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/SourceDeclaration/getParentLibrary.html">getParentLibrary</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a></span>
-  </span>
-  
-
-</dt>
-<dd class="inherited">
-  Returns the <a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a> in which this declaration is defined.
+  Returns the <strong>package URI</strong> in which this class is declared.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
         <dt id="getQualifiedName" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/getQualifiedName.html">getQualifiedName</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/QualifiedName/getQualifiedName.html">getQualifiedName</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  Returns the fully qualified name of this type.
+  Returns the <strong>fully-qualified identifier</strong> for this object.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
         <dt id="getSimpleName" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/getSimpleName.html">getSimpleName</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getSimpleName.html">getSimpleName</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  Returns the simple name of the type without the package or library URI.
+  Returns the <strong>simple (unqualified) name</strong> of this class.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -499,14 +529,40 @@ enum entry names, metadata, and declared members (fields, methods).
 
 </dt>
 <dd class="inherited">
-  Returns the source code location (e.g., file path or URI) where this declaration is defined,
-or <code>null</code> if not available in the current reflection context.
+  Returns the URI pointing to the source location where this declaration
+is defined.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getStaticFields" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getStaticFields.html">getStaticFields</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/FieldDeclaration-class.html">FieldDeclaration</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns all static fields declared in this class or mixin.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getStaticMethods" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getStaticMethods.html">getStaticMethods</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/MethodDeclaration-class.html">MethodDeclaration</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns all static methods declared in this class or mixin.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
         <dt id="getSuperClass" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/getSuperClass.html">getSuperClass</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getSuperClass.html">getSuperClass</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a>?</span>
   </span>
   
@@ -526,13 +582,13 @@ or <code>null</code> if not available in the current reflection context.
 
 </dt>
 <dd class="inherited">
-  Gets the runtime type of the declared element.
+  Returns the Dart <a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a> represented by this declaration.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
         <dt id="getTypeArguments" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/getTypeArguments.html">getTypeArguments</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/getTypeArguments.html">getTypeArguments</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a></span>&gt;</span></span>
   </span>
   
@@ -557,54 +613,54 @@ or <code>null</code> if not available in the current reflection context.
 
 </dd>
 
-        <dt id="hasAnalyzerSupport" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/EntityDeclaration/hasAnalyzerSupport.html">hasAnalyzerSupport</a></span><span class="signature">(<wbr>)
+        <dt id="hasField" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/hasField.html">hasField</a></span><span class="signature">(<wbr><span class="parameter" id="hasField-param-fieldName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">fieldName</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  Returns true if this declaration has analyzer information available.
+  Checks if this class or mixin declares a field with the given <code>fieldName</code>.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="isAssignableFrom" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/isAssignableFrom.html">isAssignableFrom</a></span><span class="signature">(<wbr><span class="parameter" id="isAssignableFrom-param-other"><span class="type-annotation"><a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a></span> <span class="parameter-name">other</span></span>)
+        <dt id="hasMethod" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/hasMethod.html">hasMethod</a></span><span class="signature">(<wbr><span class="parameter" id="hasMethod-param-methodName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">methodName</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  Type Assignability Table:
-  <div class="features"><span class="feature">inherited</span></div>
-
-</dd>
-
-        <dt id="isAssignableTo" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/isAssignableTo.html">isAssignableTo</a></span><span class="signature">(<wbr><span class="parameter" id="isAssignableTo-param-target"><span class="type-annotation"><a href="../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a></span> <span class="parameter-name">target</span></span>)
-    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
-  </span>
-  
-
-</dt>
-<dd class="inherited">
-  Type Assignability Table:
+  Checks if this class or mixin declares a method with the given <code>methodName</code>.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
         <dt id="isGeneric" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/isGeneric.html">isGeneric</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/isGeneric.html">isGeneric</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  Check if this is a generic type.
+  Returns <code>true</code> if this class declares <strong>generic type parameters</strong>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="newInstance" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/newInstance.html">newInstance</a></span><span class="signature">(<wbr><span class="parameter" id="newInstance-param-arguments"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">arguments</span></span>)
+    <span class="returntype parameter">&#8594; dynamic</span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Instantiates this class using the default (unnamed) constructor.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -623,20 +679,20 @@ or <code>null</code> if not available in the current reflection context.
 </dd>
 
         <dt id="toJson" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/toJson.html">toJson</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/toJson.html">toJson</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>, <span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span>&gt;</span></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  Returns a JSON representation of this entity.
+  Serializes this declaration into a JSON-compatible map.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
         <dt id="toString" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/EntityDeclaration/toString.html">toString</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/toString.html">toString</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
   </span>
   
@@ -657,7 +713,7 @@ or <code>null</code> if not available in the current reflection context.
     <h2>Operators</h2>
     <dl class="callables">
         <dt id="operator ==" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/TypeDeclaration/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+  <span class="name"><a href="../jetleaf_build/ClassDeclaration/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
   </span>
   
@@ -698,7 +754,7 @@ or <code>null</code> if not available in the current reflection context.
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

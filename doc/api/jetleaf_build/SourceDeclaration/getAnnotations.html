@@ -62,14 +62,13 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns all annotations applied to this declaration.</p>
-<p>You can inspect custom or built-in annotations and their arguments:</p>
-<h3 id="example">Example</h3>
-<pre class="language-dart"><code class="language-dart">for (final annotation in declaration.getAnnotations()) {
-  print(annotation.getTypeDeclaration().getName());
-  print(annotation.getArguments());
-}
-</code></pre>
+  <p>Returns all annotations applied to this declaration in source code.</p>
+<p>The returned list:</p>
+<ul>
+<li>Preserves declaration order</li>
+<li>Contains fully materialized <a href="../../jetleaf_build/AnnotationDeclaration-class.html">AnnotationDeclaration</a> instances</li>
+</ul>
+<p>Returns an empty list if no annotations are present.</p>
 </section>
 
 
@@ -104,7 +103,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

@@ -56,7 +56,8 @@
       
 <span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../jetleaf_build/Package-class.html">Package</a></span>&gt;</span></span>&gt;</span></span>
 <span class="name ">readPackageGraphDependencies</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="readPackageGraphDependencies-param-projectRoot"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a></span> <span class="parameter-name">projectRoot</span>, [</span></li>
-<li><span class="parameter" id="readPackageGraphDependencies-param-mirrorSystem"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a>?</span> <span class="parameter-name">mirrorSystem</span></span></li>
+<li><span class="parameter" id="readPackageGraphDependencies-param-mirrorSystem"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a>?</span> <span class="parameter-name">mirrorSystem</span>, </span></li>
+<li><span class="parameter" id="readPackageGraphDependencies-param-libraries"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/LibraryMirror-class.html">LibraryMirror</a></span>&gt;</span>?</span> <span class="parameter-name">libraries</span></span></li>
 </ol>])
 
       
@@ -64,14 +65,47 @@
     </section>
     
 <section class="desc markdown">
-  <p>Reads dependencies from .dart_tool/package_graph.json.</p>
+  <p>Reads dependency information for the current Dart project by combining
+data from:</p>
+<ul>
+<li><strong><code>.dart_tool/package_graph.json</code></strong> – Provides dependency names,
+versions, and root markers.</li>
+<li><strong><code>.dart_tool/package_config.json</code></strong> – Provides resolved URIs,
+language versions, and filesystem paths.</li>
+</ul>
+<p>The resulting dependency list includes:</p>
+<ul>
+<li>All packages explicitly listed in <code>package_config.json</code></li>
+<li>Their versions from the package graph</li>
+<li>Flags indicating whether each package is a <strong>root package</strong></li>
+<li>Resolved absolute file paths when available</li>
+</ul>
+<p>If <code>package_config.json</code> is missing, unreadable, or incomplete,
+this method gracefully <strong>falls back</strong> to using only the package graph.</p>
+<h3 id="runtime-reflection">Runtime Reflection</h3>
+<p>If the optional <code>mirrorSystem</code> is provided, the method also scans the
+runtime environment for classes extending <a href="../../jetleaf_build/GenerativePackage-class.html">GenerativePackage</a> and having
+a zero-argument constructor. These “generative" packages behave like
+dynamically declared package metadata at runtime and are added to the
+final list.</p>
+<h3 id="parameters">Parameters</h3>
+<ul>
+<li><code>projectRoot</code>: Root directory of the Dart project whose dependencies
+should be resolved.</li>
+<li><code>mirrorSystem</code>: Optional runtime reflection system.</li>
+<li><code>libraries</code>: A filtered list of library mirrors, if reflection
+should be restricted.</li>
+</ul>
+<h3 id="returns">Returns</h3>
+<p>A list of concrete <a href="../../jetleaf_build/Package-class.html">Package</a> implementations describing all detected
+project dependencies.</p>
 </section>
 
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Future&lt;List&lt;Package&gt;&gt; readPackageGraphDependencies(Directory projectRoot, [mirrors.MirrorSystem? mirrorSystem]) async {
+  <pre class="language-dart"><code class="language-dart">Future&lt;List&lt;Package&gt;&gt; readPackageGraphDependencies(Directory projectRoot, [mirrors.MirrorSystem? mirrorSystem, List&lt;mirrors.LibraryMirror&gt;? libraries]) async {
   final graphFile = File(p.join(projectRoot.path, &#39;.dart_tool&#39;, &#39;package_graph.json&#39;));
   final configFile = File(p.join(projectRoot.path, &#39;.dart_tool&#39;, &#39;package_config.json&#39;));
 
@@ -83,7 +117,7 @@
   try {
     graph = jsonDecode(await graphFile.readAsString());
   } catch (e) {
-    _onError(&#39;Error reading package_graph.json: $e&#39;);
+    onError(&#39;Error reading package_graph.json: $e&#39;, true);
     return [];
   }
 
@@ -91,16 +125,20 @@
     try {
       config = jsonDecode(await configFile.readAsString());
     } catch (e) {
-      _onError(&#39;Error reading package_config.json: $e&#39;);
+      onError(&#39;Error reading package_config.json: $e&#39;, true);
     }
   }
 
   final roots = Set&lt;String&gt;.from(graph[&#39;roots&#39;] ?? []);
-  final graphPackages = Map.fromEntries(
-    (graph[&#39;packages&#39;] as List)
-        .whereType&lt;Map&gt;()
-        .map((pkg) =&gt; MapEntry(pkg[&#39;name&#39;], pkg[&#39;version&#39;])),
-  );
+  Map&lt;String, _GraphPackage&gt; graphPackages = {};
+
+  if (graph[&quot;packages&quot;] case List graph) {
+    graphPackages = Map.fromEntries(graph.whereType&lt;Map&gt;().map((pkg) =&gt; MapEntry(pkg[&quot;name&quot;], _GraphPackage(
+      &quot;${pkg[&#39;version&#39;]}&quot;,
+      pkg[&quot;dependencies&quot;] is List ? List&lt;String&gt;.from(pkg[&quot;dependencies&quot;]) : [],
+      pkg[&quot;devDependencies&quot;] is List ? List&lt;String&gt;.from(pkg[&quot;devDependencies&quot;]) : []
+    ))));
+  }
 
   final configPackages = config[&#39;packages&#39;] as List&lt;dynamic&gt;? ?? [];
   final result = &lt;Package&gt;[];
@@ -110,19 +148,23 @@
       final name = entry[&#39;name&#39;] as String?;
       final rootUri = entry[&#39;rootUri&#39;] as String?;
       final langVersion = entry[&#39;languageVersion&#39;] as String?;
-      final version = graphPackages[name];
+      final graphPackage = graphPackages[name];
+      final resolvedFilePath = rootUri != null ? Uri.parse(rootUri).isAbsolute
+        ? Uri.parse(rootUri).toFilePath()
+        : Directory.current.uri.resolveUri(Uri.parse(rootUri)).toFilePath() : null;
 
-      if (name != null &amp;&amp; version != null) {
+      if (name != null &amp;&amp; graphPackage != null) {
         final isRoot = rootUri == &#39;..&#47;&#39; || roots.contains(name);
-        result.add(PackageImplementation(
+        result.add(MaterialPackage(
           name: name,
-          version: version,
+          version: graphPackage._version,
           languageVersion: langVersion,
           isRootPackage: isRoot,
           rootUri: rootUri,
-          filePath: rootUri != null ? Uri.parse(rootUri).isAbsolute
-              ? Uri.parse(rootUri).toFilePath()
-              : Directory.current.uri.resolveUri(Uri.parse(rootUri)).toFilePath() : null,
+          jetleafDependencies: extractJetleafDependencies([...graphPackage._dependencies, ...graphPackage._devDependencies]),
+          dependencies: graphPackage._dependencies,
+          filePath: resolvedFilePath,
+          devDependencies: graphPackage._devDependencies
         ));
       }
     }
@@ -131,19 +173,24 @@
   &#47;&#47; Fallback to graph only if config is missing
   if (result.isEmpty) {
     for (final pkg in graphPackages.entries) {
-      result.add(PackageImplementation(
+      final package = pkg.value;
+
+      result.add(MaterialPackage(
         name: pkg.key,
-        version: pkg.value,
+        version: package._version,
         languageVersion: null,
         isRootPackage: roots.contains(pkg.key),
         rootUri: null,
         filePath: null,
+        jetleafDependencies: extractJetleafDependencies([...package._dependencies, ...package._devDependencies]),
+        dependencies: package._dependencies,
+        devDependencies: package._devDependencies
       ));
     }
   }
 
   if (mirrorSystem != null) {
-    result.addAll(await _readMirrorGenerativePackages(mirrorSystem));
+    result.addAll(await _readMirrorGenerativePackages(mirrorSystem, libraries));
   }
 
   return result;
@@ -175,7 +222,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

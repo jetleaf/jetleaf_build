@@ -63,7 +63,18 @@
     
 <section class="desc markdown">
   <p>Returns all constructors declared in this class.</p>
-<p>This allows you to introspect constructor names, parameters, and metadata.</p>
+<p>Each constructor can be inspected for:</p>
+<ul>
+<li>Name (unnamed or named)</li>
+<li>Parameters (<a href="../../jetleaf_build/ParameterDeclaration-class.html">ParameterDeclaration</a>)</li>
+<li>Modifiers like <code>const</code>, <code>factory</code>, or <code>external</code></li>
+</ul>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code class="language-dart">for (final ctor in clazz.getConstructors()) {
+  print(ctor.getName());
+}
+</code></pre>
+<p>Returns an empty list if the class has no constructors.</p>
 </section>
 
 
@@ -98,7 +109,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

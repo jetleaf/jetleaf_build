@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the BuildArg class from the jetleaf_build library, for the Dart programming language.">
+  <title>BuildArg class - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../static-assets/styles.css?v1">
+  <link rel="icon" href="../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../index.html">jetleaf_build</a></li>
+    <li><a href="../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li class="self-crumb">BuildArg class</li>
+  </ol>
+  <div class="self-name">BuildArg</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="jetleaf_build&#47;jetleaf_build-library-sidebar.html"
+    data-below-sidebar="jetleaf_build&#47;BuildArg-class-sidebar.html">
+    <div>
+<h1><span class="kind-class">BuildArg</span> class 
+    <a href="https://dart.dev/language/class-modifiers#abstract" class="feature feature-abstract" title="This type can not be directly constructed.">abstract</a>
+    <a href="https://dart.dev/language/class-modifiers#final" class="feature feature-final" title="This class can neither be extended, implemented, nor mixed in.">final</a>
+ 
+</h1></div>
+
+    
+<section class="desc markdown">
+  <p>Centralized parser and accessor for <strong>build-time command-line arguments</strong>.</p>
+<p><code>BuildArg</code> provides a lightweight, static API for interpreting CLI flags
+passed to JetLeaf build tools, scanners, and generators. It is designed
+specifically for <strong>build-time configuration</strong>, not runtime configuration,
+and focuses on logging verbosity, diagnostics, and safety controls.</p>
+<p>The class is:</p>
+<ul>
+<li><strong>Stateless by design</strong> (arguments are stored once via <a href="../jetleaf_build/BuildArg/setArgs.html">setArgs</a>)</li>
+<li><strong>Non-instantiable</strong> (private constructor)</li>
+<li><strong>Optimized for fast flag lookup</strong></li>
+</ul>
+<p>Flags may be provided in either:</p>
+<ul>
+<li><strong>Long form</strong> (<code>--fully-verbose</code>)</li>
+<li><strong>Short form</strong> (<code>--jfv</code>)</li>
+<li><strong>Key/value form</strong> (<code>--fully-verbose=true</code>)</li>
+</ul>
+<p>Boolean flags default to either <code>true</code> or <code>false</code> depending on their
+semantic intent.</p>
+<hr>
+<h2 id="internal-state">Internal State</h2>
+<h3 id="_args"><code>_args</code></h3>
+<pre class="language-dart"><code class="language-dart">static List&lt;String&gt; _args = [];
+</code></pre>
+<p>Stores the raw argument list passed from the build or tool entry point.
+This list is treated as immutable after initialization and is queried
+by all flag-accessor methods.</p>
+<hr>
+<h2 id="verbosity-flags">Verbosity Flags</h2>
+<h3 id="fully_verbose--fully_verbose_sn"><code>FULLY_VERBOSE</code> / <code>FULLY_VERBOSE_SN</code></h3>
+<p>Enables <strong>maximum verbosity</strong>.</p>
+<p>When enabled, the build system logs <strong>all internal events</strong>, including:</p>
+<ul>
+<li>Library discovery</li>
+<li>Class, mixin, and enum analysis</li>
+<li>Annotation and metadata resolution</li>
+<li>Generator and scanner internals</li>
+</ul>
+<p>Default: <code>false</code></p>
+<hr>
+<h3 id="library_verbose--library_verbose_sn"><code>LIBRARY_VERBOSE</code> / <code>LIBRARY_VERBOSE_SN</code></h3>
+<p>Enables logging at the <strong>library level only</strong>.</p>
+<p>This is the default verbosity mode and provides:</p>
+<ul>
+<li>High-level progress information</li>
+<li>Library scanning and generation logs</li>
+</ul>
+<p>Default: <code>true</code></p>
+<hr>
+<h3 id="imp_verbose--imp_verbose_sn"><code>IMP_VERBOSE</code> / <code>IMP_VERBOSE_SN</code></h3>
+<p>Enables <strong>important-only logging</strong>.</p>
+<p>When enabled, all non-essential logs are suppressed, leaving only:</p>
+<ul>
+<li>Critical status updates</li>
+<li>Warnings and errors (unless skipped)</li>
+</ul>
+<p>Default: <code>true</code></p>
+<hr>
+<h2 id="log-suppression-flags">Log Suppression Flags</h2>
+<h3 id="skip_warning--skip_warning_sn"><code>SKIP_WARNING</code> / <code>SKIP_WARNING_SN</code></h3>
+<p>Suppresses all <strong>warning-level</strong> logs.</p>
+<p>Useful in CI pipelines where warnings are expected or non-actionable.</p>
+<p>Default: <code>false</code></p>
+<hr>
+<h3 id="skip_error--skip_error_sn"><code>SKIP_ERROR</code> / <code>SKIP_ERROR_SN</code></h3>
+<p>Suppresses all <strong>error-level</strong> logs.</p>
+<p>Intended primarily for debugging or experimental tooling; errors are
+still raised internally, but logging is muted.</p>
+<p>Default: <code>false</code></p>
+<hr>
+<h3 id="skip_info--skip_info_sn"><code>SKIP_INFO</code> / <code>SKIP_INFO_SN</code></h3>
+<p>Suppresses all <strong>info-level</strong> logs.</p>
+<p>Allows users to see only warnings and errors without changing verbosity
+modes.</p>
+<p>Default: <code>false</code></p>
+<hr>
+<h2 id="diagnostic-flags">Diagnostic Flags</h2>
+<h3 id="show_cycle--show_cycle_sn"><code>SHOW_CYCLE</code> / <code>SHOW_CYCLE_SN</code></h3>
+<p>Enables logging of <strong>cycle detection events</strong>.</p>
+<p>When enabled, the build system emits diagnostic output for:</p>
+<ul>
+<li>Circular type references</li>
+<li>Recursive generic resolution</li>
+<li>Dependency loops during scanning</li>
+</ul>
+<p>Default: <code>false</code></p>
+<hr>
+<h2 id="constructors">Constructors</h2>
+<h3 id="buildarg_"><code>BuildArg._()</code></h3>
+<p>Private constructor to prevent instantiation.</p>
+<p><code>BuildArg</code> is intended to be used purely as a static utility.</p>
+<hr>
+<h2 id="methods">Methods</h2>
+<h3 id="setargs"><code>setArgs</code></h3>
+<pre class="language-dart"><code class="language-dart">static void setArgs(List&lt;String&gt; args)
+</code></pre>
+<p>Registers the raw command-line arguments to be parsed.</p>
+<p>This method should be called <strong>once</strong> during tool or build initialization,
+typically at the entry point of a build or generator.</p>
+<hr>
+<h3 id="_boolflag"><code>_boolFlag</code></h3>
+<pre class="language-dart"><code class="language-dart">static bool _boolFlag(String key, String? short, {bool defaultValue = false})
+</code></pre>
+<p>Internal helper for parsing boolean flags.</p>
+<p>Supported formats:</p>
+<ul>
+<li><code>--flag</code></li>
+<li><code>--short</code></li>
+<li><code>--flag=true</code> / <code>--flag=false</code></li>
+<li><code>--short=true</code> / <code>--short=false</code></li>
+</ul>
+<p>The first matching flag determines the value. If no match is found,
+<code>defaultValue</code> is returned.</p>
+<hr>
+<h3 id="isfullyverbose"><code>isFullyVerbose</code></h3>
+<p>Returns <code>true</code> if <strong>full verbosity</strong> is enabled.</p>
+<hr>
+<h3 id="islibraryverbose"><code>isLibraryVerbose</code></h3>
+<p>Returns <code>true</code> if <strong>library-level verbosity</strong> is enabled.</p>
+<p>Default behavior enables this unless explicitly overridden.</p>
+<hr>
+<h3 id="isimportantlyverbose"><code>isImportantlyVerbose</code></h3>
+<p>Returns <code>true</code> if <strong>important-only verbosity</strong> is enabled.</p>
+<hr>
+<h3 id="shouldskipwarning"><code>shouldSkipWarning</code></h3>
+<p>Returns <code>true</code> if <strong>warning logs</strong> should be suppressed.</p>
+<hr>
+<h3 id="shouldskiperror"><code>shouldSkipError</code></h3>
+<p>Returns <code>true</code> if <strong>error logs</strong> should be suppressed.</p>
+<hr>
+<h3 id="shouldskipinfo"><code>shouldSkipInfo</code></h3>
+<p>Returns <code>true</code> if <strong>info logs</strong> should be suppressed.</p>
+<hr>
+<h3 id="shouldshowcycle"><code>shouldShowCycle</code></h3>
+<p>Returns <code>true</code> if <strong>cycle detection logs</strong> should be emitted.</p>
+<hr>
+<h2 id="example">Example</h2>
+<pre class="language-dart"><code class="language-dart">void main(List&lt;String&gt; args) {
+  BuildArg.setArgs(args);
+
+  if (BuildArg.isFullyVerbose()) {
+    enableFullLogging();
+  }
+
+  if (BuildArg.shouldSkipWarning()) {
+    disableWarningLogs();
+  }
+}
+</code></pre>
+<hr>
+<h2 id="design-notes">Design Notes</h2>
+<ul>
+<li>Optimized for <strong>build-time performance</strong></li>
+<li>Avoids argument re-parsing</li>
+<li>No external dependencies</li>
+<li>Safe for concurrent reads</li>
+</ul>
+<hr>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li>Runtime scanner logging utilities</li>
+<li>Generator diagnostic configuration</li>
+<li>JetLeaf build tooling entry points</li>
+</ul>
+</section>
+
+
+
+    
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="instance-properties">
+    <h2>Properties</h2>
+    <dl class="properties">
+        <dt id="hashCode" class="property inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/hashCode.html">hashCode</a></span>
+  <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  The hash code for this object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="runtimeType" class="property inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/runtimeType.html">runtimeType</a></span>
+  <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  A representation of the runtime type of the object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="instance-methods">
+    <h2>Methods</h2>
+    <dl class="callables">
+        <dt id="noSuchMethod" class="callable inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Invocation-class.html">Invocation</a></span> <span class="parameter-name">invocation</span></span>)
+    <span class="returntype parameter">&#8594; dynamic</span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Invoked when a nonexistent method or property is accessed.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="toString" class="callable inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/toString.html">toString</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  A string representation of this object.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="operators">
+    <h2>Operators</h2>
+    <dl class="callables">
+        <dt id="operator ==" class="callable inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  The equality operator.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+  <section class="summary offset-anchor" id="static-properties">
+    <h2>Static Properties</h2>
+    <dl class="properties">
+        <dt id="flagDescriptions" class="property">
+  <span class="name"><a href="../jetleaf_build/BuildArg/flagDescriptions.html">flagDescriptions</a></span>
+  <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>, <span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
+  
+
+</dt>
+<dd>
+  A mapping of <strong>CLI build flags</strong> to their human-readable descriptions.
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+  <section class="summary offset-anchor" id="static-methods">
+    <h2>Static Methods</h2>
+    <dl class="callables">
+        <dt id="getCommandLineUsage" class="callable">
+  <span class="name"><a href="../jetleaf_build/BuildArg/getCommandLineUsage.html">getCommandLineUsage</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns a detailed <strong>command-line usage guide</strong> for the JetLeaf build tool.
+  
+
+</dd>
+
+        <dt id="isFullyVerbose" class="callable">
+  <span class="name"><a href="../jetleaf_build/BuildArg/isFullyVerbose.html">isFullyVerbose</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns <code>true</code> if <strong>full verbosity logging</strong> is enabled.
+  
+
+</dd>
+
+        <dt id="isImportantlyVerbose" class="callable">
+  <span class="name"><a href="../jetleaf_build/BuildArg/isImportantlyVerbose.html">isImportantlyVerbose</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns <code>true</code> if <strong>important-only verbosity</strong> is enabled.
+  
+
+</dd>
+
+        <dt id="isLibraryVerbose" class="callable">
+  <span class="name"><a href="../jetleaf_build/BuildArg/isLibraryVerbose.html">isLibraryVerbose</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns <code>true</code> if <strong>library-level verbosity</strong> is enabled.
+  
+
+</dd>
+
+        <dt id="setArgs" class="callable">
+  <span class="name"><a href="../jetleaf_build/BuildArg/setArgs.html">setArgs</a></span><span class="signature">(<wbr><span class="parameter" id="setArgs-param-args"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">args</span></span>)
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  Registers the raw command-line arguments used by JetLeaf build tooling.
+  
+
+</dd>
+
+        <dt id="shouldShowCycle" class="callable">
+  <span class="name"><a href="../jetleaf_build/BuildArg/shouldShowCycle.html">shouldShowCycle</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns <code>true</code> if <strong>cycle detection diagnostics</strong> should be logged.
+  
+
+</dd>
+
+        <dt id="shouldSkipError" class="callable">
+  <span class="name"><a href="../jetleaf_build/BuildArg/shouldSkipError.html">shouldSkipError</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns <code>true</code> if <strong>error-level logs</strong> should be suppressed.
+  
+
+</dd>
+
+        <dt id="shouldSkipInfo" class="callable">
+  <span class="name"><a href="../jetleaf_build/BuildArg/shouldSkipInfo.html">shouldSkipInfo</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns <code>true</code> if <strong>info-level logs</strong> should be suppressed.
+  
+
+</dd>
+
+        <dt id="shouldSkipWarning" class="callable">
+  <span class="name"><a href="../jetleaf_build/BuildArg/shouldSkipWarning.html">shouldSkipWarning</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns <code>true</code> if <strong>warning-level logs</strong> should be suppressed.
+  
+
+</dd>
+
+        <dt id="showUsageHintIfNoFlags" class="callable">
+  <span class="name"><a href="../jetleaf_build/BuildArg/showUsageHintIfNoFlags.html">showUsageHintIfNoFlags</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  Prints a usage hint if no recognized CLI flags are supplied.
+  
+
+</dd>
+
+    </dl>
+  </section>
+    
+
+  <section class="summary offset-anchor" id="constants">
+    <h2>Constants</h2>
+    <dl class="properties">
+        <dt id="FULLY_VERBOSE" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/FULLY_VERBOSE-constant.html">FULLY_VERBOSE</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Enables <strong>full verbosity logging</strong>.
+  
+
+</dd>
+
+        <dt id="FULLY_VERBOSE_SN" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/FULLY_VERBOSE_SN-constant.html">FULLY_VERBOSE_SN</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Enables <strong>full verbosity logging</strong>.
+  
+
+</dd>
+
+        <dt id="IMP_VERBOSE" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/IMP_VERBOSE-constant.html">IMP_VERBOSE</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Enables <strong>important-only logging</strong>.
+  
+
+</dd>
+
+        <dt id="IMP_VERBOSE_SN" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/IMP_VERBOSE_SN-constant.html">IMP_VERBOSE_SN</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Enables <strong>important-only logging</strong>.
+  
+
+</dd>
+
+        <dt id="LIBRARY_VERBOSE" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/LIBRARY_VERBOSE-constant.html">LIBRARY_VERBOSE</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Enables <strong>library-level verbosity only</strong>.
+  
+
+</dd>
+
+        <dt id="LIBRARY_VERBOSE_SN" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/LIBRARY_VERBOSE_SN-constant.html">LIBRARY_VERBOSE_SN</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Enables <strong>library-level verbosity only</strong>.
+  
+
+</dd>
+
+        <dt id="SHOW_CYCLE" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/SHOW_CYCLE-constant.html">SHOW_CYCLE</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Enables logging of <strong>cycle detection diagnostics</strong>.
+  
+
+</dd>
+
+        <dt id="SHOW_CYCLE_SN" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/SHOW_CYCLE_SN-constant.html">SHOW_CYCLE_SN</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Enables logging of <strong>cycle detection diagnostics</strong>.
+  
+
+</dd>
+
+        <dt id="SKIP_ERROR" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/SKIP_ERROR-constant.html">SKIP_ERROR</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Suppresses all <strong>error-level</strong> log messages.
+  
+
+</dd>
+
+        <dt id="SKIP_ERROR_SN" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/SKIP_ERROR_SN-constant.html">SKIP_ERROR_SN</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Suppresses all <strong>error-level</strong> log messages.
+  
+
+</dd>
+
+        <dt id="SKIP_INFO" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/SKIP_INFO-constant.html">SKIP_INFO</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Suppresses all <strong>info-level</strong> log messages.
+  
+
+</dd>
+
+        <dt id="SKIP_INFO_SN" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/SKIP_INFO_SN-constant.html">SKIP_INFO_SN</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Suppresses all <strong>info-level</strong> log messages.
+  
+
+</dd>
+
+        <dt id="SKIP_WARNING" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/SKIP_WARNING-constant.html">SKIP_WARNING</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Suppresses all <strong>warning-level</strong> log messages.
+  
+
+</dd>
+
+        <dt id="SKIP_WARNING_SN" class="constant">
+    <span class="name "><a href="../jetleaf_build/BuildArg/SKIP_WARNING_SN-constant.html">SKIP_WARNING_SN</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Suppresses all <strong>warning-level</strong> log messages.
+  
+
+</dd>
+
+    </dl>
+  </section>
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../index.html">jetleaf_build</a></li>
+    <li><a href="../jetleaf_build/">jetleaf_build</a></li>
+    <li class="self-crumb">BuildArg class</li>
+</ol>
+
+    <h5>jetleaf_build library</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.1.0
+  </span>
+  
+</footer>
+
+
+<script src="../static-assets/highlight.pack.js?v1"></script>
+<script src="../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

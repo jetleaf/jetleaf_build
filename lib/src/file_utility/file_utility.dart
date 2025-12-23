@@ -18,12 +18,8 @@ import 'dart:mirrors' as mirrors;
 
 import 'package:path/path.dart' as p;
 
-import 'abstract_file_utility.dart';
-import 'abstract_part_file_utility.dart';
-import '../utils/constant.dart';
-import '../declaration/declaration.dart';
-import '../generative/generative.dart';
-import '../runtime/scanner/runtime_scanner_configuration.dart';
+import '../runtime/declaration/declaration.dart';
+import 'abstract_asset_support.dart';
 
 /// {@template file_utility}
 /// A utility class providing file-system and package-resolution helpers
@@ -57,7 +53,7 @@ import '../runtime/scanner/runtime_scanner_configuration.dart';
 /// - [configuration]: Runtime scanner configuration options controlling
 ///   scanning behavior and file-system traversal rules.
 /// {@endtemplate}
-final class FileUtility extends AbstractPartFileUtility {
+final class FileUtility extends AbstractAssetSupport {
   /// File patterns that should be skipped
   // static const List<String> _skipPatterns = [
   //   r'.*/(test|tests)/.*',
@@ -134,11 +130,15 @@ final class FileUtility extends AbstractPartFileUtility {
     }
 
     final roots = Set<String>.from(graph['roots'] ?? []);
-    final graphPackages = Map.fromEntries(
-      (graph['packages'] as List)
-          .whereType<Map>()
-          .map((pkg) => MapEntry(pkg['name'], pkg['version'])),
-    );
+    Map<String, _GraphPackage> graphPackages = {};
+
+    if (graph["packages"] case List graph) {
+      graphPackages = Map.fromEntries(graph.whereType<Map>().map((pkg) => MapEntry(pkg["name"], _GraphPackage(
+        "${pkg['version']}",
+        pkg["dependencies"] is List ? List<String>.from(pkg["dependencies"]) : [],
+        pkg["devDependencies"] is List ? List<String>.from(pkg["devDependencies"]) : []
+      ))));
+    }
 
     final configPackages = config['packages'] as List<dynamic>? ?? [];
     final result = <Package>[];
@@ -148,19 +148,23 @@ final class FileUtility extends AbstractPartFileUtility {
         final name = entry['name'] as String?;
         final rootUri = entry['rootUri'] as String?;
         final langVersion = entry['languageVersion'] as String?;
-        final version = graphPackages[name];
+        final graphPackage = graphPackages[name];
+        final resolvedFilePath = rootUri != null ? Uri.parse(rootUri).isAbsolute
+          ? Uri.parse(rootUri).toFilePath()
+          : Directory.current.uri.resolveUri(Uri.parse(rootUri)).toFilePath() : null;
 
-        if (name != null && version != null) {
+        if (name != null && graphPackage != null) {
           final isRoot = rootUri == '../' || roots.contains(name);
-          result.add(PackageImplementation(
+          result.add(MaterialPackage(
             name: name,
-            version: version,
+            version: graphPackage._version,
             languageVersion: langVersion,
             isRootPackage: isRoot,
             rootUri: rootUri,
-            filePath: rootUri != null ? Uri.parse(rootUri).isAbsolute
-                ? Uri.parse(rootUri).toFilePath()
-                : Directory.current.uri.resolveUri(Uri.parse(rootUri)).toFilePath() : null,
+            jetleafDependencies: extractJetleafDependencies([...graphPackage._dependencies, ...graphPackage._devDependencies]),
+            dependencies: graphPackage._dependencies,
+            filePath: resolvedFilePath,
+            devDependencies: graphPackage._devDependencies
           ));
         }
       }
@@ -169,13 +173,18 @@ final class FileUtility extends AbstractPartFileUtility {
     // Fallback to graph only if config is missing
     if (result.isEmpty) {
       for (final pkg in graphPackages.entries) {
-        result.add(PackageImplementation(
+        final package = pkg.value;
+
+        result.add(MaterialPackage(
           name: pkg.key,
-          version: pkg.value,
+          version: package._version,
           languageVersion: null,
           isRootPackage: roots.contains(pkg.key),
           rootUri: null,
           filePath: null,
+          jetleafDependencies: extractJetleafDependencies([...package._dependencies, ...package._devDependencies]),
+          dependencies: package._dependencies,
+          devDependencies: package._devDependencies
         ));
       }
     }
@@ -217,12 +226,12 @@ final class FileUtility extends AbstractPartFileUtility {
         final classMirror = decl;
 
         // Must be a subclass of GenerativePackage
-        if (!_isSubclassOf(classMirror, gaClass)) {
+        if (!isSubclassOf(classMirror, gaClass)) {
           continue;
         }
 
         // Must have zero-arg constructor symbol
-        final symbol = _findZeroArgsConstructorSymbol(classMirror);
+        final symbol = findZeroArgsConstructorSymbol(classMirror);
         if (symbol == null) {
           continue;
         }
@@ -241,282 +250,50 @@ final class FileUtility extends AbstractPartFileUtility {
 
     return packages;
   }
+}
 
-  /// Discovers all resource files available in the current project as well as
-  /// across all resolved package dependencies.
-  ///
-  /// This method performs a full resource scan following JetLeaf’s asset
-  /// discovery conventions. It searches several known directories inside both
-  /// the root project and each dependency:
-  ///
-  /// - `<package>/resources/`
-  /// - `<package>/lib/resources/`
-  /// - `<package>/assets/`
-  /// - `<package>/lib/assets/`
-  /// - The package root itself
-  ///
-  /// **Behavior overview:**
-  ///
-  /// 1. Ensures the package configuration is loaded before scanning.
-  /// 2. Scans the current (user) project for assets.
-  /// 3. Scans every dependency package unless explicitly excluded via
-  ///    [RuntimeScannerConfiguration.packagesToExclude].
-  /// 4. Optionally enriches results using mirrors when Dart VM reflection is
-  ///    available.
-  ///
-  /// **Filtering logic:**
-  /// - A dependency is included only if:
-  ///   - It is not explicitly excluded, AND
-  ///   - Either the scan list is empty, or the package is included in
-  ///     `packagesToScan`.
-  ///
-  /// **Parameters:**
-  /// - [currentPackageName]: The name of the root package.
-  /// - [mirrorSystem]: (Optional) A mirror system to scan for generative assets.
-  /// - [libraries]: (Optional) Specific libraries to include when scanning with
-  ///   VM mirrors.
-  ///
-  /// **Returns:**
-  /// A complete list of discovered [Asset] objects from both the current project
-  /// and all included dependencies.
-  Future<List<Asset>> discoverAllResources(String currentPackageName, [mirrors.MirrorSystem? mirrorSystem, List<mirrors.LibraryMirror>? libraries]) async {
-    if (packageConfigCache == null) {
-      await loadPackageConfig();
-    }
+/// {@template _graph_package}
+/// Internal representation of a package entry parsed from `package_graph.json`.
+///
+/// `_GraphPackage` captures the **resolved dependency state** of a Dart package
+/// as produced by JetLeaf’s package graph analysis. It stores the package
+/// version along with its direct runtime and development dependencies.
+///
+/// This class is **internal-only** and is not intended for public API exposure.
+/// It exists to support dependency resolution, graph traversal, and package
+/// filtering during materialization and analysis.
+///
+/// ---
+///
+/// ## Fields
+/// - `_version`
+///   The resolved semantic version string of the package.
+///
+/// - `_dependencies`
+///   A list of package names that this package depends on at runtime.
+///
+/// - `_devDependencies`
+///   A list of package names required only for development, testing,
+///   or build-time tooling.
+///
+/// ---
+///
+/// ## Notes
+/// - Dependency names are stored as raw strings and are assumed to be
+///   normalized by the graph loader.
+/// - This class does not perform validation or resolution logic itself;
+///   it is a passive data container.
+/// {@endtemplate}
+final class _GraphPackage {
+  /// The resolved version of the package.
+  final String _version;
 
-    final List<Asset> allResources = [];
-    final currentProjectRoot = Directory.current.path;
+  /// Runtime dependencies declared by this package.
+  final List<String> _dependencies;
 
-    List<Directory> searchDirectories(String root) => [
-      Directory(p.join(root, Constant.RESOURCES_DIR_NAME)),
-      Directory(p.join(root, 'lib', Constant.RESOURCES_DIR_NAME)),
-      Directory(p.join(root, Constant.PACKAGE_ASSET_DIR)),
-      Directory(p.join(root, 'lib', Constant.PACKAGE_ASSET_DIR)),
-      Directory(root),
-    ];
+  /// Development-only dependencies declared by this package.
+  final List<String> _devDependencies;
 
-    // 1. User's project resources
-    onInfo('🔍 Scanning user project for resources...', true);
-    for (final dir in searchDirectories(currentProjectRoot)) {
-      if (dir.existsSync()) {
-        allResources.addAll(await _scanDirectoryForResources(dir, currentPackageName, currentProjectRoot));
-      }
-    }
-
-    // 2. ALL dependency resources unless explicitly excluded
-    onInfo('🔍 Scanning all dependencies for resources...', true);
-    for (final dep in (packageConfigCache ?? <PackageConfigEntry>[])) {
-      final depPackagePath = dep.absoluteRootPath;
-      final packageName = dep.name;
-
-      // Only exclude if user explicitly excludes this package
-      final bool excludePackage = configuration.packagesToExclude.contains(packageName);
-      final bool includePackage = configuration.packagesToScan.isEmpty || configuration.packagesToScan.contains(packageName);
-
-      if (Directory(depPackagePath).existsSync() && includePackage && !excludePackage) {
-        for (final dir in searchDirectories(depPackagePath)) {
-          if (dir.existsSync()) {
-            allResources.addAll(await _scanDirectoryForResources(dir, dep.name, depPackagePath));
-          }
-        }
-      }
-    }
-
-    if (mirrorSystem != null) {
-      allResources.addAll(await _scanMirrorForGenerativeAssets(mirrorSystem, libraries));
-    }
-    
-    return allResources;
-  }
-
-  /// Scans a single directory for resource files and converts them into
-  /// [Asset] instances.
-  ///
-  /// This method performs a deep, recursive scan of the given [dir] and
-  /// collects all non-Dart files. Each recognized file is read and wrapped into
-  /// an [AssetImplementation], which contains:
-  ///
-  /// - The file path  
-  /// - The filename  
-  /// - The package that owns the asset  
-  /// - Raw file bytes  
-  ///
-  /// Files ending with `.dart` are intentionally ignored since they are source
-  /// files, not end-user assets.
-  ///
-  /// **Parameters:**
-  /// - [dir]: The directory to scan.
-  /// - [packageName]: The owning package’s name.
-  /// - [packageRootPath]: The absolute path to the package root.
-  ///
-  /// **Returns:**
-  /// A list of successfully parsed resource files.
-  ///
-  /// Any unreadable files result in a logged warning rather than an exception,
-  /// ensuring the scan process remains fault-tolerant.
-  Future<List<Asset>> _scanDirectoryForResources(Directory dir, String packageName, String packageRootPath) async {
-    final List<Asset> resources = [];
-    await for (final entity in dir.list(recursive: true, followLinks: true)) {
-      if (entity is File && !entity.path.endsWith(".dart")) {
-        try {
-          resources.add(AssetImplementation(
-            filePath: entity.path,
-            fileName: p.basename(entity.path),
-            packageName: packageName,
-            contentBytes: await entity.readAsBytes(),
-          ));
-        } catch (e) {
-          onWarning('Could not read resource file ${entity.path}: $e', true);
-        }
-      }
-    }
-    return resources;
-  }
-
-  /// Scans loaded Dart libraries (via `dart:mirrors`) for classes that define
-  /// **generative assets** — i.e., classes that extend [GenerativeAsset] and
-  /// expose a zero-argument constructor.
-  ///
-  /// This reflective scan supplements file-based resource discovery by allowing
-  /// assets to be defined programmatically. Any class that:
-  ///
-  /// 1. Extends or implements [GenerativeAsset] (directly or indirectly),
-  /// 2. Has a callable zero-argument constructor,
-  ///
-  /// will be instantiated and collected.
-  ///
-  /// **How discovery works:**
-  /// - Iterate over all libraries in the provided [mirrorSystem] or a filtered
-  ///   list of [libraries].
-  /// - Inspect each class declaration.
-  /// - Determine whether the class is a subtype of [GenerativeAsset] using
-  ///   [_isSubclassOf].
-  /// - Look for a zero-argument constructor via `_findZeroArgsConstructorSymbol`
-  ///   (defined elsewhere in this class).
-  /// - Attempt instantiation via `ClassMirror.newInstance`.
-  ///
-  /// If instantiation succeeds and the reflected instance is a
-  /// [GenerativeAsset], it is added to the returned list.
-  ///
-  /// **Fault tolerance:**
-  /// - Constructor invocation errors are silently ignored to prevent a single
-  ///   broken class from interrupting the entire discovery pipeline.
-  ///
-  /// **Parameters:**
-  /// - [mirrorSystem]: The active reflective view of the Dart program.
-  /// - [libraries]: Optional subset of libraries to restrict the scan.
-  ///
-  /// **Returns:**
-  /// A list of instantiated generative assets discovered through reflection.
-  Future<List<GenerativeAsset>> _scanMirrorForGenerativeAssets(mirrors.MirrorSystem mirrorSystem, List<mirrors.LibraryMirror>? libraries) async {
-    final assets = <GenerativeAsset>[];
-    final gaClass = mirrors.reflectClass(GenerativeAsset);
-
-    for (final lib in libraries ?? mirrorSystem.libraries.values) {
-      for (final decl in lib.declarations.values) {
-        // We only care about classes
-        if (decl is! mirrors.ClassMirror) continue;
-
-        final classMirror = decl;
-
-        // Must be a subclass of GenerativeAsset
-        if (!_isSubclassOf(classMirror, gaClass)) {
-          continue;
-        }
-
-        // Must have zero-arg constructor symbol
-        final symbol = _findZeroArgsConstructorSymbol(classMirror);
-        if (symbol == null) {
-          continue;
-        }
-
-        // Try to instantiate
-        try {
-          final instanceMirror = classMirror.newInstance(symbol, const []);
-          final instance = instanceMirror.reflectee;
-
-          if (instance is GenerativeAsset) {
-            assets.add(instance);
-          }
-        } catch (_) {}
-      }
-    }
-
-    return assets;
-  }
-
-  /// Determines whether [classMirror] is the same type as [target] or a
-  /// transitive subtype of it.
-  ///
-  /// The check is performed using a recursive traversal of:
-  ///
-  /// 1. The class itself  
-  /// 2. All implemented interfaces  
-  /// 3. The superclass chain  
-  ///
-  /// This ensures accurate subtype detection even for deep or mixed inheritance
-  /// hierarchies, including classes that implement [GenerativeAsset] through
-  /// multiple interfaces rather than direct extension.
-  ///
-  /// **Parameters:**
-  /// - [classMirror]: The class being examined.
-  /// - [target]: The type to compare against.
-  ///
-  /// **Returns:**
-  /// `true` if [classMirror] is the same as or a subtype of [target],
-  /// otherwise `false`.
-  bool _isSubclassOf(mirrors.ClassMirror classMirror, mirrors.ClassMirror target) {
-    // 1. Check the class itself
-    if (classMirror == target) return true;
-
-    // 2. Check all interfaces implemented by this class
-    for (final interface in classMirror.superinterfaces) {
-      if (interface == target) return true;
-      if (_isSubclassOf(interface, target)) return true;
-    }
-
-    // 3. Recurse into superclass (if exists)
-    final superClass = classMirror.superclass;
-    if (superClass == null) return false;
-
-    return _isSubclassOf(superClass, target);
-  }
-
-  /// Attempts to locate a **zero-argument constructor** for the given class.
-  ///
-  /// A class is considered eligible for reflective instantiation only if it
-  /// exposes a constructor whose parameter list is empty. This method scans
-  /// all declarations of the provided [mirror] and checks:
-  ///
-  /// - The declaration is a [mirrors.MethodMirror]
-  /// - It represents a constructor (`isConstructor == true`)
-  /// - It defines **no parameters**
-  ///
-  /// When such a constructor is found, this method returns the canonical
-  /// invocation symbol `Symbol('')`, which corresponds to the unnamed
-  /// (default) constructor in Dart’s reflective invocation model.
-  ///
-  /// ### Why return `Symbol("")`?
-  /// Dart’s reflection system treats all unnamed constructors—no matter
-  /// how they appear in source—as `Symbol('')`.  
-  /// This aligns with how `ClassMirror.newInstance` expects the constructor
-  /// symbol for default constructors.
-  ///
-  /// ### Parameters:
-  /// - [mirror]: The class mirror to inspect for a zero-argument constructor.
-  ///
-  /// ### Returns:
-  /// - The constructor symbol (`Symbol('')`) if such a constructor exists.
-  /// - `null` if the class does not define any zero-argument constructor.
-  Symbol? _findZeroArgsConstructorSymbol(mirrors.ClassMirror mirror) {
-    for (final entry in mirror.declarations.entries) {
-      final decl = entry.value;
-
-      if (decl is mirrors.MethodMirror && decl.isConstructor && decl.parameters.isEmpty) {
-        return Symbol(""); // constructor symbol
-      }
-    }
-
-    return null;
-  }
+  /// {@macro _graph_package}
+  _GraphPackage(this._version, this._dependencies, this._devDependencies);
 }

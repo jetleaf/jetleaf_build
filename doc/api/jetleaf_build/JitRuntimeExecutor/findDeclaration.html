@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the findDeclaration method from the JitRuntimeExecutor class, for the Dart programming language.">
+  <title>findDeclaration method - JitRuntimeExecutor class - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li><a href="../../jetleaf_build/JitRuntimeExecutor-class.html">JitRuntimeExecutor</a></li>
+    <li class="self-crumb">findDeclaration method</li>
+  </ol>
+  <div class="self-name">findDeclaration</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="jetleaf_build&#47;JitRuntimeExecutor-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-method">findDeclaration</span> method 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+  <div>
+    <ol class="annotation-list">
+        <li>@<a href="https://pub.dev/documentation/meta/1.17.0/meta/protected-constant.html">protected</a></li>
+    </ol>
+  </div>
+<span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/DeclarationMirror-class.html">DeclarationMirror</a>?</span>
+<span class="name ">findDeclaration</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="findDeclaration-param-symbol"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Symbol-class.html">Symbol</a></span> <span class="parameter-name">symbol</span>, </span></li>
+<li><span class="parameter" id="findDeclaration-param-type"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/ClassMirror-class.html">ClassMirror</a></span> <span class="parameter-name">type</span></span></li>
+</ol>)
+
+      <div class="features"><span class="feature">inherited</span></div>
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Attempts to locate a member declaration (field, method, getter, setter,
+or any <code>DeclarationMirror</code>) with the given <code>symbol</code> inside the provided
+<code>type</code> and its full inheritance hierarchy.</p>
+<p>This method performs a <em>deep reflective lookup</em> and is used in JetLeaf’s
+JIT runtime when resolving members dynamically through <code>dart:mirrors</code>.
+Because the mirror system does not automatically traverse superclasses
+or interfaces for declarations, this resolver manually walks the type
+hierarchy.</p>
+<p>The search order is:</p>
+<ol>
+<li>
+<p><strong>Direct declarations</strong><br>
+Checks <code>type.declarations</code> for a matching symbol.</p>
+</li>
+<li>
+<p><strong>Superclass chain</strong><br>
+Recursively traverses each superclass until either:</p>
+<ul>
+<li>a declaration is found, or</li>
+<li>the root (<code>Object</code>) is reached.</li>
+</ul>
+</li>
+<li>
+<p><strong>Interfaces</strong><br>
+Recursively searches all implemented interfaces, mirroring Dart’s
+interface inheritance rules.</p>
+</li>
+<li>
+<p><strong>Instance members</strong><br>
+If still not found, checks <code>instanceMembers</code> for inherited or mixed-in
+members that do not appear in <code>declarations</code>.</p>
+</li>
+<li>
+<p><strong>Static members</strong><br>
+Finally checks <code>staticMembers</code> for static methods or fields that match
+the symbol.</p>
+</li>
+</ol>
+<p>If no matching declaration is found after searching the full hierarchy,
+the method returns <code>null</code>.</p>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code class="language-dart">final cm = reflectClass(MySubclass);
+final mirror = findDeclaration(#someMethod, cm);
+if (mirror != null) {
+  print('Found: ${mirror.simpleName}');
+}
+</code></pre>
+<p>This method is particularly useful when:</p>
+<ul>
+<li>
+<p>resolving overridden members,</p>
+</li>
+<li>
+<p>detecting inherited fields or methods,</p>
+</li>
+<li>
+<p>inspecting mixins or interface-provided members,</p>
+</li>
+<li>
+<p>performing late-binding member resolution in JIT mode.</p>
+</li>
+<li>
+<p><code>symbol</code>: the member name to look up (<code>#foo</code>, <code>#bar=</code>, etc.)</p>
+</li>
+<li>
+<p><code>type</code>: the class in which to begin the search</p>
+</li>
+<li>
+<p>Returns: the matching <code>DeclarationMirror</code>, or <code>null</code> if no match exists.</p>
+</li>
+</ul>
+<p>This method does <strong>not</strong> throw — a missing declaration is treated
+as a normal resolution failure.</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">@protected
+mirrors.DeclarationMirror? findDeclaration(Symbol symbol, mirrors.ClassMirror type) {
+  &#47;&#47; 1. Check current class
+  final declaration = type.declarations[symbol];
+  if (declaration != null) return declaration;
+
+  final methodMirror = type.instanceMembers[symbol];
+  if (methodMirror != null) return methodMirror;
+
+  final staticMethodMirror = type.staticMembers[symbol];
+  if (staticMethodMirror != null) return staticMethodMirror;
+
+  &#47;&#47; 2. Recursively check superclass
+  final superclass = type.superclass;
+  if (superclass != null) {
+    final foundInSuper = findDeclaration(symbol, superclass);
+    if (foundInSuper != null) return foundInSuper;
+  }
+
+  &#47;&#47; 3. Recursively check interfaces
+  for (final interface in type.superinterfaces) {
+    final foundInInterface = findDeclaration(symbol, interface);
+    if (foundInInterface != null) return foundInInterface;
+  }
+
+  return null;
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/">jetleaf_build</a></li>
+    <li><a href="../../jetleaf_build/JitRuntimeExecutor-class.html">JitRuntimeExecutor</a></li>
+    <li class="self-crumb">findDeclaration method</li>
+</ol>
+
+    <h5>JitRuntimeExecutor class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.1.0
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

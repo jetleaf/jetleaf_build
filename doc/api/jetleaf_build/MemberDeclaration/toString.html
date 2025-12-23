@@ -85,9 +85,8 @@ mainly for debugging or logging.</p>
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">@override
 String toString() =&gt; &#39;&#39;&#39;
-Member(
+$runtimeType(
 name: ${getName()},
-parentLibrary: ${getParentLibrary().getDebugIdentifier()},
 annotations: ${getAnnotations().map((a) =&gt; a.getDebugIdentifier()).join(&#39;, &#39;)},
 sourceLocation: ${getSourceLocation()},
 isStatic: ${getIsStatic()},
@@ -122,7 +121,7 @@ parentClass: ${getParentClass()?.toJson()},
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

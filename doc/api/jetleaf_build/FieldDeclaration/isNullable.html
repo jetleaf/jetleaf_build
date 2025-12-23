@@ -62,12 +62,15 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns true if the field is nullable.</p>
+  <p>Indicates whether this field’s declared type is nullable.</p>
+<p>This reflects the analyzer-derived nullability of the field’s type,
+not whether the field currently holds a <code>null</code> value at runtime.</p>
 <h3 id="example">Example</h3>
-<pre class="language-dart"><code class="language-dart">final annotation = ...;
-final fields = annotation.getFields();
-print(fields.map((f) =&gt; f.isNullable())); // [true]
+<pre class="language-dart"><code class="language-dart">final fields = declaration.getFields();
+print(fields.map((f) =&gt; f.isNullable())); // [true, false]
 </code></pre>
+<h3 id="returns">Returns</h3>
+<p><code>true</code> if the field type is nullable; otherwise, <code>false</code>.</p>
 </section>
 
 
@@ -102,7 +105,7 @@ print(fields.map((f) =&gt; f.isNullable())); // [true]
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

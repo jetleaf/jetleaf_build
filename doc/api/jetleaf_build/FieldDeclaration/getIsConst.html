@@ -62,7 +62,12 @@
     </section>
     
 <section class="desc markdown">
-  <p>Whether this field is declared <code>const</code>.</p>
+  <p>Indicates whether this field is declared with the <code>const</code> modifier.</p>
+<p>Const fields are implicitly <code>static</code> and must be compile-time
+constants. Their values are fully resolved at build time.</p>
+<p>Attempting to modify a const field at runtime will always fail.</p>
+<h3 id="returns">Returns</h3>
+<p><code>true</code> if the field is <code>const</code>; otherwise, <code>false</code>.</p>
 </section>
 
 
@@ -97,7 +102,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

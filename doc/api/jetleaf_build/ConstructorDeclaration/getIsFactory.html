@@ -62,7 +62,16 @@
     </section>
     
 <section class="desc markdown">
-  <p>Whether this constructor is a <code>factory</code>.</p>
+  <p>Returns <code>true</code> if this constructor is a <code>factory</code>.</p>
+<p>Factory constructors do not necessarily create a new instance of the
+class; they may return cached instances or redirect to other constructors.</p>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code class="language-dart">class Singleton {
+  factory Singleton() =&gt; _instance ??= Singleton._internal();
+  Singleton._internal();
+}
+print(constructor.getIsFactory()); // true
+</code></pre>
 </section>
 
 
@@ -97,7 +106,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>
