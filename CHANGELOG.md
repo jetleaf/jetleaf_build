@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 This project follows a simple, human-readable changelog format inspired by
 [Keep a Changelog](https://keepachangelog.com/) and adheres to semantic versioning.
 
+---
+
+## [1.1.1]
+
+### Changed
+- Updated `System` design to allow properties setting via args.
+- Fixed asset log issues.
+
+---
+
 ## [1.1.0]
 
 This release is a major architectural improvement to the `Runtime` and scanning model.

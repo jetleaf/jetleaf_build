@@ -251,10 +251,6 @@ abstract class AbstractAssetSupport extends AbstractPartFileUtility {
     if (mirrorSystem != null) {
       allResources.addAll(await _scanMirrorForGenerativeAssets(mirrorSystem, libraries));
     }
-
-    for (final asset in allResources) {
-      print(asset.getFilePath());
-    }
     
     return allResources;
   }

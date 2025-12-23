@@ -3,6 +3,8 @@ import 'dart:io' as io;
 import 'core_print.dart' as dev;
 import 'compilation_mode.dart';
 import 'properties.dart';
+import 'system_detector.dart';
+import 'system_properties.dart';
 
 /// {@template system}
 /// Internal system facade for the JetLeaf framework.
@@ -35,7 +37,7 @@ import 'properties.dart';
 /// ```
 /// {@endtemplate}
 class _System implements SystemProperties {
-  late SystemProperties _properties;
+  SystemProperties _properties = SystemPropertiesBuilder();
 
   /// Replaces the current [SystemProperties] implementation with a new one.
   ///
@@ -43,6 +45,8 @@ class _System implements SystemProperties {
   void setProperties(SystemProperties properties) {
     _properties = properties;
   }
+
+  void fromArgs(List<String> args) => SystemDetector().detect(args);
 
   @override
   CompilationMode getCompilationMode() => _properties.getCompilationMode();
