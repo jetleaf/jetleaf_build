@@ -104,10 +104,9 @@ the <a href="../../jetleaf_build/EntityDeclaration/hashCode.html">hashCode</a> m
   <pre class="language-dart"><code class="language-dart">@override
 bool operator ==(Object other) {
   if (identical(this, other)) return true;
-  &#47;&#47; Use runtimeType for strict equality, as different concrete implementations
-  &#47;&#47; might have the same debugIdentifier but represent different concepts.
   if (other.runtimeType != runtimeType) return false;
-  return other is EntityDeclaration &amp;&amp; getDebugIdentifier() == other.getDebugIdentifier();
+  return other is EntityDeclaration &amp;&amp;
+      getDebugIdentifier() == other.getDebugIdentifier();
 }</code></pre>
 </section>
 
@@ -136,7 +135,7 @@ bool operator ==(Object other) {
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

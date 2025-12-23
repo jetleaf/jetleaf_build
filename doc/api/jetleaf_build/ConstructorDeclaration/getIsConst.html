@@ -62,7 +62,16 @@
     </section>
     
 <section class="desc markdown">
-  <p>Whether this constructor is declared <code>const</code>.</p>
+  <p>Returns <code>true</code> if this constructor is declared <code>const</code>.</p>
+<p>Const constructors allow compile-time instantiation and can be used
+to create canonicalized constant objects.</p>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code class="language-dart">class Point {
+  final int x, y;
+  const Point(this.x, this.y);
+}
+print(constructor.getIsConst()); // true
+</code></pre>
 </section>
 
 
@@ -97,7 +106,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

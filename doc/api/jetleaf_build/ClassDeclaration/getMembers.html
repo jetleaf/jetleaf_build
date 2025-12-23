@@ -63,11 +63,21 @@
     
 <section class="desc markdown">
   <p>Returns all members declared in this class, including fields, methods, and constructors.</p>
+<p>This method provides a comprehensive view of the class structure
+without including inherited members. Useful for code analysis,
+generation, or runtime introspection.</p>
+<p>Members include:</p>
+<ul>
+<li><a href="../../jetleaf_build/FieldDeclaration-class.html">FieldDeclaration</a> objects for each field</li>
+<li><a href="../../jetleaf_build/MethodDeclaration-class.html">MethodDeclaration</a> objects for each method</li>
+<li><a href="../../jetleaf_build/ConstructorDeclaration-class.html">ConstructorDeclaration</a> objects for each constructor</li>
+</ul>
 <h3 id="example">Example</h3>
 <pre class="language-dart"><code class="language-dart">for (final member in clazz.getMembers()) {
-  print(member.getName());
+  print('${member.getName()} (${member.runtimeType})');
 }
 </code></pre>
+<p>Returns an empty list if the class has no declared members.</p>
 </section>
 
 
@@ -102,7 +112,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

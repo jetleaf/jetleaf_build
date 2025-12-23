@@ -54,16 +54,46 @@
 
     <section class="multi-line-signature">
       
-      <span class="name ">FileUtility</span>(<wbr><ol class="parameter-list"> <li><span class="parameter" id="-param-_onInfo"><span class="type-annotation"><a href="../../jetleaf_build/OnLogged.html">OnLogged</a></span> <span class="parameter-name">_onInfo</span>, </span></li>
-<li><span class="parameter" id="-param-_onWarning"><span class="type-annotation"><a href="../../jetleaf_build/OnLogged.html">OnLogged</a></span> <span class="parameter-name">_onWarning</span>, </span></li>
-<li><span class="parameter" id="-param-_onError"><span class="type-annotation"><a href="../../jetleaf_build/OnLogged.html">OnLogged</a></span> <span class="parameter-name">_onError</span>, </span></li>
-<li><span class="parameter" id="-param-_configuration"><span class="type-annotation"><a href="../../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">_configuration</span>, </span></li>
-<li><span class="parameter" id="-param-_tryOutsideIsolate"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">_tryOutsideIsolate</span>, </span></li>
+      <span class="name ">FileUtility</span>(<wbr><ol class="parameter-list"> <li><span class="parameter" id="-param-onInfo"><span class="type-annotation"><a href="../../jetleaf_build/OnLogged.html">OnLogged</a></span> <span class="parameter-name">onInfo</span>, </span></li>
+<li><span class="parameter" id="-param-onWarning"><span class="type-annotation"><a href="../../jetleaf_build/OnLogged.html">OnLogged</a></span> <span class="parameter-name">onWarning</span>, </span></li>
+<li><span class="parameter" id="-param-onError"><span class="type-annotation"><a href="../../jetleaf_build/OnLogged.html">OnLogged</a></span> <span class="parameter-name">onError</span>, </span></li>
+<li><span class="parameter" id="-param-configuration"><span class="type-annotation"><a href="../../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">configuration</span>, </span></li>
+<li><span class="parameter" id="-param-tryOutsideIsolate"><span class="type-annotation"><a href="../../jetleaf_build/TryOutsideIsolate.html">TryOutsideIsolate</a></span> <span class="parameter-name">tryOutsideIsolate</span>, </span></li>
 </ol>)
     </section>
     
 <section class="desc markdown">
-  <p>File patterns that should be skipped</p>
+  <p>File patterns that should be skipped
+A utility class providing file-system and package-resolution helpers
+for Dart and JetLeaf runtime environments.</p>
+<p><code>FileUtility</code> centralizes logic for interacting with:</p>
+<ul>
+<li><code>package_config.json</code> parsing and caching</li>
+<li>Resolution of package-local and project-local file paths</li>
+<li>Determining safe file access contexts (e.g., inside vs. outside isolates)</li>
+<li>Logging of file-related operations</li>
+</ul>
+<p>This class is used internally by JetLeaf runtime scanners,
+reflection systems, and AOT tooling to robustly locate, load,
+and classify project files.</p>
+<p>The utility caches package configuration entries for performance and
+exposes controlled logging hooks that allow the host application or
+framework to capture scanner output without depending on any logging
+package.</p>
+<p>Fields:</p>
+<ul>
+<li><a href="../../jetleaf_build/AbstractFileUtility/packageConfigCache.html">packageConfigCache</a>: Cached list of parsed package configuration entries.</li>
+<li><a href="../../jetleaf_build/AbstractFileUtility/currentPackageName.html">currentPackageName</a>: Name of the root package resolved from the
+active package configuration.</li>
+<li><a href="../../jetleaf_build/AbstractFileUtility/onInfo.html">onInfo</a>: Callback for informational logging messages.</li>
+<li><a href="../../jetleaf_build/AbstractFileUtility/onWarning.html">onWarning</a>: Callback for warnings that do not halt execution.</li>
+<li><a href="../../jetleaf_build/AbstractFileUtility/onError.html">onError</a>: Callback for critical errors encountered during file
+operations.</li>
+<li><a href="../../jetleaf_build/AbstractFileUtility/tryOutsideIsolate.html">tryOutsideIsolate</a>: Strategy function to determine whether specific
+files must be read in the main isolate.</li>
+<li><a href="../../jetleaf_build/AbstractFileUtility/configuration.html">configuration</a>: Runtime scanner configuration options controlling
+scanning behavior and file-system traversal rules.</li>
+</ul>
 </section>
 
 
@@ -80,8 +110,9 @@
 &#47;&#47;   r&#39;.*&#47;build&#47;.*&#39;,
 &#47;&#47; ];
 
-FileUtility(this._onInfo, this._onWarning, this._onError, this._configuration, this._tryOutsideIsolate) {
-  _loadPackageConfig();
+&#47;&#47;&#47; {@macro file_utility}
+FileUtility(super.onInfo, super.onWarning, super.onError, super.configuration, super.tryOutsideIsolate) {
+  loadPackageConfig();
 }</code></pre>
 </section>
 
@@ -110,7 +141,7 @@ FileUtility(this._onInfo, this._onWarning, this._onError, this._configuration, t
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

@@ -16,6 +16,7 @@
 
 import 'package:test/test.dart';
 import 'package:jetleaf_build/jetleaf_build.dart';
+import 'dart:io';
 
 // Test classes for class declarations
 abstract class AbstractBaseClass {
@@ -197,39 +198,38 @@ void main() async {
 
   group('ClassDeclaration Basic Properties', () {
     test('should identify class type kind', () {
-      final concreteClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ConcreteClass');
+      final concreteClass = Runtime.findClass<ConcreteClass>();
       
       expect(concreteClass.getKind(), equals(TypeKind.classType));
       expect(concreteClass.getSimpleName(), equals('ConcreteClass'));
-      expect(concreteClass.getIsNullable(), isFalse);
     });
 
     test('should identify abstract classes', () {
-      final abstractClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'AbstractBaseClass');
+      final abstractClass = Runtime.findClassByType(AbstractBaseClass);
       
       expect(abstractClass.getIsAbstract(), isTrue);
     });
 
     test('should identify sealed classes', () {
-      final sealedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'SealedBaseClass');
+      final sealedClass = Runtime.findClass<SealedBaseClass>();
       
       expect(sealedClass.getIsSealed(), isTrue);
     });
 
     test('should identify base classes', () {
-      final baseClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'BaseClass');
+      final baseClass = Runtime.findClassByType(BaseClass);
       
       expect(baseClass.getIsBase(), isTrue);
     });
 
     test('should identify interface classes', () {
-      final interfaceClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'InterfaceClass');
+      final interfaceClass = Runtime.findClassByType(InterfaceClass);
       
       expect(interfaceClass.getIsInterface(), isTrue);
     });
 
     test('should identify final classes', () {
-      final finalClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'FinalClass');
+      final finalClass = Runtime.findClassByType(FinalClass);
       
       expect(finalClass.getIsFinal(), isTrue);
     });
@@ -237,7 +237,7 @@ void main() async {
 
   group('ClassDeclaration Inheritance', () {
     test('should retrieve superclass', () {
-      final concreteClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ConcreteClass');
+      final concreteClass = Runtime.findClass<ConcreteClass>();
       
       final superClass = concreteClass.getSuperClass();
       expect(superClass, isNotNull);
@@ -245,14 +245,14 @@ void main() async {
     });
 
     test('should retrieve mixins', () {
-      final mixedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MixedClass');
+      final mixedClass = Runtime.findClassByType(MixedClass);
       
       final mixins = mixedClass.getMixins();
       expect(mixins, isNotEmpty);
     });
 
     test('should retrieve implemented interfaces', () {
-      final complexClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComplexClass');
+      final complexClass = Runtime.findClassByType(ComplexClass);
       
       final interfaces = complexClass.getInterfaces();
       expect(interfaces, isNotEmpty);
@@ -260,7 +260,7 @@ void main() async {
     });
 
     test('should handle deep inheritance chain', () {
-      final derivedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'DerivedClass');
+      final derivedClass = Runtime.findClassByType(DerivedClass);
       
       final superClass = derivedClass.getSuperClass();
       expect(superClass, isNotNull);
@@ -270,14 +270,14 @@ void main() async {
 
   group('ClassDeclaration Members', () {
     test('should retrieve all members', () {
-      final concreteClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ConcreteClass');
+      final concreteClass = Runtime.findClass<ConcreteClass>();
       
       final members = concreteClass.getMembers();
       expect(members.length, greaterThanOrEqualTo(3)); // name getter, doSomething, additionalMethod
     });
 
     test('should retrieve constructors', () {
-      final concreteClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ConcreteClass');
+      final concreteClass = Runtime.findClass<ConcreteClass>();
       
       final constructors = concreteClass.getConstructors();
       expect(constructors.length, equals(1));
@@ -285,7 +285,7 @@ void main() async {
     });
 
     test('should retrieve fields', () {
-      final concreteClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ConcreteClass');
+      final concreteClass = Runtime.findClass<ConcreteClass>();
       
       final fields = concreteClass.getFields();
       expect(fields.length, equals(2));
@@ -294,7 +294,7 @@ void main() async {
     });
 
     test('should retrieve methods', () {
-      final concreteClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ConcreteClass');
+      final concreteClass = Runtime.findClass<ConcreteClass>();
       
       final methods = concreteClass.getMethods();
       expect(methods.length, greaterThanOrEqualTo(2));
@@ -303,7 +303,7 @@ void main() async {
     });
 
     test('should handle static members', () {
-      final staticClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'StaticMemberClass');
+      final staticClass = Runtime.findClassByType(StaticMemberClass);
       
       final staticFields = staticClass.getFields().where((field) => field.getIsStatic());
       expect(staticFields.length, equals(2));
@@ -317,21 +317,21 @@ void main() async {
 
   group('ClassDeclaration Generic Types', () {
     test('should identify generic classes', () {
-      final genericClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'GenericClass');
+      final genericClass = Runtime.findClass<GenericClass>();
       
       expect(genericClass.isGeneric(), isTrue);
       expect(genericClass.getTypeArguments(), isNotEmpty);
     });
 
     test('should handle bounded generic types', () {
-      final boundedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'BoundedGenericClass');
+      final boundedClass = Runtime.findClass<BoundedGenericClass>();
       
       expect(boundedClass.isGeneric(), isTrue);
       // Type parameter should have upper bound of Comparable
     });
 
     test('should handle complex generic constraints', () {
-      final complexClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComplexClass');
+      final complexClass = Runtime.findClassByType(ComplexClass);
       
       expect(complexClass.isGeneric(), isTrue);
       // Type parameter should have upper bound of AbstractBaseClass
@@ -340,7 +340,7 @@ void main() async {
 
   group('ClassDeclaration Instantiation', () {
     test('should instantiate class with default constructor', () {
-      final concreteClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ConcreteClass');
+      final concreteClass = Runtime.findClass<ConcreteClass>();
       
       final instance = concreteClass.newInstance({
         'name': 'Test',
@@ -354,7 +354,7 @@ void main() async {
     });
 
     test('should not instantiate unresolved generic class', () {
-      final genericClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'GenericClass');
+      final genericClass = Runtime.findClass<GenericClass>();
       
       expect(() => genericClass.newInstance({
         'value': 'Test',
@@ -363,7 +363,7 @@ void main() async {
     });
 
     test('should instantiate resolved generic class', () {
-      final genericClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ResolvedGenericClass');
+      final genericClass = Runtime.findClassByType(ResolvedGenericClass);
       
       final instance = genericClass.newInstance({
         'value': 'Test',
@@ -376,7 +376,7 @@ void main() async {
     });
 
     test('should instantiate class with nullable fields', () {
-      final nullableClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'NullableFieldClass');
+      final nullableClass = Runtime.findClass<NullableFieldClass>();
       
       final instance = nullableClass.newInstance({
         'nonNullableField': 'required',
@@ -392,7 +392,7 @@ void main() async {
 
   group('ClassDeclaration Edge Cases', () {
     test('should handle private members', () {
-      final privateClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'PrivateMemberClass');
+      final privateClass = Runtime.findClass<PrivateMemberClass>();
       
       final fields = privateClass.getFields();
       expect(fields.any((f) => f.getName() == '_privateField'), isTrue);
@@ -406,11 +406,145 @@ void main() async {
     });
 
     test('should handle annotations on class', () {
-      final annotatedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'AnnotatedClass');
+      final annotatedClass = Runtime.findClass<AnnotatedClass>();
       
       final annotations = annotatedClass.getAnnotations();
       // Note: Might not find @override annotation
       expect(annotations, isNotNull);
+    });
+  });
+
+  group('ClassDeclaration Subclass Retrieval', () {
+    test('getSubClasses should return all subclasses of a base class', () {
+      final baseClass = Runtime.findClassByType(BaseClass);
+      
+      final subclasses = Runtime.getSubClasses(baseClass).toList();
+      
+      // There should be at least MixedClass which extends BaseClass
+      expect(subclasses.any((c) => c.getSimpleName() == 'MixedClass'), isTrue);
+
+      // Ensure that no subclass is the base class itself
+      expect(subclasses.any((c) => c.getSimpleName() == 'BaseClass'), isFalse);
+    });
+
+    test('getSubClasses should handle abstract base classes', () {
+      final abstractBase = Runtime.findClassByType(AbstractBaseClass);
+      
+      final subclasses = Runtime.getSubClasses(abstractBase).toList();
+
+      // ConcreteClass should be a subclass
+      expect(subclasses.any((c) => c.getSimpleName() == 'ConcreteClass'), isTrue);
+    });
+
+    test('getSubClassReferences should return lightweight references', () {
+      final subclassRefs = Runtime.getSubClassReferences(Runtime.findClass<BaseClass>().getQualifiedName()).toList();
+
+      // There should be at least one subclass reference
+      expect(subclassRefs.isNotEmpty, isTrue);
+
+      // The references should contain MixedClass
+      expect(subclassRefs.any((r) => r.getQualifiedName().endsWith('MixedClass')), isTrue);
+    });
+
+    test('subclass references should match getSubClasses results', () {
+      final baseClass = Runtime.findClassByType(BaseClass);
+      
+      final subclasses = Runtime.getSubClasses(baseClass).map((c) => c.getQualifiedName()).toSet();
+      final subclassRefs = Runtime.getSubClassReferences(baseClass.getQualifiedName()).map((r) => r.getQualifiedName()).toSet();
+
+      // The sets of qualified names should match
+      expect(subclassRefs.difference(subclasses), isEmpty);
+      expect(subclasses.difference(subclassRefs), isEmpty);
+    });
+
+    test('getSubClassReferences should handle classes with no subclasses', () {
+      final finalClass = Runtime.findClassByType(FinalClass);
+
+      final subclassRefs = Runtime.getSubClassReferences(finalClass.getQualifiedName()).toList();
+
+      // FinalClass should not have any subclasses
+      expect(subclassRefs.isEmpty, isTrue);
+    });
+  });
+
+  group('ClassDeclaration Performance', () {
+    late ClassDeclaration baseClassDecl;
+
+    setUpAll(() {
+      baseClassDecl = Runtime.findClassByType(BaseClass);
+    });
+
+    void measure(String label, int iterations, void Function() fn) {
+      // warm up
+      for (int i = 0; i < 10; i++) {
+        fn();
+      }
+
+      final sw = Stopwatch()..start();
+      for (int i = 0; i < iterations; i++) {
+        fn();
+      }
+      sw.stop();
+
+      final totalUs = sw.elapsedMicroseconds;
+      final avgUs = totalUs / iterations;
+      print('✅ PERF $label — iterations: $iterations, total: ${totalUs / 1000.0}ms, avg: ${avgUs.toStringAsFixed(2)}μs');
+
+      final envThreshold = Platform.environment['JETLEAF_MAX_AVG_US'];
+      if (envThreshold != null) {
+        final threshold = int.tryParse(envThreshold) ?? -1;
+        if (threshold > 0) {
+          expect(avgUs, lessThanOrEqualTo(threshold), reason: 'Average $avgUsμs exceeded threshold $threshold μs for $label.');
+        }
+      }
+    }
+
+    test('find class by type — repeated lookups', () {
+      measure('findClassByType<ConcreteClass>', 10000, () {
+        Runtime.findClassByType(ConcreteClass);
+      });
+    });
+
+    test('find class by name — repeated lookups', () {
+      measure('findClassByName ConcreteClass', 10000, () {
+        Runtime.findClassByName('ConcreteClass');
+      });
+    });
+
+    test('obtainClassDeclaration from instance — repeated', () {
+      measure('obtainClassDeclaration(instance)', 5000, () {
+        Runtime.obtainClassDeclaration(ConcreteClass('x', 1));
+      });
+    });
+
+    test('getSubClasses — repeated', () {
+      measure('getSubClasses(BaseClass)', 2000, () {
+        Runtime.getSubClasses(baseClassDecl).toList();
+      });
+    });
+
+    test('getSubClassReferences — repeated', () {
+      measure('getSubClassReferences(BaseClass)', 2000, () {
+        Runtime.getSubClassReferences(baseClassDecl.getQualifiedName()).toList();
+      });
+    });
+
+    test('cold vs warm lookup', () {
+      // Try to clear caches if API available
+      try {
+        Runtime.cleanup();
+      } catch (_) {}
+
+      // cold measurement (single)
+      final swCold = Stopwatch()..start();
+      Runtime.findClassByType(ConcreteClass);
+      swCold.stop();
+      print('🔁 PERF cold lookup findClassByType<ConcreteClass>: ${swCold.elapsedMicroseconds}μs');
+
+      // warm measurement (averaged)
+      measure('warm findClassByType<ConcreteClass>', 10000, () {
+        Runtime.findClassByType(ConcreteClass);
+      });
     });
   });
 }

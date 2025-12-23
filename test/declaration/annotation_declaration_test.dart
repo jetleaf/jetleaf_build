@@ -197,7 +197,7 @@ void main() async {
 
   group('AnnotationDeclaration Basic Properties', () {
     test('should retrieve annotations from class', () {
-      final annotatedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'AnnotatedClass');
+      final annotatedClass = Runtime.findClass<AnnotatedClass>();
       
       final annotations = annotatedClass.getAnnotations();
       expect(annotations, isNotEmpty);
@@ -211,7 +211,7 @@ void main() async {
     });
 
     test('should retrieve annotation fields', () {
-      final annotatedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'AnnotatedClass');
+      final annotatedClass = Runtime.findClass<AnnotatedClass>();
       
       final annotations = annotatedClass.getAnnotations();
       final simpleAnnotation = annotations.firstWhere((a) => a.getLinkDeclaration().getType() == SimpleAnnotation);
@@ -220,14 +220,14 @@ void main() async {
       expect(fields.length, equals(1));
       
       final valueField = fields.firstWhere((f) => f.getName() == 'value');
-      expect(valueField.getValue(), equals('test'));
+      expect(valueField.getAnnotationValue(), equals('test'));
       expect(valueField.getUserProvidedValue(), equals('test'));
       expect(valueField.hasUserProvidedValue(), isTrue);
       expect(valueField.hasDefaultValue(), isFalse);
     });
 
     test('should handle complex annotations with multiple fields', () {
-      final serviceClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ServiceClass');
+      final serviceClass = Runtime.findClass<ServiceClass>();
       
       final annotations = serviceClass.getAnnotations();
       final complexAnnotation = annotations.firstWhere((a) => a.getLinkDeclaration().getType() == ComplexAnnotation);
@@ -238,22 +238,22 @@ void main() async {
       expect(fields.length, equals(4));
       
       final nameField = fields.firstWhere((f) => f.getName() == 'name');
-      expect(nameField.getValue(), equals('service'));
+      expect(nameField.getAnnotationValue(), equals('service'));
       
       final priorityField = fields.firstWhere((f) => f.getName() == 'priority');
-      expect(priorityField.getValue(), equals(10));
+      expect(priorityField.getAnnotationValue(), equals(10));
       
       final tagsField = fields.firstWhere((f) => f.getName() == 'tags');
-      expect(tagsField.getValue(), equals(['api', 'rest']));
+      expect(tagsField.getAnnotationValue(), equals(['api', 'rest']));
       
       final metadataField = fields.firstWhere((f) => f.getName() == 'metadata');
-      expect(metadataField.getValue(), equals({}));
+      expect(metadataField.getAnnotationValue(), equals({}));
     });
   });
 
   group('AnnotationDeclaration Field Properties', () {
     test('should handle nullable annotation fields', () {
-      final nullableClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'AnnotatedClass');
+      final nullableClass = Runtime.findClass<AnnotatedClass>();
       
       final field = nullableClass.getFields().firstWhere((f) => f.getName() == 'nullableField');
       
@@ -263,16 +263,16 @@ void main() async {
       final fields = nullableAnnotation.getFields();
       
       final nonNullableField = fields.firstWhere((f) => f.getName() == 'nonNullableField');
-      expect(nonNullableField.getValue(), equals('required'));
+      expect(nonNullableField.getAnnotationValue(), equals('required'));
       expect(nonNullableField.isNullable(), isFalse);
       
       final nullableField = fields.firstWhere((f) => f.getName() == 'nullableField');
-      expect(nullableField.getValue(), isNull);
+      expect(nullableField.getAnnotationValue(), isNull);
       expect(nullableField.isNullable(), isTrue);
     });
 
     test('should handle default values in annotations', () {
-      final defaultValueClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'AnnotatedClass');
+      final defaultValueClass = Runtime.findClass<AnnotatedClass>();
       
       final field = defaultValueClass.getFields().firstWhere((f) => f.getName() == 'defaultField');
       
@@ -282,23 +282,23 @@ void main() async {
       final fields = defaultValueAnn.getFields();
       
       final withDefaultField = fields.firstWhere((f) => f.getName() == 'withDefault');
-      expect(withDefaultField.getValue(), equals('default'));
+      expect(withDefaultField.getAnnotationValue(), equals('default'));
       expect(withDefaultField.getDefaultValue(), equals('default'));
       expect(withDefaultField.hasDefaultValue(), isTrue);
       
       final nullableWithDefault = fields.firstWhere((f) => f.getName() == 'nullableWithDefault');
-      expect(nullableWithDefault.getValue(), isNull);
+      expect(nullableWithDefault.getAnnotationValue(), isNull);
       expect(nullableWithDefault.getDefaultValue(), isNull);
       expect(nullableWithDefault.hasDefaultValue(), isFalse);
       
       final numberWithDefault = fields.firstWhere((f) => f.getName() == 'numberWithDefault');
-      expect(numberWithDefault.getValue(), equals(42));
+      expect(numberWithDefault.getAnnotationValue(), equals(42));
       expect(numberWithDefault.getDefaultValue(), equals(42));
       expect(numberWithDefault.hasDefaultValue(), isTrue);
     });
 
     test('should handle positional annotation parameters', () {
-      final annotatedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'AnnotatedClass');
+      final annotatedClass = Runtime.findClass<AnnotatedClass>();
       
       final field = annotatedClass.getFields().firstWhere((f) => f.getName() == 'positionalField');
       
@@ -308,11 +308,11 @@ void main() async {
       final fields = positionalAnn.getFields();
       
       final firstField = fields.firstWhere((f) => f.getName() == 'first');
-      expect(firstField.getValue(), equals('first'));
+      expect(firstField.getAnnotationValue(), equals('first'));
       expect(firstField.getPosition(), equals(0));
       
       final secondField = fields.firstWhere((f) => f.getName() == 'second');
-      expect(secondField.getValue(), equals('second'));
+      expect(secondField.getAnnotationValue(), equals('second'));
       expect(secondField.getPosition(), equals(1));
       expect(secondField.isNullable(), isTrue);
     });
@@ -320,7 +320,7 @@ void main() async {
 
   group('AnnotationDeclaration on Methods', () {
     test('should retrieve annotations from methods', () {
-      final serviceClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ServiceClass');
+      final serviceClass = Runtime.findClass<ServiceClass>();
       
       final methods = serviceClass.getMethods();
       final fetchMethod = methods.firstWhere((m) => m.getName() == 'fetchData');
@@ -333,7 +333,7 @@ void main() async {
     });
 
     test('should retrieve annotations from method parameters', () {
-      final serviceClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ServiceClass');
+      final serviceClass = Runtime.findClass<ServiceClass>();
       
       final methods = serviceClass.getMethods();
       final paramMethod = methods.firstWhere((m) => m.getName() == 'methodWithParam');
@@ -349,7 +349,7 @@ void main() async {
     });
 
     test('should handle multiple annotations on method return type', () {
-      final methodClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodAnnotationClass');
+      final methodClass = Runtime.findClass<MethodAnnotationClass>();
       
       final methods = methodClass.getMethods();
       final annotatedMethod = methods.firstWhere((m) => m.getName() == 'annotatedMethod');
@@ -366,7 +366,7 @@ void main() async {
     });
 
     test('should retrieve annotations from method parameters', () {
-      final methodClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MethodAnnotationClass');
+      final methodClass = Runtime.findClass<MethodAnnotationClass>();
       
       final methods = methodClass.getMethods();
       final annotatedMethod = methods.firstWhere((m) => m.getName() == 'annotatedMethod');
@@ -391,7 +391,7 @@ void main() async {
 
   group('AnnotationDeclaration on Fields', () {
     test('should retrieve field annotations', () {
-      final annotatedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'AnnotatedClass');
+      final annotatedClass = Runtime.findClass<AnnotatedClass>();
       
       final fields = annotatedClass.getFields();
       
@@ -409,7 +409,7 @@ void main() async {
 
   group('AnnotationDeclaration Generic Annotations', () {
     test('should handle generic annotations', () {
-      final multiClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MultiAnnotationClass');
+      final multiClass = Runtime.findClass<MultiAnnotationClass>();
       
       final annotations = multiClass.getAnnotations();
       
@@ -423,7 +423,7 @@ void main() async {
     });
 
     test('should handle generic annotations on fields', () {
-      final multiClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MultiAnnotationClass');
+      final multiClass = Runtime.findClass<MultiAnnotationClass>();
       
       final fields = multiClass.getFields();
       final itemsField = fields.firstWhere((f) => f.getName() == 'items');
@@ -437,7 +437,7 @@ void main() async {
 
   group('AnnotationDeclaration Inheritance', () {
     test('should handle inherited annotations', () {
-      final inheritedClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'InheritedAnnotatedClass');
+      final inheritedClass = Runtime.findClassByType(InheritedAnnotatedClass);
       
       final annotations = inheritedClass.getAnnotations();
       final inheritedAnnotation = annotations.firstWhere((a) => a.getLinkDeclaration().getType() == InheritedAnnotation);
@@ -454,7 +454,7 @@ void main() async {
 
   group('AnnotationDeclaration Private Fields', () {
     test('should handle annotations with private fields', () {
-      final privateClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'PrivateAnnotatedClass');
+      final privateClass = Runtime.findClassByType(PrivateAnnotatedClass);
       
       final annotations = privateClass.getAnnotations();
       final privateAnnotation = annotations.firstWhere((a) => a.getLinkDeclaration().getType() == PrivateFieldAnnotation);
@@ -463,17 +463,17 @@ void main() async {
       
       final privateField = fields.firstWhere((f) => f.getName() == '_privateField');
       expect(privateField.getIsPublic(), isFalse);
-      expect(privateField.getValue(), equals('private'));
+      expect(privateField.getAnnotationValue(), equals('private'));
       
       final publicField = fields.firstWhere((f) => f.getName() == 'publicField');
       expect(publicField.getIsPublic(), isTrue);
-      expect(publicField.getValue(), equals('public'));
+      expect(publicField.getAnnotationValue(), equals('public'));
     });
   });
 
   group('AnnotationDeclaration Const Annotations', () {
     test('should handle const annotations', () {
-      final constClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ConstAnnotatedClass');
+      final constClass = Runtime.findClassByType(ConstAnnotatedClass);
       
       final annotations = constClass.getAnnotations();
       final constAnn = annotations.firstWhere((a) => a.getLinkDeclaration().getPointerType() == ConstAnnotation);
@@ -481,15 +481,15 @@ void main() async {
       final fields = constAnn.getFields();
       final valueField = fields.firstWhere((f) => f.getName() == 'value');
       
-      expect(valueField.getValue(), equals('constant value'));
-      expect(valueField.isConst(), isFalse);
-      expect(valueField.isFinal(), isTrue);
+      expect(valueField.getAnnotationValue(), equals('constant value'));
+      expect(valueField.getIsConst(), isFalse);
+      expect(valueField.getIsFinal(), isTrue);
     });
   });
 
   group('AnnotationDeclaration Additional Properties', () {
     test('should retrieve user provided values', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
+      final testClass = Runtime.findClass<ComprehensiveAnnotationTest>();
       
       final annotations = testClass.getAnnotations();
       final simpleAnnotation = annotations.firstWhere((a) => 
@@ -501,7 +501,7 @@ void main() async {
     });
 
     test('should retrieve mapped fields', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
+      final testClass = Runtime.findClass<ComprehensiveAnnotationTest>();
       
       final annotations = testClass.getAnnotations();
       final complexAnnotation = annotations.firstWhere((a) => 
@@ -515,7 +515,7 @@ void main() async {
     });
 
     test('should retrieve specific field by name', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
+      final testClass = Runtime.findClass<ComprehensiveAnnotationTest>();
       
       final annotations = testClass.getAnnotations();
       final complexAnnotation = annotations.firstWhere((a) => 
@@ -524,14 +524,14 @@ void main() async {
       final requiredField = complexAnnotation.getField('required');
       expect(requiredField, isNotNull);
       expect(requiredField!.getName(), equals('required'));
-      expect(requiredField.getValue(), equals('test'));
+      expect(requiredField.getAnnotationValue(), equals('test'));
       
       final nonExistent = complexAnnotation.getField('nonExistent');
       expect(nonExistent, isNull);
     });
 
     test('should retrieve field names', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
+      final testClass = Runtime.findClass<ComprehensiveAnnotationTest>();
       
       final annotations = testClass.getAnnotations();
       final complexAnnotation = annotations.firstWhere((a) => 
@@ -542,7 +542,7 @@ void main() async {
     });
 
     test('should retrieve fields with defaults', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
+      final testClass = Runtime.findClass<ComprehensiveAnnotationTest>();
       
       final annotations = testClass.getAnnotations();
       final complexAnnotation = annotations.firstWhere((a) => 
@@ -554,7 +554,7 @@ void main() async {
     });
 
     test('should retrieve fields with user values', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
+      final testClass = Runtime.findClass<ComprehensiveAnnotationTest>();
       
       final annotations = testClass.getAnnotations();
       final complexAnnotation = annotations.firstWhere((a) => 
@@ -566,7 +566,7 @@ void main() async {
     });
 
     test('should correctly identify getDebugIdentifier', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
+      final testClass = Runtime.findClass<ComprehensiveAnnotationTest>();
       
       final annotations = testClass.getAnnotations();
       final firstAnnotation = annotations.first;
@@ -579,7 +579,7 @@ void main() async {
 
   group('AnnotationFieldDeclaration Additional Properties', () {
     test('should correctly identify final and const fields', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
+      final testClass = Runtime.findClass<ComprehensiveAnnotationTest>();
       
       final annotations = testClass.getAnnotations();
       final finalConstAnnotation = annotations.firstWhere((a) => 
@@ -588,16 +588,16 @@ void main() async {
       final fields = finalConstAnnotation.getFields();
       
       final finalField = fields.firstWhere((f) => f.getName() == 'finalField');
-      expect(finalField.isFinal(), isTrue);
-      expect(finalField.isConst(), isFalse);
+      expect(finalField.getIsFinal(), isTrue);
+      expect(finalField.getIsConst(), isFalse);
       
       final constField = fields.firstWhere((f) => f.getName() == 'constField');
-      expect(constField.isConst(), isFalse);
-      expect(constField.isFinal(), isTrue); // const implies final
+      expect(constField.getIsConst(), isFalse);
+      expect(constField.getIsFinal(), isTrue); // const implies final
     });
 
     test('should handle default vs user-provided values', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
+      final testClass = Runtime.findClass<ComprehensiveAnnotationTest>();
       
       final annotations = testClass.getAnnotations();
       final defaultsAnnotation = annotations.firstWhere((a) => 
@@ -621,7 +621,7 @@ void main() async {
     });
 
     test('should handle position in annotation', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
+      final testClass = Runtime.findClass<ComprehensiveAnnotationTest>();
       
       final annotations = testClass.getAnnotations();
       final positionalAnnotation = annotations.firstWhere((a) => 
@@ -637,7 +637,7 @@ void main() async {
     });
 
     test('should correctly identify getDebugIdentifier', () {
-      final testClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'ComprehensiveAnnotationTest');
+      final testClass = Runtime.findClass<ComprehensiveAnnotationTest>();
       
       final annotations = testClass.getAnnotations();
       final firstAnnotation = annotations.first;
@@ -653,7 +653,7 @@ void main() async {
     test('should handle repeated annotations', () {
       // Some annotation systems allow repeated annotations
       // This depends on Dart's annotation system
-      final multiClass = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'MultiAnnotationClass');
+      final multiClass = Runtime.findClass<MultiAnnotationClass>();
       
       final annotations = multiClass.getAnnotations();
       final genericAnnotations = annotations.where((a) => 

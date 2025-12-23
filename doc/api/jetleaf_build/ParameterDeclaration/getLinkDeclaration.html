@@ -62,7 +62,16 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the <a href="../../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a> of the parameter.</p>
+  <p>Returns the <a href="../../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a> representing the declared type of this
+parameter.</p>
+<p>This provides semantic information about the parameter’s type, including:</p>
+<ul>
+<li>resolved type references</li>
+<li>nullability</li>
+<li>generic type data</li>
+</ul>
+<p>This is useful during code generation or reflection when evaluating the
+parameter's type annotation.</p>
 </section>
 
 
@@ -97,7 +106,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

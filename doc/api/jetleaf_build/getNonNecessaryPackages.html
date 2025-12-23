@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the getNonNecessaryPackages function from the jetleaf_build library, for the Dart programming language.">
+  <title>getNonNecessaryPackages function - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../static-assets/styles.css?v1">
+  <link rel="icon" href="../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../index.html">jetleaf_build</a></li>
+    <li><a href="../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li class="self-crumb">getNonNecessaryPackages function</li>
+  </ol>
+  <div class="self-name">getNonNecessaryPackages</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar="jetleaf_build&#47;jetleaf_build-library-sidebar.html"
+      data-below-sidebar="">
+      <div>
+<h1><span class="kind-function">getNonNecessaryPackages</span> function 
+ 
+</h1></div>
+
+    <section class="multi-line-signature">
+        
+<span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
+<span class="name ">getNonNecessaryPackages</span>(<wbr>)
+
+        
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Returns a list of package names that are considered <strong>non-essential</strong> for
+runtime analysis and should generally be excluded from scanning.</p>
+<p>These packages are typically:</p>
+<ul>
+<li>build-system tooling (<code>build_runner</code>, <code>build_daemon</code>, <code>source_gen</code>)</li>
+<li>code-generation libraries (<code>code_builder</code>, <code>dart_style</code>)</li>
+<li>analysis and compiler internals (<code>analyzer</code>, <code>_fe_analyzer_shared</code>)</li>
+<li>testing and debugging utilities (<code>matcher</code>, <code>test_api</code>, <code>vm_service</code>)</li>
+<li>SDK support or meta packages (<code>package_config</code>, <code>pub_semver</code>)</li>
+</ul>
+<p>JetLeaf uses this list to:</p>
+<ul>
+<li>reduce noise during dependency inspection</li>
+<li>avoid scanning files irrelevant to runtime execution</li>
+<li>improve performance when resolving user code</li>
+</ul>
+<p>This list may evolve as Dart ecosystem tooling changes.</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">List&lt;String&gt; getNonNecessaryPackages() =&gt; [
+  &quot;code_builder&quot;,
+  &quot;build_runner&quot;,
+  &quot;build_daemon&quot;,
+  &quot;built_value&quot;,
+  &quot;built_collection&quot;,
+  &quot;build_config&quot;,
+  &quot;fixnum&quot;,
+  &quot;dart_internal&quot;,
+  &quot;matcher&quot;,
+  &quot;string_scanner&quot;,
+  &quot;pub_semver&quot;,
+  &quot;analyzer&quot;,
+  &quot;pubspec_parse&quot;,
+  &quot;checked_yaml&quot;,
+  &quot;source_gen&quot;,
+  &quot;dart_style&quot;,
+  &quot;build&quot;,
+  &quot;source_span&quot;,
+  &quot;watcher&quot;,
+  &quot;test_api&quot;,
+  &quot;_fe_analyzer_shared&quot;,
+  &quot;package_config&quot;,
+  &quot;path&quot;,
+  &quot;term_glyph&quot;,
+  &quot;frontend_server_client&quot;,
+  &quot;vm_service&quot;
+];</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../index.html">jetleaf_build</a></li>
+    <li><a href="../jetleaf_build/">jetleaf_build</a></li>
+    <li class="self-crumb">getNonNecessaryPackages function</li>
+</ol>
+
+    <h5>jetleaf_build library</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-left-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.1.0
+  </span>
+  
+</footer>
+
+
+<script src="../static-assets/highlight.pack.js?v1"></script>
+<script src="../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

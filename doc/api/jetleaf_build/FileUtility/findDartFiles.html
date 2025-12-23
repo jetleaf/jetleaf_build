@@ -54,37 +54,54 @@
 
     <section class="multi-line-signature">
       
-<span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span>&gt;</span></span>&gt;</span></span>
+<span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../jetleaf_build/LocatedFiles-class.html">LocatedFiles</a></span>&gt;</span></span>
 <span class="name ">findDartFiles</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="findDartFiles-param-projectDir"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a></span> <span class="parameter-name">projectDir</span></span></li>
 </ol>)
 
-      
+      <div class="features"><span class="feature">inherited</span></div>
 
     </section>
     
 <section class="desc markdown">
-  <p>Finds all Dart files within the current project and ALL its dependencies, respecting only user exclusions.</p>
+  <p>Scans the current project <strong>and all dependency packages</strong> for Dart source
+files, applying user-defined inclusion and exclusion rules.</p>
+<p>This is the primary method for assembling the complete set of Dart files
+relevant to JetLeaf’s analysis or code generation systems.</p>
+<h3 id="features">Features</h3>
+<ul>
+<li>Honors explicit user-included files via <code>configuration.filesToScan</code></li>
+<li>Honors explicit user-excluded files via <code>configuration.filesToExclude</code></li>
+<li>Skips test files if <code>skipTests = true</code></li>
+<li>Skips packages that do not depend on JetLeaf (unless disabled)</li>
+<li>Scans both the user’s project and all dependencies</li>
+</ul>
+<h3 id="parameters">Parameters</h3>
+<ul>
+<li><code>projectDir</code> — The root directory of the user's project.</li>
+</ul>
+<h3 id="returns">Returns</h3>
+<p>A set of all discovered <code>.dart</code> files.</p>
 </section>
 
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Future&lt;Set&lt;File&gt;&gt; findDartFiles(Directory projectDir) async {
-  final Set&lt;File&gt; dartFiles = {};
+  <pre class="language-dart"><code class="language-dart">Future&lt;LocatedFiles&gt; findDartFiles(Directory projectDir) async {
+  final LocatedFiles files = LocatedFiles();
 
-  final allFilesToScan = (_configuration.filesToScan).map((f) =&gt; p.normalize(f.absolute.path)).toSet();
-  final allFilesToExclude = (_configuration.filesToExclude).map((f) =&gt; p.normalize(f.absolute.path)).toSet();
+  final allFilesToScan = (configuration.filesToScan).map((f) =&gt; p.normalize(f.absolute.path)).toSet();
+  final allFilesToExclude = (configuration.filesToExclude).map((f) =&gt; p.normalize(f.absolute.path)).toSet();
 
   &#47;&#47; Scan user project
-  _onInfo(&#39;Scanning user project for Dart files...&#39;);
-  await _scanDirectoryForDartFiles(Directory.current, dartFiles, allFilesToScan, allFilesToExclude);
+  onInfo(&#39;Scanning user project for Dart files...&#39;, true);
+  await _scanDirectoryForDartFiles(Directory.current, files, allFilesToScan, allFilesToExclude);
 
   &#47;&#47; Scan ALL dependencies unless user explicitly excludes them
-  _onInfo(&#39;Scanning ALL dependencies for Dart files...&#39;);
-  await scanAllDependenciesForDartFiles(dartFiles, allFilesToScan, allFilesToExclude);
+  onInfo(&#39;Scanning ALL dependencies for Dart files...&#39;, true);
+  await scanAllDependenciesForDartFiles(files, allFilesToScan, allFilesToExclude);
 
-  return dartFiles;
+  return files;
 }</code></pre>
 </section>
 
@@ -113,7 +130,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

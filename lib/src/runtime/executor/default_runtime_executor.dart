@@ -13,7 +13,7 @@
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
 import '../../argument/executable_argument.dart';
-import '../../declaration/declaration.dart';
+import '../declaration/declaration.dart';
 import '../../exceptions.dart';
 import 'runtime_executor.dart';
 

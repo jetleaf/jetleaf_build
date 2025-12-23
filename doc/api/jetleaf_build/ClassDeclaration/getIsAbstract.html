@@ -63,6 +63,13 @@
     
 <section class="desc markdown">
   <p>Returns <code>true</code> if this class is marked <code>abstract</code>.</p>
+<p>Abstract classes cannot be instantiated directly and are intended
+to be subclassed. They may contain abstract methods that must be
+implemented by subclasses.</p>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code class="language-dart">abstract class Shape {}
+print(shapeClass.getIsAbstract()); // true
+</code></pre>
 </section>
 
 
@@ -97,7 +104,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

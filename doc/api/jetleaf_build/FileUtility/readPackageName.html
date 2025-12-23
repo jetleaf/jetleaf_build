@@ -57,12 +57,22 @@
 <span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
 <span class="name ">readPackageName</span>(<wbr>)
 
-      
+      <div class="features"><span class="feature">inherited</span></div>
 
     </section>
     
 <section class="desc markdown">
-  <p>Reads the package name from the pubspec.yaml file in the current directory.</p>
+  <p>Reads the current package's name from the project's <code>pubspec.yaml</code>.</p>
+<p>The method attempts to extract the value of the top-level <code>name:</code> field.
+Once successfully resolved, the name is cached and subsequent calls return
+the cached value without re-reading the file.</p>
+<h3 id="behavior">Behavior</h3>
+<ul>
+<li>Throws if <code>pubspec.yaml</code> cannot be found in the current directory.</li>
+<li>Throws if the <code>name:</code> field is missing or malformed.</li>
+</ul>
+<h3 id="returns">Returns</h3>
+<p>A <code>String</code> containing the package name as declared in <code>pubspec.yaml</code>.</p>
 </section>
 
 
@@ -70,7 +80,7 @@
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">Future&lt;String&gt; readPackageName() async {
-  if (_currentPackageName != null) return _currentPackageName!;
+  if (currentPackageName != null) return currentPackageName!;
 
   final pubspecFile = File(p.join(Directory.current.path, &#39;pubspec.yaml&#39;));
   if (!await pubspecFile.exists()) {
@@ -80,8 +90,8 @@
   final content = await pubspecFile.readAsString();
   final nameMatch = RegExp(r&#39;name:\s*(\S+)&#39;).firstMatch(content);
   if (nameMatch != null &amp;&amp; nameMatch.group(1) != null) {
-    _currentPackageName = nameMatch.group(1)!;
-    return _currentPackageName!;
+    currentPackageName = nameMatch.group(1)!;
+    return currentPackageName!;
   }
   throw Exception(&#39;Could not find package name in pubspec.yaml&#39;);
 }</code></pre>
@@ -112,7 +122,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

@@ -62,7 +62,11 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the file path of the package.</p>
+  <p>Returns the <strong>absolute file system path</strong> to the package root,
+or <code>null</code> if unavailable.</p>
+<p>Example:</p>
+<pre class="language-dart"><code class="language-dart">final path = myPackage.getFilePath(); // '/Users/me/projects/my_package'
+</code></pre>
 </section>
 
 
@@ -97,7 +101,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

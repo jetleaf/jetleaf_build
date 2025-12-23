@@ -42,16 +42,79 @@
 <main>
   <div id="dartdoc-main-content" class="main-content">
       
+<section class="desc markdown">
+  <h1 id="jetleaf_build">jetleaf_build</h1>
+<p>Build module for the JetLeaf framework — generates application libraries, runtime declarations and runtime scanning utilities.</p>
+<p>Package: <code>jetleaf_build</code>
+Version: 1.0.0</p>
+<p>Homepage: <a href="https://jetleaf.hapnium.com">https://jetleaf.hapnium.com</a>
+Repository: <a href="https://github.com/jetleaf/jetleaf_build">https://github.com/jetleaf/jetleaf_build</a>
+Documentation: <a href="https://jetleaf.hapnium.com/docs/build">https://jetleaf.hapnium.com/docs/build</a></p>
+<h2 id="what-this-package-provides">What this package provides</h2>
+<ul>
+<li>Runtime scanning utilities to discover annotated types, pods and runtime metadata.</li>
+<li>Generators that produce application libraries and declaration files from discovered runtime metadata.</li>
+<li>Helpers and runtime provider implementations used by the JetLeaf toolchain.</li>
+</ul>
+<p>This package is a core piece of the JetLeaf code-generation and build tooling. It's primarily consumed by JetLeaf tooling and other JetLeaf packages, but can also be used directly by applications that need to run the JetLeaf scanner or programmatically generate declaration libraries.</p>
+<h2 id="quick-install">Quick install</h2>
+<p>Add the dependency to your <code>pubspec.yaml</code>:</p>
+<pre class="language-yaml"><code class="language-yaml">dependencies:
+  jetleaf_build: ^1.0.0
+</code></pre>
+<p>Or reference the package via git when using the repository directly:</p>
+<pre class="language-yaml"><code class="language-yaml">dependencies:
+  jetleaf_build:
+    git:
+      url: https://github.com/jetleaf/jetleaf_build.git
+      ref: main
+</code></pre>
+<h2 id="basic-usage">Basic usage</h2>
+<p>Import the package's main library and call the scanner helper to obtain a <code>RuntimeProvider</code>:</p>
+<pre class="language-dart"><code class="language-dart">import 'package:jetleaf_build/jetleaf_build.dart';
+
+Future&lt;void&gt; main() async {
+  // Perform a runtime scan (scans the current project packages by default)
+  final runtimeProvider = await runScan();
+
+  // Access discovered metadata via the returned RuntimeProvider
+  print('Discovered runtime provider: $runtimeProvider');
+}
+</code></pre>
+<p>The package also exports generators and runtime provider implementations which can be used to produce application libraries and declaration files. See the package documentation for advanced examples and generator configuration options.</p>
+<h2 id="development">Development</h2>
+<p>Run analysis and tests from the package root:</p>
+<pre class="language-bash"><code class="language-bash">dart analyze
+dart test
+</code></pre>
+<p>Dev dependencies include <code>lints</code> and <code>test</code> as specified in <code>pubspec.yaml</code>.</p>
+<h2 id="contributing">Contributing</h2>
+<p>See the main repository for contribution guidelines. When contributing:</p>
+<ul>
+<li>Keep changes focused and add tests for new behavior.</li>
+<li>Follow the existing lint rules (project uses <code>lints</code>).</li>
+<li>Update documentation and <code>CHANGELOG.md</code> when adding or changing public APIs.</li>
+</ul>
+<h2 id="links">Links</h2>
+<ul>
+<li>Documentation: <a href="https://jetleaf.hapnium.com/docs/build">https://jetleaf.hapnium.com/docs/build</a></li>
+<li>Repository: <a href="https://github.com/jetleaf/jetleaf_build">https://github.com/jetleaf/jetleaf_build</a></li>
+<li>Issue tracker: <a href="https://github.com/jetleaf/jetleaf_build/issues">https://github.com/jetleaf/jetleaf_build/issues</a></li>
+</ul>
+<h2 id="license">License</h2>
+<p>This project includes a <code>LICENSE</code> file in the repository root — please consult it for licensing details.</p>
+</section>
 
 
       <section class="summary">
           <h2>Libraries</h2>
         <dl>
-          <dt id="jetleaf_build">
+          <h3>Build &amp; Runtime</h3>
+            <dt id="jetleaf_build">
   <span class="name"><a href="jetleaf_build/">jetleaf_build</a></span> 
 
 </dt>
-<dd>
+<dd>🏗 <strong>JetLeaf Build</strong>
 </dd>
 
         </dl>
@@ -71,7 +134,8 @@
     <h5 class="hidden-xs"><span class="package-name">jetleaf_build</span> <span class="package-kind">package</span></h5>
     <ol>
       <li class="section-title">Libraries</li>
-      <li><a href="jetleaf_build/">jetleaf_build</a></li>
+      <li class="section-subtitle">Build &amp; Runtime</li>
+        <li class="section-subitem"><a href="jetleaf_build/">jetleaf_build</a></li>
 </ol>
 
   </div>
@@ -81,7 +145,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

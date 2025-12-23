@@ -68,9 +68,6 @@ abstract class AbstractFileLocatorUtility extends AbstractFileUtility {
   /// Keeps track of logged "Skipping package" message to reduce message logs.
   final Set<String> _loggedSkippedPackageMessages = {};
 
-  /// Keeps track of extracted pubspec keys to increase performance
-  final Map<Directory, Set<String>> _extractedPubSpecKeys = {};
-
   /// {@macro abstract_file_locator_utility}
   AbstractFileLocatorUtility(super.configuration, super.onError, super.onInfo, super.onWarning, super.tryOutsideIsolate);
 
@@ -161,8 +158,7 @@ abstract class AbstractFileLocatorUtility extends AbstractFileUtility {
 
         // Include everything else
         if (pkgRoot case final packageRoot?) {
-          final keys = _extractedPubSpecKeys[packageRoot] ?? await extractPubspecDependencyKeys(packageRoot);
-          if (!(keys.any(jetleafPackages.contains) || keys.any((key) => key.startsWith(PackageNames.MAIN)))) {
+          if ((await getJetleafDependencies(packageRoot)).isEmpty) {
             final message = 'Skipping non-Jetleaf package: $packageName';
 
             if (_loggedSkippedPackageMessages.add(message)) {
@@ -285,6 +281,60 @@ abstract class AbstractFileLocatorUtility extends AbstractFileUtility {
     return keys;
   }
 
+  /// Returns the set of **JetLeaf-related dependencies** declared in a package.
+  ///
+  /// This method inspects the `pubspec.yaml` located at [packageRoot] and
+  /// extracts all declared dependency names. From that set, it filters and
+  /// returns only dependencies that are considered part of the JetLeaf
+  /// ecosystem.
+  ///
+  /// A dependency is classified as a *JetLeaf dependency* if:
+  /// - Its name exists in [jetleafPackages], **or**
+  /// - Its name starts with [PackageNames.MAIN] (the JetLeaf main package prefix)
+  ///
+  /// Parameters:
+  /// - [packageRoot]: The root directory of the Dart package containing
+  ///   a `pubspec.yaml` file.
+  ///
+  /// Returns:
+  /// - A [Set] of dependency names that belong to the JetLeaf framework
+  ///   or its core modules.
+  Future<Set<String>> getJetleafDependencies(Directory packageRoot) async {
+    final keys = await extractPubspecDependencyKeys(packageRoot);
+    return extractJetleafDependencies(keys).toSet();
+  }
+
+  /// Returns the set of **JetLeaf-related dependencies** declared in a package.
+  ///
+  /// This method inspects the given iterable [dependencies] to filter and
+  /// returns only dependencies that are considered part of the JetLeaf
+  /// ecosystem.
+  ///
+  /// A dependency is classified as a *JetLeaf dependency* if:
+  /// - Its name exists in [jetleafPackages], **or**
+  /// - Its name starts with [PackageNames.MAIN] (the JetLeaf main package prefix)
+  Iterable<String> extractJetleafDependencies(Iterable<String> dependencies) => dependencies.where((key) => jetleafPackages.contains(key) || key.startsWith(PackageNames.MAIN));
+
+  /// Returns the set of **non-JetLeaf dependencies** declared in a package.
+  ///
+  /// This method complements [getJetleafDependencies] by identifying
+  /// dependencies that do **not** belong to the JetLeaf ecosystem.
+  ///
+  /// A dependency is classified as *non-JetLeaf* if:
+  /// - Its name is not listed in [jetleafPackages], **or**
+  /// - Its name does not start with [PackageNames.MAIN]
+  /// 
+  /// Parameters:
+  /// - [packageRoot]: The root directory of the Dart package containing
+  ///   a `pubspec.yaml` file.
+  ///
+  /// Returns:
+  /// - A [Set] of dependency names that are external to the JetLeaf framework.
+  Future<Set<String>> getNonJetleafDependencies(Directory packageRoot) async {
+    final keys = await extractPubspecDependencyKeys(packageRoot);
+    return keys.where((key) => !jetleafPackages.contains(key) || !key.startsWith(PackageNames.MAIN)).toSet();
+  }
+
   /// Finds all **non-Dart files** within the current project and optionally
   /// selected dependency packages, respecting the user's inclusion and exclusion
   /// rules from the runtime scanner configuration.
@@ -356,6 +406,5 @@ abstract class AbstractFileLocatorUtility extends AbstractFileUtility {
   Future<void> cleanup() async {
     await super.cleanup();
     _loggedSkippedPackageMessages.clear();
-    _extractedPubSpecKeys.clear();
   }
 }

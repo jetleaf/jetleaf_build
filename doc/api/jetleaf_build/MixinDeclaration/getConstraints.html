@@ -63,8 +63,15 @@
     
 <section class="desc markdown">
   <p>Returns the <code>on</code> constraint types for this mixin.</p>
-<p>For example, in <code>mixin MyMixin on BaseClass, SomeInterface</code>,
-this returns a list with <a href="../../jetleaf_build/TypeDeclaration-class.html">TypeDeclaration</a>s for <code>BaseClass</code> and <code>SomeInterface</code>.</p>
+<p>Mixins in Dart can declare <code>on</code> constraints to specify the
+classes or interfaces they can be applied to. This method
+returns a list of <a href="../../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a> objects representing
+those types.</p>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code class="language-dart">mixin MyMixin on BaseClass, SomeInterface {}
+final constraints = mixinDecl.getConstraints();
+// constraints contains LinkDeclaration for BaseClass and SomeInterface
+</code></pre>
 <p>Returns an empty list if the mixin has no <code>on</code> constraints.</p>
 </section>
 
@@ -100,7 +107,7 @@ this returns a list with <a href="../../jetleaf_build/TypeDeclaration-class.html
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

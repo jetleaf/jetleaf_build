@@ -62,12 +62,16 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns all methods declared in this class (excluding inherited methods).</p>
+  <p>Returns all methods declared in this class, excluding inherited methods.</p>
+<p>Methods include instance and static methods, as well as getters and setters.
+Each method can be inspected via <a href="../../jetleaf_build/MethodDeclaration-class.html">MethodDeclaration</a> for return type,
+parameters, and invocation.</p>
 <h3 id="example">Example</h3>
 <pre class="language-dart"><code class="language-dart">for (final method in clazz.getMethods()) {
-  print(method.getName());
+  print('${method.getName()} returns ${method.getReturnType().getName()}');
 }
 </code></pre>
+<p>Returns an empty list if the class has no declared methods.</p>
 </section>
 
 
@@ -102,7 +106,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

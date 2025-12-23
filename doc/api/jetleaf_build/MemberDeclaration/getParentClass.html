@@ -62,11 +62,12 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the <a href="../../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a> that owns this member.</p>
-<h3 id="example">Example</h3>
-<pre class="language-dart"><code class="language-dart">final owner = member.getParentClass();
-print(owner.getName()); // e.g., "MyClass"
-</code></pre>
+  <p>Returns a link to the class that declares this member.</p>
+<p>Returns:</p>
+<ul>
+<li>A <a href="../../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a> pointing to the owning class</li>
+<li><code>null</code> if the member is not associated with a class</li>
+</ul>
 </section>
 
 
@@ -101,7 +102,7 @@ print(owner.getName()); // e.g., "MyClass"
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

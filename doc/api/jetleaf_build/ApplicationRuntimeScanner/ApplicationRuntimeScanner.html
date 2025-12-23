@@ -54,38 +54,51 @@
 
     <section class="multi-line-signature">
       
-      <span class="name ">ApplicationRuntimeScanner</span>(<wbr>{<ol class="parameter-list"> <li><span class="parameter" id="-param-onInfo"><span class="type-annotation">OnLogged?</span> <span class="parameter-name">onInfo</span>, </span></li>
-<li><span class="parameter" id="-param-onWarning"><span class="type-annotation">OnLogged?</span> <span class="parameter-name">onWarning</span>, </span></li>
-<li><span class="parameter" id="-param-onError"><span class="type-annotation">OnLogged?</span> <span class="parameter-name">onError</span>, </span></li>
+      <span class="name ">ApplicationRuntimeScanner</span>(<wbr>{<ol class="parameter-list"> <li><span class="parameter" id="-param-onInfo"><span class="type-annotation"><a href="../../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onInfo</span>, </span></li>
+<li><span class="parameter" id="-param-onWarning"><span class="type-annotation"><a href="../../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onWarning</span>, </span></li>
+<li><span class="parameter" id="-param-onError"><span class="type-annotation"><a href="../../jetleaf_build/OnLogged.html">OnLogged</a>?</span> <span class="parameter-name">onError</span>, </span></li>
 </ol>})
     </section>
     
 <section class="desc markdown">
-  <p>A default implementation of <a href="../../jetleaf_build/RuntimeScanner-class.html">RuntimeScanner</a> that supports scanning,
-logging, and context tracking.</p>
-<p>This scanner allows optional logging hooks to handle messages during
-the scanning process. If no callbacks are provided, messages are
-buffered internally and can be retrieved later.</p>
-<h2 id="example">Example</h2>
-<pre class="language-dart"><code class="language-dart">final scan = DefaultRuntimeScan(
-  onInfo: (msg) =&gt; print('[INFO] $msg'),
-  onWarning: (msg) =&gt; print('[WARN] $msg'),
-  onError: (msg) =&gt; print('[ERR] $msg'),
-);
-</code></pre>
-<p>The logs are tagged with the current <code>_package</code> name when set, helping
-identify the origin of messages during multi-package scans.</p>
+  <p>A runtime scanner responsible for analyzing <strong>application-level Dart code</strong>
+and generating runtime metadata required for reflection, asset discovery,
+and package resolution.</p>
+<p><code>ApplicationRuntimeScanner</code> operates on the current application package,
+scanning Dart source files, loading libraries into the mirror system,
+resolving declarations, and registering runtime assets and packages.</p>
+<h2 id="responsibilities">Responsibilities</h2>
+<ul>
+<li>Discover Dart source files within the application</li>
+<li>Load application libraries into the current mirror system</li>
+<li>Generate reflection metadata using <a href="../../jetleaf_build/DefaultLibraryGenerator-class.html">DefaultLibraryGenerator</a></li>
+<li>Discover runtime assets and package dependencies</li>
+<li>Build and register runtime resolvers for AOT execution</li>
+</ul>
+<h2 id="logging">Logging</h2>
+<p>The scanner supports optional logging callbacks:</p>
+<ul>
+<li><a href="../../jetleaf_build/ApplicationRuntimeScanner/onInfo.html">onInfo</a> for informational messages</li>
+<li><a href="../../jetleaf_build/ApplicationRuntimeScanner/onWarning.html">onWarning</a> for recoverable or non-fatal issues</li>
+<li><a href="../../jetleaf_build/ApplicationRuntimeScanner/onError.html">onError</a> for errors encountered during scanning</li>
+</ul>
+<h2 id="configuration">Configuration</h2>
+<p>Behavior is controlled through <a href="../../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a>, allowing:</p>
+<ul>
+<li>Incremental or full reloads</li>
+<li>Selective file and package scanning</li>
+<li>Conditional asset and package updates</li>
+<li>Library force-loading and exclusion rules</li>
+</ul>
+<p>This scanner is typically used for <strong>production or application builds</strong>
+where accurate runtime metadata is required for execution.</p>
 </section>
 
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">ApplicationRuntimeScanner({
-  OnLogged? onInfo,
-  OnLogged? onWarning,
-  OnLogged? onError,
-}) : _onInfo = onInfo, _onWarning = onWarning, _onError = onError;</code></pre>
+  <pre class="language-dart"><code class="language-dart">ApplicationRuntimeScanner({this.onInfo, this.onWarning, this.onError});</code></pre>
 </section>
 
 
@@ -113,7 +126,7 @@ identify the origin of messages during multi-package scans.</p>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

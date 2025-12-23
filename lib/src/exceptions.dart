@@ -874,3 +874,104 @@ class UnexpectedArgumentException extends ArgumentResolutionException {
   UnexpectedArgumentException(this.argumentName, {required String location})
       : super('Unexpected argument: $argumentName', location: location);
 }
+
+/// {@template classNotFoundException}
+/// A runtime exception in **JetLeaf** thrown when a requested class
+/// cannot be found by the runtime provider.
+///
+/// This exception indicates a **class resolution failure** during
+/// runtime reflection or materialization.
+///
+/// ---
+///
+/// ## Common Causes
+/// This typically occurs when:
+/// - The class has not been registered or scanned by the runtime provider
+/// - There is a typo in the requested class name or qualified name
+/// - The class is missing from the active package or library context
+///
+/// ---
+///
+/// ## Usage Example
+/// ```dart
+/// try {
+///   final clazz = Class.forName('NonExistentClass');
+/// } on ClassNotFoundException catch (e) {
+///   print(e);
+/// }
+/// ```
+///
+/// ---
+///
+/// This exception is the **base class** for more specific
+/// class resolution failures such as [ImmaterialClassException].
+/// {@endtemplate}
+class ClassNotFoundException extends RuntimeException {
+  /// The name of the class that could not be located.
+  ///
+  /// Useful for debugging, logging, and error reporting to
+  /// identify which class resolution failed.
+  final String className;
+
+  /// {@macro classNotFoundException}
+  ClassNotFoundException(this.className, {String? message}) : super(message ??
+    'Class "$className" could not be found.\n'
+        'This typically means:\n'
+        ' • The class has not been registered with the runtime provider.\n'
+        ' • A typo exists in the requested class name.\n'
+        ' • The class is missing from the current ClassLoader context.\n',
+  );
+}
+
+/// {@template immaterial_class_exception}
+/// Thrown when a class **exists** but cannot be materialized into a
+/// concrete [ClassDeclaration] by JetLeaf.
+///
+/// This exception represents a **semantic failure**, not a lookup failure.
+/// The class was located, but JetLeaf could not construct a stable,
+/// fully-resolved runtime representation.
+///
+/// ---
+///
+/// ## Common Causes
+/// This typically occurs when:
+/// - A `dart:mirrors` type such as `ClassMirror` or `TypeMirror` is used
+/// - A generic class is referenced without resolved type arguments
+/// - Generic type information has been erased at runtime
+///
+/// ---
+///
+/// ## Why This Matters
+/// JetLeaf requires a **concrete, fully-resolved runtime type**
+/// to safely perform reflection, hierarchy analysis, and code generation.
+///
+/// Mirror-only or erased generic types do not provide sufficient guarantees.
+///
+/// ---
+///
+/// ## How to Fix
+/// - Use a concrete class instead of a mirror-based type
+/// - Annotate generic classes with `@Generic(MyResolvedClass)`
+/// - For Dart core generic types, use the fully qualified concrete type
+///
+/// ---
+///
+/// This exception extends [ClassNotFoundException] to allow
+/// unified handling of class resolution failures.
+/// {@endtemplate}
+final class ImmaterialClassException extends ClassNotFoundException {
+  /// {@macro immaterial_class_exception}
+  ImmaterialClassException(super.className) : super(message:
+    'Class "$className" cannot be materialized.\n'
+    'This type originates from `dart:mirrors` or has lost generic information.\n\n'
+    'JetLeaf requires a concrete, fully-resolved runtime type.\n\n'
+    'This typically means:\n'
+    ' • A mirror type such as ClassMirror or TypeMirror was encountered.\n'
+    ' • A generic class was used without resolution.\n'
+    ' • Generic type arguments were erased at runtime.\n\n'
+    'How to fix:\n'
+    ' • Use a concrete class instead of a mirror type.\n'
+    ' • Annotate generic classes with @Generic(MyResolvedClass).\n'
+    ' • For Dart core generic types, use the qualified name of the type.\n',
+  );
+}

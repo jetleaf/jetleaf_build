@@ -182,6 +182,32 @@ associated <code>libraryUri</code>.
 
 </dd>
 
+        <dt id="extractClassName" class="callable">
+  <span class="name"><a href="../jetleaf_build/ReflectionUtils/extractClassName.html">extractClassName</a></span><span class="signature">(<wbr><span class="parameter" id="extractClassName-param-qualifiedName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">qualifiedName</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Extracts the class name from a fully-qualified name.
+  
+
+</dd>
+
+        <dt id="extractLibraryUri" class="callable">
+  <span class="name"><a href="../jetleaf_build/ReflectionUtils/extractLibraryUri.html">extractLibraryUri</a></span><span class="signature">(<wbr><span class="parameter" id="extractLibraryUri-param-qualifiedName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">qualifiedName</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Extracts the library/package URI from a fully qualified name.
+  
+
+</dd>
+
         <dt id="findQualifiedName" class="callable">
   <span class="name"><a href="../jetleaf_build/ReflectionUtils/findQualifiedName.html">findQualifiedName</a></span><span class="signature">(<wbr><span class="parameter" id="findQualifiedName-param-instance"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">instance</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
@@ -208,10 +234,53 @@ associated <code>libraryUri</code>.
 
 </dd>
 
+        <dt id="isThisAFunction" class="callable">
+  <span class="name"><a href="../jetleaf_build/ReflectionUtils/isThisAFunction.html">isThisAFunction</a></span><span class="signature">(<wbr><span class="parameter" id="isThisAFunction-param-instance"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">instance</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Checks if the given <code>instance</code> or <a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/TypeMirror-class.html">mirrors.TypeMirror</a> represents a <strong>function type</strong>.
+  
+
+</dd>
+
+        <dt id="isThisARecord" class="callable">
+  <span class="name"><a href="../jetleaf_build/ReflectionUtils/isThisARecord.html">isThisARecord</a></span><span class="signature">(<wbr><span class="parameter" id="isThisARecord-param-instance"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">instance</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Checks if the given <code>instance</code> or <a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/TypeMirror-class.html">mirrors.TypeMirror</a> represents a <strong>record type</strong>.
+  
+
+</dd>
+
     </dl>
   </section>
     
 
+  <section class="summary offset-anchor" id="constants">
+    <h2>Constants</h2>
+    <dl class="properties">
+        <dt id="KEYWORD" class="constant">
+    <span class="name "><a href="../jetleaf_build/ReflectionUtils/KEYWORD-constant.html">KEYWORD</a></span>
+  <span class="signature">&#8594; const <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Fallback keyword used when reflection metadata cannot be resolved.
+  
+
+</dd>
+
+    </dl>
+  </section>
   </div> <!-- /.main-content -->
   <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
     <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
@@ -235,7 +304,7 @@ associated <code>libraryUri</code>.
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

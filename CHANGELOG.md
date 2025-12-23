@@ -4,6 +4,58 @@ All notable changes to this project will be documented in this file.
 This project follows a simple, human-readable changelog format inspired by
 [Keep a Changelog](https://keepachangelog.com/) and adheres to semantic versioning.
 
+## [1.1.0]
+
+This release is a major architectural improvement to the `Runtime` and scanning model.
+
+Since `1.0.0`, using `Runtime` required `runScan` or `runTestScan` to eagerly build the *entire* application into `Declaration` objects. While functional, this approach introduced significant drawbacks:
+
+- Long build times, even for small projects
+- Excessive and often multiplied memory usage for larger applications
+
+These limitations motivated a redesign in **1.1.0**, focusing on **on-demand resolution**, reduced memory pressure, and clearer runtime boundaries.
+
+### Added
+- `ClosureDeclaration` to support `ClosureMirror` types.
+- `MaterialLibrary`, `SourceLibrary`, and `UnresolvedClass` to simplify how `Runtime` interacts with Dart mirrors.
+- `ClassReference` to help in sub class searching
+- `AnnotatedMethodReference` for annotated method search. _Internal_
+- Periodic cache cleanup via `Runtime.enablePeriodicCleanup()`.
+- `System`, `SystemDetector`, `SystemProperties`, `StdExtension`, `SystemExtension`
+
+### Changed
+- `FunctionLinkDeclaration` → `FunctionDeclaration`.
+- `RecordLinkDeclaration` → `RecordDeclaration`.
+- `PackageImplementation` → `MaterialPackage`.
+- `AssetImplementation` → `MaterialAsset`.
+
+- `RecordDeclaration`, `FunctionDeclaration`, `MixinDeclaration`,
+  `EnumDeclaration`, and `ClosureDeclaration` are now full
+  `ClassDeclaration` subtypes, distinguished using `TypeKind`.
+  - This unifies previously fragmented APIs under a single, consistent model.
+  - `RecordDeclaration` and `FunctionDeclaration` remain subtypes of `LinkDeclaration`.
+
+- `AnnotationFieldDeclaration`, `EnumFieldDeclaration`, and `RecordFieldDeclaration`
+  are now subtypes of `FieldDeclaration`, unifying field access and behavior
+  across declaration types.
+
+- `Runtime` now operates entirely **on-demand**:
+  - It no longer holds all discovered classes, enums, or declarations in memory.
+  - Aggressive cache eviction is applied after use.
+  - Optional periodic cleanup can be enabled.
+
+- Scans (`runScan`, `runTestScan`) now return **summary results only**.
+  Runtime context is populated *after* scanning completes.
+
+### Removed
+- `TypeDiscovery`; key APIs were migrated into `MaterialLibrary`.
+- Support for external `RuntimeProvider` designs.
+
+### Notes
+- This release significantly reduces memory usage and improves scalability.
+- The new runtime model favors lazy resolution over eager graph construction.
+- Consumers relying on internal runtime behavior should review the updated APIs carefully, as this release introduces intentional breaking changes.
+
 ---
 
 ## [1.0.9]

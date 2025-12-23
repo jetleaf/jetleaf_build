@@ -83,7 +83,7 @@ print(result); // true
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">static bool shouldCheckGeneric(Type type) =&gt; isGenericMirror(type.toString());</code></pre>
+  <pre class="language-dart"><code class="language-dart">static bool shouldCheckGeneric(Type type) =&gt; isMirrored(type.toString());</code></pre>
 </section>
 
 
@@ -111,7 +111,7 @@ print(result); // true
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

@@ -67,26 +67,18 @@
     </section>
     
 <section class="desc markdown">
-  <p>Serializes this resource to a JSON-encodable map.</p>
-<p>Returns:</p>
+  <p>Serializes this declaration into a JSON-compatible map.</p>
+<p>The returned map must:</p>
 <ul>
-<li>A map containing all relevant resource metadata</li>
-<li>Should include at minimum a 'type' field identifying the resource kind</li>
-<li>Must contain only JSON-encodable values</li>
+<li>Contain only JSON-encodable values</li>
+<li>Fully describe the declaration’s identity and structure</li>
 </ul>
-<p>Implementation Requirements:</p>
+<p>This method is used for:</p>
 <ul>
-<li>Must be overridden by subclasses</li>
-<li>Should include all identifying metadata</li>
-<li>Should maintain backward compatibility</li>
+<li>Debugging</li>
+<li>Tooling output</li>
+<li>Snapshot comparisons</li>
 </ul>
-<p>Example Output:</p>
-<pre class="language-json"><code class="language-json">{
-  "type": "font",
-  "family": "Roboto",
-  "files": ["Roboto-Regular.ttf", "Roboto-Bold.ttf"]
-}
-</code></pre>
 </section>
 
 
@@ -129,7 +121,7 @@ Map&lt;String, Object&gt; toJson() {
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

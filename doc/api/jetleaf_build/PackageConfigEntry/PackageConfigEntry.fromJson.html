@@ -59,6 +59,22 @@
 </ol>)
     </section>
     
+<section class="desc markdown">
+  <p>Builds a <a href="../../jetleaf_build/PackageConfigEntry-class.html">PackageConfigEntry</a> directly from a JSON object read from
+<code>package_config.json</code>.</p>
+<p>This factory handles both absolute and relative <code>rootUri</code> values and
+resolves them into a normalized absolute filesystem path.</p>
+<p>Parameters:</p>
+<ul>
+<li><code>json</code>: The raw JSON map describing the package entry.</li>
+<li><code>packageConfigDir</code>: The directory in which the <code>package_config.json</code>
+file resides; used to resolve relative URIs.</li>
+</ul>
+<p>Returns:</p>
+<ul>
+<li>A fully constructed, filesystem-safe <a href="../../jetleaf_build/PackageConfigEntry-class.html">PackageConfigEntry</a>.</li>
+</ul>
+</section>
 
 
     
@@ -110,7 +126,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

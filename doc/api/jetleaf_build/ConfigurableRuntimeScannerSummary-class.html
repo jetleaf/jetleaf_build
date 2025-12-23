@@ -144,6 +144,19 @@ summary.addInfo("Scanning completed.");
       id="instance-methods">
     <h2>Methods</h2>
     <dl class="callables">
+        <dt id="addAll" class="callable">
+  <span class="name"><a href="../jetleaf_build/ConfigurableRuntimeScannerSummary/addAll.html">addAll</a></span><span class="signature">(<wbr><span class="parameter" id="addAll-param-logs"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">logs</span></span>)
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  Appends an informational message to the summary.
+  
+
+</dd>
+
         <dt id="addErrors" class="callable">
   <span class="name"><a href="../jetleaf_build/ConfigurableRuntimeScannerSummary/addErrors.html">addErrors</a></span><span class="signature">(<wbr><span class="parameter" id="addErrors-param-errors"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">errors</span></span>)
     <span class="returntype parameter">&#8594; void</span>
@@ -209,20 +222,6 @@ summary.addInfo("Scanning completed.");
 
 </dd>
 
-        <dt id="getContext" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/RuntimeScannerSummary/getContext.html">getContext</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/ConfigurableRuntimeProvider-class.html">ConfigurableRuntimeProvider</a></span>
-  </span>
-  
-
-</dt>
-<dd class="inherited">
-  Represents a summary of the reflection scan process, containing
-diagnostics and metadata such as build time and scanning context.
-  <div class="features"><span class="feature">inherited</span></div>
-
-</dd>
-
         <dt id="getErrors" class="callable inherited">
   <span class="name"><a href="../jetleaf_build/RuntimeScannerSummary/getErrors.html">getErrors</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
@@ -257,7 +256,20 @@ diagnostics and metadata such as build time and scanning context.
 
 </dt>
 <dd class="inherited">
-  Informational messages collected during the scan.
+  This retrieves the logs as they were written or collected.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getLogsAsIs" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/RuntimeScannerSummary/getLogsAsIs.html">getLogsAsIs</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  This retrieves the logs as they were written or collected.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -297,19 +309,6 @@ diagnostics and metadata such as build time and scanning context.
 </dt>
 <dd>
   Sets the build time when the scan was performed.
-  
-
-</dd>
-
-        <dt id="setContext" class="callable">
-  <span class="name"><a href="../jetleaf_build/ConfigurableRuntimeScannerSummary/setContext.html">setContext</a></span><span class="signature">(<wbr><span class="parameter" id="setContext-param-context"><span class="type-annotation"><a href="../jetleaf_build/ConfigurableRuntimeProvider-class.html">ConfigurableRuntimeProvider</a></span> <span class="parameter-name">context</span></span>)
-    <span class="returntype parameter">&#8594; void</span>
-  </span>
-  
-
-</dt>
-<dd>
-  Sets the scanning context associated with this summary.
   
 
 </dd>
@@ -377,7 +376,7 @@ diagnostics and metadata such as build time and scanning context.
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

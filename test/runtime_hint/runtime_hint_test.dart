@@ -24,23 +24,8 @@ void main() async {
   });
 
   group('RuntimeHint Discovery and Registration', () {
-    test('should discover RuntimeHintProvider implementations', () {
-      final classes = Runtime.getAllClasses().toList();
-      
-      final providerClasses = classes.where((c) {
-        final cls = c.asClass();
-        if (cls == null) return false;
-        
-        final methods = cls.getMethods();
-        return methods.any((m) => m.getName() == 'createHint');
-      }).toList();
-      
-      expect(providerClasses.length, greaterThanOrEqualTo(2)); // ComplexRuntimeHintProvider and DiscoverableRuntimeHintProvider
-    });
-
     test('should find annotations that are RuntimeHints', () {
-      final annotatedClass = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'AnnotatedStringUser');
+      final annotatedClass = Runtime.findClass<AnnotatedStringUser>();
       
       final annotations = annotatedClass.getAnnotations();
       
@@ -55,8 +40,7 @@ void main() async {
     });
 
     test('should find annotations that are RuntimeHintProviders', () {
-      final annotatedClass = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'AnnotatedIntUser');
+      final annotatedClass = Runtime.findClass<AnnotatedIntUser>();
       
       final annotations = annotatedClass.getAnnotations();
       
@@ -72,8 +56,7 @@ void main() async {
 
   group('RuntimeHintDescriptor Resolution', () {
     test('should not instantiate abstract RuntimeHint classes', () {
-      final abstractClass = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'AbstractRuntimeHintClass');
+      final abstractClass = Runtime.findClassByType(AbstractRuntimeHintClass);
       
       expect(abstractClass.getIsAbstract(), isTrue);
     });
@@ -81,8 +64,7 @@ void main() async {
 
   group('RuntimeHint Integration with ClassDeclaration', () {
     test('ClassDeclaration.newInstance should use RuntimeHint if available', () {
-      final userClass = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'User');
+      final userClass = Runtime.findClass<User>();
       
       // Create a User instance through reflection
       final instance = userClass.newInstance({
@@ -97,8 +79,7 @@ void main() async {
     });
 
     test('MethodDeclaration.invoke should use RuntimeHint for method calls', () {
-      final userClass = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'User');
+      final userClass = Runtime.findClass<User>();
       
       final instance = User('Alice', 25);
       final methods = userClass.getMethods();
@@ -110,8 +91,7 @@ void main() async {
     });
 
     test('FieldDeclaration.getValue should use RuntimeHint for field access', () {
-      final userClass = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'User');
+      final userClass = Runtime.findClass<User>();
       
       final instance = User('Bob', 35);
       final fields = userClass.getFields();
@@ -128,8 +108,7 @@ void main() async {
     });
 
     test('should handle String operations with RuntimeHint', () {
-      final stringClass = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'String');
+      final stringClass = Runtime.findClass<String>();
       
       final instance = 'Hello World';
       final methods = stringClass.getMethods();
@@ -142,8 +121,7 @@ void main() async {
     });
 
     test('should handle int operations with RuntimeHint', () {
-      final intClass = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'int');
+      final intClass = Runtime.findClass<int>();
       
       final instance = 42;
       final methods = intClass.getMethods();
@@ -212,47 +190,6 @@ void main() async {
       expect(hintTypes, contains(String));
       expect(hintTypes, contains(int));
       expect(hintTypes, contains(User));
-    });
-  });
-
-  group('RuntimeHint Performance and Integration', () {
-    test('should demonstrate mixed hint sources working together', () {
-      // Test that we can discover all types of hints:
-      // 1. Direct RuntimeHint implementations
-      // 2. RuntimeHintProvider implementations  
-      // 3. Annotation-based RuntimeHints
-      // 4. Annotation-based RuntimeHintProviders
-      
-      final classes = Runtime.getAllClasses().toList();
-      
-      // Count different types of hint-related classes
-      int directHints = 0;
-      int hintProviders = 0;
-      int abstractHints = 0;
-      
-      for (final cls in classes) {
-        final classDecl = cls.asClass();
-        if (classDecl == null) continue;
-        
-        if (classDecl.getIsAbstract() && classDecl.getName().contains('RuntimeHint')) {
-          abstractHints++;
-        }
-        
-        final methods = classDecl.getMethods();
-        final hasObtainType = methods.any((m) => m.getName() == 'obtainTypeOfRuntimeHint');
-        final hasCreateHint = methods.any((m) => m.getName() == 'createHint');
-        
-        if (hasObtainType && !classDecl.getIsAbstract()) {
-          directHints++;
-        }
-        
-        if (hasCreateHint && !classDecl.getIsAbstract()) {
-          hintProviders++;
-        }
-      }
-      
-      expect(directHints, greaterThanOrEqualTo(4));
-      expect(hintProviders, greaterThanOrEqualTo(2));
     });
   });
 }

@@ -62,7 +62,13 @@
     </section>
     
 <section class="desc markdown">
-  <p>Whether this field is declared <code>late</code>.</p>
+  <p>Indicates whether this field is declared with the <code>late</code> modifier.</p>
+<p>Late fields defer initialization until first access or explicit
+assignment, allowing non-nullable fields to be initialized outside
+of the constructor.</p>
+<p>This flag does not imply mutability.</p>
+<h3 id="returns">Returns</h3>
+<p><code>true</code> if the field is <code>late</code>; otherwise, <code>false</code>.</p>
 </section>
 
 
@@ -97,7 +103,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

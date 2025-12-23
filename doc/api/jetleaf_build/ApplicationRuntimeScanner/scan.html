@@ -60,7 +60,8 @@
     </ol>
   </div>
 <span class="returntype"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../jetleaf_build/RuntimeScannerSummary-class.html">RuntimeScannerSummary</a></span>&gt;</span></span>
-<span class="name ">scan</span>(<wbr><ol class="parameter-list"> <li><span class="parameter" id="scan-param-configuration"><span class="type-annotation"><a href="../../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">configuration</span>, {</span></li>
+<span class="name ">scan</span>(<wbr><ol class="parameter-list"> <li><span class="parameter" id="scan-param-configuration"><span class="type-annotation"><a href="../../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">configuration</span>, </span></li>
+<li><span class="parameter" id="scan-param-args"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">args</span>, {</span></li>
 <li><span class="parameter" id="scan-param-source"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a>?</span> <span class="parameter-name">source</span>, </span></li>
 </ol>})
 
@@ -92,6 +93,7 @@ print(summary.getErrors());
 <ul>
 <li><code>loader</code> is the configuration for the scan.</li>
 <li><code>source</code> is the root directory to scan. Defaults to <a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory/current.html">Directory.current</a>.</li>
+<li><code>args</code> is the build args to use</li>
 </ul>
 <p>Returns a <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a> that resolves to the final <a href="../../jetleaf_build/RuntimeScannerSummary-class.html">RuntimeScannerSummary</a>.</p>
 </section>
@@ -101,161 +103,132 @@ print(summary.getErrors());
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">@override
-Future&lt;RuntimeScannerSummary&gt; scan(RuntimeScannerConfiguration configuration, {Directory? source}) async {
-  bool refreshContext = _context == null || !configuration.reload;
-  final stopwatch = Stopwatch()..start();
-  FileUtility FileUtils = FileUtility(_logInfo, _logWarning, _logError, configuration, true);
+Future&lt;RuntimeScannerSummary&gt; scan(RuntimeScannerConfiguration configuration, List&lt;String&gt; args, {Directory? source}) async {
+  String? package;
+  RuntimeBuilder.setContext(args, onError: onError, onInfo: onInfo, onWarning: onWarning, package: package);
 
-  &#47;&#47; 1. Setup directory and verify its existence
-  if(refreshContext) {
-    _logInfo(&#39;Creating target directory structure...&#39;);
-  }
+  final result = await RuntimeBuilder.timeAsyncExecution(() async {
+    bool refreshContext = configuration.reload;
+    FileUtility FileUtils = FileUtility(
+      RuntimeBuilder.logInfo,
+      RuntimeBuilder.logWarning,
+      RuntimeBuilder.logError,
+      configuration,
+      configuration.tryOutsideIsolate ?? (file, uri) =&gt; true
+    );
 
-  Directory directory = source ?? Directory.current;
+    &#47;&#47; 1. Setup directory and verify its existence
+    Directory directory = source ?? Directory.current;
 
-  &#47;&#47; 2. Read package name from pubspec.yaml
-  _package ??= await FileUtils.readPackageName();
+    &#47;&#47; 2. Read package name from pubspec.yaml
+    package ??= await FileUtils.readPackageName();
+    RuntimeBuilder.setPackage(package);
 
-  &#47;&#47; 3. Add default packages to scan if none specified
-  configuration = _addDefaultPackagesToScan(configuration, _package!);
+    &#47;&#47; 3. Add default packages to scan if none specified
+    configuration = _addDefaultPackagesToScan(configuration, package!);
 
-  &#47;&#47; 4. Setup mirror system and access domain
-  _logInfo(&#39;Setting up mirror system and access domain...&#39;);
-  mirrors.MirrorSystem access = mirrors.currentMirrorSystem();
-  _logInfo(&#39;Mirror system and access domain set up. ${access.isolate.rootLibrary.uri}&#39;);
+    &#47;&#47; 4. Setup mirror system and access domain
+    RuntimeBuilder.logVerboseInfo(&#39;Setting up mirror system and access domain...&#39;);
+    mirrors.MirrorSystem access = mirrors.currentMirrorSystem();
+    final iso = access.isolate;
+    RuntimeBuilder.logVerboseInfo(&#39;Mirror system and access domain set up for ${iso.rootLibrary.uri}&#39;);
+    setRuntimeLibraryTag(iso.rootLibrary.uri.toString());
 
-  _logInfo(&quot;${refreshContext ? &quot;Reloading&quot; : &quot;Scanning&quot;} $_package application...&quot;);
-  Set&lt;File&gt; dartFiles = {};
-  Set&lt;File&gt; nonDartFiles = {};
-  List&lt;Asset&gt; resources = [];
-  List&lt;Package&gt; packages = [];
+    RuntimeBuilder.logVerboseInfo(&quot;Scanning $package application...&quot;);
+    final locatedFiles = await FileUtils.findDartFiles(directory);
+    Set&lt;File&gt; dartFiles = {};
 
-  if(refreshContext) {
-    dartFiles = await FileUtils.findDartFiles(directory);
-    nonDartFiles = await FileUtils.findNonDartFiles(directory);
-    resources = await FileUtils.discoverAllResources(_package!, access);
-    packages = await FileUtils.readPackageGraphDependencies(directory, access);
-  } else {
-    &#47;&#47; For non-rebuilds, only process additions&#47;removals if specified
-    if(configuration.additions.isNotEmpty || configuration.removals.isNotEmpty || configuration.filesToScan.isNotEmpty) {
-      dartFiles = (configuration.filesToScan + configuration.additions).where((file) =&gt; file.path.endsWith(&#39;.dart&#39;)).toSet();
-      nonDartFiles = (configuration.filesToScan + configuration.additions).where((file) =&gt; !file.path.endsWith(&#39;.dart&#39;)).toSet();
+    if(refreshContext) {
+      dartFiles = locatedFiles.getScannableDartFiles();
+    } else {
+      &#47;&#47; For non-rebuilds, only process additions&#47;removals if specified
+      if(configuration.additions.isNotEmpty || configuration.removals.isNotEmpty || configuration.filesToScan.isNotEmpty) {
+        dartFiles = (configuration.filesToScan + configuration.additions).where((file) =&gt; file.path.endsWith(&#39;.dart&#39;)).toSet();
+      }
     }
 
-    if(configuration.updateAssets) {
-      resources = await FileUtils.discoverAllResources(_package!, access);
+    RuntimeBuilder.logVerboseInfo(&quot;Found ${dartFiles.length} dart files.&quot;);
+
+    &#47;&#47; 5. Load dart files that are not present in the [currentMirrorSystem]
+    List&lt;mirrors.LibraryMirror&gt; forceLoadedMirrors = [];
+    if (configuration.forceLoadLibraries) {
+      RuntimeBuilder.logVerboseInfo(&#39;Loading dart files not present in the currentMirrorSystem [#${iso.debugName}*${iso.rootLibrary.uri}]...&#39;);
+      final forceLoaded = &lt;String&gt;{};
+      Map&lt;File, Uri&gt; urisToLoad = FileUtils.getUrisToLoad(dartFiles, package!);
+
+      for (final uriEntry in urisToLoad.entries) {
+        if(RuntimeUtils.isNonLoadableJetLeafFile(uriEntry.value) || await RuntimeUtils.shouldNotIncludeLibrary(uriEntry.value, configuration)) {
+          continue;
+        }
+
+        if (!forceLoaded.add(uriEntry.value.toString())) {
+          continue;
+        }
+
+        mirrors.LibraryMirror? mirror = await FileUtils.forceLoadLibrary(uriEntry.value, uriEntry.key, access);
+        if(mirror != null) {
+          forceLoadedMirrors.add(mirror);
+        }
+      }
     }
 
-    if(configuration.updatePackages) {
-      packages = await FileUtils.readPackageGraphDependencies(directory, access);
-    }
-  }
+    final mirrorLibraries = refreshContext ? [...access.libraries.values, ...forceLoadedMirrors] : [...forceLoadedMirrors];
+    List&lt;Asset&gt; resources = [];
+    List&lt;Package&gt; packages = [];
 
-  _logInfo(&quot;Found ${dartFiles.length} dart files.&quot;);
-  _logInfo(&quot;Found ${nonDartFiles.length} non-dart files.&quot;);
-  _logInfo(&quot;Found ${resources.length} resources.&quot;);
-  _logInfo(&quot;Found ${packages.length} packages.&quot;);
+    if(refreshContext) {
+      resources = await FileUtils.discoverAllResources(package!, access, mirrorLibraries);
+      packages = await FileUtils.readPackageGraphDependencies(directory, access, mirrorLibraries);
+    } else {
+      if(configuration.updateAssets) {
+        resources = await FileUtils.discoverAllResources(package!, access, mirrorLibraries);
+      }
 
-  List&lt;LibraryDeclaration&gt; libraries = [];
-  List&lt;TypeDeclaration&gt; specialTypes = [];
-
-  &#47;&#47; 5. Load dart files that are not present in the [currentMirrorSystem]
-  _logInfo(&#39;Loading dart files that are not present in the [currentMirrorSystem#${access.isolate.debugName}]...&#39;);
-  Map&lt;File, Uri&gt; urisToLoad = FileUtils.getUrisToLoad(dartFiles, _package!);
-  List&lt;mirrors.LibraryMirror&gt; forceLoadedMirrors = [];
-  final forceLoaded = &lt;String&gt;{};
-
-  for (final uriEntry in urisToLoad.entries) {
-    if(RuntimeUtils.isNonLoadableJetLeafFile(uriEntry.value) || await RuntimeUtils.shouldNotIncludeLibrary(uriEntry.value, configuration)) {
-      continue;
+      if(configuration.updatePackages) {
+        packages = await FileUtils.readPackageGraphDependencies(directory, access, mirrorLibraries);
+      }
     }
 
-    if (!forceLoaded.add(uriEntry.value.toString())) {
-      continue;
+    RuntimeBuilder.logVerboseInfo(&quot;Found ${resources.length} resources.&quot;);
+    RuntimeBuilder.logVerboseInfo(&quot;Found ${packages.length} packages.&quot;);
+
+    &#47;&#47; 5. Generate reflection metadata
+    RuntimeBuilder.logVerboseInfo(&#39;Resolving declaration metadata libraries...&#39;);
+    LibraryGenerator libraryGenerator = DefaultLibraryGenerator(
+      mirrorSystem: access,
+      forceLoadedMirrors: forceLoadedMirrors,
+      configuration: configuration,
+      packages: packages,
+      refresh: refreshContext
+    );
+    await libraryGenerator.generate(locatedFiles.getAnalyzeableDartFiles().toList());
+    RuntimeBuilder.logVerboseInfo(&#39;Done generating declaration libraries.&#39;);
+
+    &#47;&#47; 6. Generate AOT Runtime Resolvers
+    final resolving = DefaultRuntimeExecutorResolving(libraries: mirrorLibraries);
+    setRuntimeResolver(await resolving.resolve());
+
+    if(resources.isNotEmpty) {
+      addRuntimeAssets(resources, replace: refreshContext);
     }
 
-    mirrors.LibraryMirror? mirror = await FileUtils.forceLoadLibrary(uriEntry.value, uriEntry.key, access);
-    if(mirror != null) {
-      forceLoadedMirrors.add(mirror);
+    if(packages.isNotEmpty) {
+      addRuntimePackages(packages, replace: refreshContext);
     }
-  }
 
-  &#47;&#47; 5. Generate reflection metadata
-  _logInfo(&#39;Resolving declaration metadata libraries...&#39;);
-  LibraryGenerator libraryGenerator = ApplicationLibraryGenerator(
-    mirrorSystem: access,
-    forceLoadedMirrors: forceLoadedMirrors,
-    onInfo: _logInfo,
-    onWarning: _logWarning,
-    onError: _logError,
-    configuration: configuration,
-    packages: packages,
-    refresh: refreshContext
-  );
-  final result = await libraryGenerator.generate(dartFiles.toList());
-  _logInfo(&#39;Resolved ${result.length} declaration libraries.&#39;);
+    freezeRuntimeLibrary();
+  });
 
-  libraries.addAll(result);
-
-  if (_context != null ) {
-    libraries.addAll(_context!.getAllLibraries());
-  }
-
-  &#47;&#47; 6. Generate AOT Runtime Resolvers
-  RuntimeResolving resolving = RuntimeResolving(
-    access: access,
-    libraries: libraries,
-    forceLoadedMirrors: forceLoadedMirrors,
-    outputFolder: configuration.outputPath,
-    fileUtils: FileUtils,
-    package: _package!,
-    logInfo: _logInfo,
-    logWarning: _logWarning,
-    logError: _logError,
-  );
-
-  if(refreshContext) {
-    _context = StandardRuntimeProvider();
-  }
-  _context?.setRuntimeResolver(await resolving.resolve());
-
-  if(resources.isNotEmpty) {
-    _context?.addAssets(resources, replace: refreshContext);
-  }
-
-  if(packages.isNotEmpty) {
-    _context?.addPackages(packages, replace: refreshContext);
-  }
-
-  if(libraries.isNotEmpty) {
-    _context?.addLibraries(libraries, replace: refreshContext);
-  }
-
-  &#47;&#47; Handle removals (now configuration.removals) by removing them from the context
-  if(configuration.removals.isNotEmpty) {
-    final libs = _context?.getAllLibraries() ?? [];
-    final urisToRemove = configuration.removals.map((f) =&gt; FileUtils.resolveToPackageUri(f.absolute.path, _package!)).whereType&lt;String&gt;().toSet();
-    final updatedLibs = libs.where((lib) =&gt; !urisToRemove.contains(lib.getUri())).toList();
-    _context?.addLibraries(updatedLibs, replace: true);
-  }
-
-  if(specialTypes.isNotEmpty) {
-    _context?.addSpecialTypes(specialTypes, replace: refreshContext);
-  }
-
-  if(nonDartFiles.isNotEmpty) {
-    (_context as StandardRuntimeProvider?)?.addNonDartFiles(nonDartFiles.toList(), replace: refreshContext);
-  }
-
-  stopwatch.stop();
-  _logInfo(&quot;Application ${refreshContext ? &quot;reloading&quot; : &quot;scanning&quot;} completed in ${stopwatch.elapsedMilliseconds}ms.&quot;);
+  RuntimeBuilder.logVerboseInfo(&quot;Application scanning completed in ${result.getFormatted()}.&quot;);
 
   ConfigurableRuntimeScannerSummary summary = DefaultRuntimeScannerSummary();
-  summary.setContext(_context!);
-  summary.setBuildTime(DateTime.fromMillisecondsSinceEpoch(stopwatch.elapsedMilliseconds));
-  summary.addInfos(_infoLogs);
-  summary.addWarnings(_warningLogs);
-  summary.addErrors(_errorLogs);
+  summary.setBuildTime(DateTime.fromMillisecondsSinceEpoch(result.watch.elapsedMilliseconds));
+  summary.addInfos(RuntimeBuilder.onCompleted().getInfos());
+  summary.addWarnings(RuntimeBuilder.onCompleted().getWarnings());
+  summary.addErrors(RuntimeBuilder.onCompleted().getErrors());
+  summary.addAll(RuntimeBuilder.onCompleted().getLogs());
+
+  RuntimeBuilder.clearTrackedLogs();
 
   return summary;
 }</code></pre>
@@ -286,7 +259,7 @@ Future&lt;RuntimeScannerSummary&gt; scan(RuntimeScannerConfiguration configurati
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

@@ -84,31 +84,54 @@ final pkg2 = ReflectUtils.getPackageNameFromUri('dart:core'); // null
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">static String? getPackageNameFromUri(dynamic uri) {
+  Uri? parsedUri;
+
   if (uri is String) {
-    try {
-      uri = Uri.parse(uri);
-    } catch (e) {
+    parsedUri = Uri.tryParse(uri);
+  } else if (uri is Uri) {
+    parsedUri = uri;
+  }
+
+  if (parsedUri == null || parsedUri.scheme == &#39;dart&#39;) {
+    return null;
+  }
+
+  &#47;&#47; Handle standard &#39;package:&#39; URIs
+  if (parsedUri.scheme == &#39;package&#39;) {
+    if (parsedUri.pathSegments.isEmpty || parsedUri.pathSegments.first.isEmpty) {
       return null;
+    }
+
+    return parsedUri.pathSegments.first;
+  }
+
+  &#47;&#47; Handle &#39;file:&#39; URIs (e.g., file:&#47;&#47;&#47;Users&#47;mac&#47;Documents&#47;...&#47;class_test.dart)
+  if (parsedUri.scheme == &#39;file&#39;) {
+    File file = File.fromUri(parsedUri);
+    Directory? currentDir = file.parent;
+
+    &#47;&#47; Search upward for the nearest pubspec.yaml
+    while (currentDir != null &amp;&amp; currentDir.path != currentDir.parent.path) {
+      final pubspecFile = File(&#39;${currentDir.path}${Platform.pathSeparator}pubspec.yaml&#39;);
+
+      if (pubspecFile.existsSync()) {
+        try {
+          &#47;&#47; Read lines to find &quot;name: package_name&quot; without needing a YAML parser
+          final lines = pubspecFile.readAsLinesSync();
+          for (var line in lines) {
+            if (line.trim().startsWith(&#39;name:&#39;)) {
+              return line.replaceFirst(&#39;name:&#39;, &#39;&#39;).trim();
+            }
+          }
+        } catch (_) {
+          return null; &#47;&#47; File access or read error
+        }
+      }
+      currentDir = currentDir.parent;
     }
   }
 
-  if (uri is! Uri) {
-    return null;
-  }
-
-  if (uri.scheme == &#39;dart&#39;) {
-    return null;
-  }
-
-  if (uri.scheme != &#39;package&#39;) {
-    return null;
-  }
-
-  if (uri.pathSegments.isEmpty || uri.pathSegments.first.isEmpty) {
-    return null;
-  }
-
-  return uri.pathSegments.first;
+  return null;
 }</code></pre>
 </section>
 
@@ -137,7 +160,7 @@ final pkg2 = ReflectUtils.getPackageNameFromUri('dart:core'); // null
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

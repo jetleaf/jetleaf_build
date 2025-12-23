@@ -19,90 +19,100 @@ import 'dart:async';
 import 'package:path/path.dart' as p;
 
 import '../../builder/runtime_builder.dart';
-import '../../declaration/declaration.dart';
 import '../../file_utility/file_utility.dart';
 import '../executor/resolving/default_runtime_executor_resolving.dart';
-import '../provider/standard_runtime_provider.dart';
+import '../provider/runtime_provider.dart';
 import 'default_runtime_scanner_summary.dart';
 import 'runtime_scanner.dart';
 import 'runtime_scanner_configuration.dart';
 import 'runtime_scanner_summary.dart';
 import '../../generator/mock_library_generator.dart';
 
-/// {@template mock_runtime_scan}
-/// A lightweight mock implementation of [RuntimeScanner] for testing and development.
+/// {@template mock_runtime_scanner}
+/// A **mock implementation** of [RuntimeScanner] designed for testing,
+/// experimentation, and controlled runtime scanning scenarios.
 ///
-/// This scanner provides a simplified reflection system that:
-/// - Operates only on the current isolate's libraries
-/// - Supports force-loading specific files
-/// - Uses Dart's mirrors API instead of filesystem scanning
-/// - Provides configurable logging
+/// [MockRuntimeScanner] simulates JetLeaf’s runtime scanning pipeline while
+/// allowing fine-grained control over:
+/// - Logging and error handling
+/// - Forced file inclusion
+/// - Library generation behavior
+///
+/// It is primarily intended for:
+/// - Unit and integration testing
+/// - Tooling and development environments
+/// - Scenarios where full production scanning is unnecessary or undesirable
+///
+/// ---
+///
+/// #### Key Characteristics
+///
+/// - Uses Dart mirrors to inspect the current isolate
+/// - Supports force-loading Dart files not discoverable via mirrors
 /// - Allows custom library generator injection
+/// - Produces deterministic reflection metadata
 ///
-/// {@template mock_runtime_scan_features}
-/// ## Key Features
-/// - **Isolated Scanning**: Only processes currently loaded libraries by default
-/// - **Selective Loading**: Can force-load specific files via `forceLoadFiles`
-/// - **Pluggable Logging**: Configurable info/warning/error callbacks
-/// - **Custom Generators**: Supports alternative library generators via factory
-/// - **Primitive Type Support**: Automatically includes Dart core types
+/// This scanner follows the same **lifecycle semantics** as production
+/// scanners:
 ///
-/// ## When to Use
-/// - Unit testing reflection-dependent code
-/// - Development environments where full scanning is unnecessary
-/// - CI pipelines requiring lightweight reflection
-/// - Debugging specific library reflection
-/// {@endtemplate}
-///
-/// {@template mock_runtime_scan_example}
-/// ## Basic Usage
-/// ```dart
-/// final mockScan = MockRuntimeScan(
-///   onInfo: (msg) => debugPrint(msg),
-///   onError: (err) => debugPrint('ERROR: $err'),
-///   forceLoadFiles: [
-///     File('lib/src/critical.dart'),
-///     File('lib/models/user.dart'),
-///   ],
-/// );
-///
-/// final summary = await mockScan.scan(
-///   'output',
-///   RuntimeScanLoader(
-///     scanClasses: [User, CriticalService],
-///   ),
-/// );
+/// ```text
+/// initialize
+///   → discover files & libraries
+///   → generate declarations
+///   → resolve runtime executors
+///   → freeze runtime registry
 /// ```
+///
+/// While behaviorally compatible with production scanners, this
+/// implementation prioritizes **flexibility and observability** over
+/// performance and isolation.
+///
+/// Consumers should rely on [RuntimeScanner] abstractions rather than
+/// this concrete type directly.
 /// {@endtemplate}
-/// {@endtemplate}
-class MockRuntimeScanner implements RuntimeScanner {
+final class MockRuntimeScanner implements RuntimeScanner {
+  /// Optional callback invoked for **informational log messages**
+  /// emitted during the mock runtime scanning process.
+  ///
+  /// This is typically used for verbose logging, diagnostics,
+  /// or progress reporting.
   final OnLogged? onInfo;
+
+  /// Optional callback invoked for **warning log messages**
+  /// emitted during the mock runtime scanning process.
+  ///
+  /// Warnings usually indicate recoverable issues or non-fatal
+  /// inconsistencies encountered during scanning.
   final OnLogged? onWarning;
+
+  /// Optional callback invoked for **error log messages**
+  /// emitted during the mock runtime scanning process.
+  ///
+  /// Errors reported here may indicate failures in file loading,
+  /// analysis, or metadata generation.
   final OnLogged? onError;
+
+  /// A list of Dart [File]s that should be **force-loaded**
+  /// into the mirror system, even if they are not discovered
+  /// through standard scanning.
+  ///
+  /// This is useful for:
+  /// - Ensuring critical libraries are always analyzed
+  /// - Injecting test or synthetic Dart files
+  /// - Working around mirror discovery limitations
   final List<File> _forceLoadFiles;
+
+  /// An optional factory used to create a custom
+  /// [MockLibraryGenerator] implementation.
+  ///
+  /// When provided, this allows callers to override the default
+  /// library generation behavior, enabling advanced testing,
+  /// instrumentation, or experimental generation strategies.
+  ///
+  /// If `null`, the default [MockLibraryGenerator] is used.
   final MockLibraryGeneratorFactory? _libraryGeneratorFactory;
 
-  /// {@macro mock_runtime_scan}
-  ///
-  /// {@template mock_runtime_scan_constructor}
-  /// Creates a mock runtime scanner with configurable behavior.
-  ///
-  /// Parameters:
-  /// - [onInfo]: Optional callback for informational messages
-  /// - [onWarning]: Optional callback for warning messages
-  /// - [onError]: Optional callback for error messages
-  /// - [forceLoadFiles]: Additional files to load for scanning (default empty)
-  /// - [libraryGeneratorFactory]: Custom generator factory (defaults to [MockLibraryGenerator])
-  /// - [includeCurrentIsolateLibraries]: Whether to scan current isolate (default true)
-  ///
-  /// Example:
-  /// ```dart
-  /// final mockScan = MockRuntimeScan(
-  ///   onError: (err) => Sentry.captureException(err),
-  ///   forceLoadFiles: criticalFiles,
-  /// );
-  /// ```
-  /// {@endtemplate}
+  /// {@macro mock_runtime_scanner}
   MockRuntimeScanner({
     this.onInfo,
     this.onWarning,
@@ -117,10 +127,8 @@ class MockRuntimeScanner implements RuntimeScanner {
     String? package;
     RuntimeBuilder.setContext(args, onError: onError, onInfo: onInfo, onWarning: onWarning, package: package);
 
-    final result = await RuntimeBuilder.timeExecution(() async {
+    final result = await RuntimeBuilder.timeAsyncExecution(() async {
       RuntimeBuilder.logVerboseInfo("Starting mock runtime scan...");
-
-      final context = StandardRuntimeProvider();
       final FileUtils = FileUtility(
         RuntimeBuilder.logInfo,
         RuntimeBuilder.logWarning,
@@ -139,6 +147,7 @@ class MockRuntimeScanner implements RuntimeScanner {
       mirrors.MirrorSystem access = mirrors.currentMirrorSystem();
       final iso = access.isolate;
       RuntimeBuilder.logVerboseInfo('Mirror system and access domain set up for ${iso.rootLibrary.uri}');
+      setRuntimeLibraryTag(iso.rootLibrary.uri.toString());
       
       // 3. Force load specified files
       final locatedFiles = await FileUtils.findDartFiles(directory);
@@ -181,7 +190,7 @@ class MockRuntimeScanner implements RuntimeScanner {
         mirrorSystem: access,
         forceLoadedMirrors: forceLoadedMirrors,
         configuration: configuration,
-        packages: [_createPackage(package!), ...packages],
+        packages: [createDefaultPackage(package!), ...packages],
       );
       
       final libraryGenerator = _libraryGeneratorFactory?.call(params) ?? MockLibraryGenerator(
@@ -191,35 +200,35 @@ class MockRuntimeScanner implements RuntimeScanner {
         packages: params.packages,
       );
 
-      List<LibraryDeclaration> libraries = [];
       final dartFilesToAnalyze = Set<File>.from(locatedFiles.getAnalyzeableDartFiles());
       dartFilesToAnalyze.addAll(_forceLoadFiles);
-      libraries = await libraryGenerator.generate(dartFilesToAnalyze.toList());
-      RuntimeBuilder.logVerboseInfo('Generated declaration metadata for ${libraries.length} libraries');
-
-      if (libraries.isNotEmpty) {
-        context.addLibraries(libraries, replace: refreshContext);
-      }
+      await libraryGenerator.generate(dartFilesToAnalyze.toList());
+      RuntimeBuilder.logVerboseInfo('Done generating declaration metadata');
       
       // 6. Generate AOT Runtime Resolvers
       final resolving = DefaultRuntimeExecutorResolving(libraries: mirrorLibraries);
       if(resources.isNotEmpty) {
-        context.addAssets(resources, replace: refreshContext);
+        addRuntimeAssets(resources, replace: refreshContext);
       }
 
       if(packages.isNotEmpty) {
-        context.addPackages(packages, replace: refreshContext);
+        addRuntimePackages(packages, replace: refreshContext);
       }
-      context.setRuntimeResolver(await resolving.resolve());
-      
-      return context;
+
+      setRuntimeResolver(await resolving.resolve());
+      freezeRuntimeLibrary();
     });
     
     RuntimeBuilder.logVerboseInfo("Mock scan completed in ${result.getFormatted()}");
 
     final summary = DefaultRuntimeScannerSummary();
-    summary.setContext(result.result);
     summary.setBuildTime(DateTime.now());
+    summary.addInfos(RuntimeBuilder.onCompleted().getInfos());
+    summary.addWarnings(RuntimeBuilder.onCompleted().getWarnings());
+    summary.addErrors(RuntimeBuilder.onCompleted().getErrors());
+    summary.addAll(RuntimeBuilder.onCompleted().getLogs());
+
+    RuntimeBuilder.clearTrackedLogs();
     
     return summary;
   }
@@ -248,47 +257,50 @@ class MockRuntimeScanner implements RuntimeScanner {
     return 'unknown';
   }
 
-  /// Creates a package representation for the current project.
+  /// Returns a new [RuntimeScannerConfiguration] with **default packages**
+  /// automatically added to the scan list.
   ///
-  /// {@template create_package}
-  /// Parameters:
-  /// - [name]: The package name
+  /// This helper ensures that essential packages required for reflection
+  /// and analysis are always included, while still respecting user-defined
+  /// exclusions.
   ///
-  /// Returns a [Package] with default mock values:
-  /// - version: '0.0.0'
-  /// - isRootPackage: true
-  /// {@endtemplate}
-  Package _createPackage(String name) {
-    return PackageImplementation(
-      name: name,
-      version: '0.0.0',
-      languageVersion: null,
-      isRootPackage: true,
-      rootUri: null,
-      filePath: null,
+  /// The following packages are added by default:
+  /// - The current application package ([currentPackage])
+  /// - `analyzer`
+  /// - `meta`
+  /// - `path`
+  /// - Any packages already specified in [RuntimeScannerConfiguration.packagesToScan]
+  ///
+  /// Packages explicitly listed in [RuntimeScannerConfiguration.packagesToExclude]
+  /// are filtered out of the final scan list.
+  ///
+  /// The returned configuration:
+  /// - Preserves all other configuration flags and options
+  /// - Does not mutate the original [configuration]
+  /// - Produces a deterministic, de-duplicated package list
+  ///
+  /// This function is typically invoked during runtime scanner
+  /// initialization to normalize the effective scan scope.
+  RuntimeScannerConfiguration _addDefaultPackagesToScan(RuntimeScannerConfiguration configuration, String currentPackage) {
+    final defaultPackages = {currentPackage, 'analyzer', 'meta', 'path', ...configuration.packagesToScan}.toList();
+    final filteredDefaults = defaultPackages.where((pkg) => !configuration.packagesToExclude.contains(pkg)).toList();
+    
+    return RuntimeScannerConfiguration(
+      reload: configuration.reload,
+      updatePackages: configuration.updatePackages,
+      updateAssets: configuration.updateAssets,
+      packagesToScan: filteredDefaults,
+      packagesToExclude: configuration.packagesToExclude,
+      filesToScan: configuration.filesToScan,
+      filesToExclude: configuration.filesToExclude,
+      additions: configuration.additions,
+      removals: configuration.removals,
+      writeDeclarationsToFiles: configuration.writeDeclarationsToFiles,
+      enableTreeShaking: configuration.enableTreeShaking,
+      outputPath: configuration.outputPath,
+      scanClasses: configuration.scanClasses,
+      excludeClasses: configuration.excludeClasses,
+      skipTests: configuration.skipTests
     );
   }
-}
-
-RuntimeScannerConfiguration _addDefaultPackagesToScan(RuntimeScannerConfiguration configuration, String currentPackage) {
-  final defaultPackages = {currentPackage, 'analyzer', 'meta', 'path', ...configuration.packagesToScan}.toList();
-  final filteredDefaults = defaultPackages.where((pkg) => !configuration.packagesToExclude.contains(pkg)).toList();
-  
-  return RuntimeScannerConfiguration(
-    reload: configuration.reload,
-    updatePackages: configuration.updatePackages,
-    updateAssets: configuration.updateAssets,
-    packagesToScan: filteredDefaults,
-    packagesToExclude: configuration.packagesToExclude,
-    filesToScan: configuration.filesToScan,
-    filesToExclude: configuration.filesToExclude,
-    additions: configuration.additions,
-    removals: configuration.removals,
-    writeDeclarationsToFiles: configuration.writeDeclarationsToFiles,
-    enableTreeShaking: configuration.enableTreeShaking,
-    outputPath: configuration.outputPath,
-    scanClasses: configuration.scanClasses,
-    excludeClasses: configuration.excludeClasses,
-    skipTests: configuration.skipTests
-  );
 }

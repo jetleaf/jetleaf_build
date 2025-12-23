@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import '../annotations.dart';
 import 'build_arg.dart';
 
@@ -30,10 +28,10 @@ abstract final class RuntimeBuilder {
   /// Internal buffer of all log entries.
   ///
   /// Logs are stored as [_LogEntry] instances and categorized by severity.
-  static final List<_LogEntry> _logs = [];
+  static List<_LogEntry> _logs = [];
 
   /// Internal tracking of messages by their trackWith identifier
-  static final Map<String, _TrackedLog> _trackedLogs = {};
+  static Map<String, _TrackedLog> _trackedLogs = {};
 
   /// Optional name of the package currently being scanned.
   ///
@@ -367,10 +365,22 @@ abstract final class RuntimeBuilder {
 
   /// Measures the execution time of an asynchronous or synchronous action.
   ///
-  /// [action] — A function returning a `Future` or a direct value of type `T`.
+  /// [action] — A function returning a type `T`.
   /// Returns a [_TimeResult<T>] containing the result and the elapsed time.
   /// Useful for profiling or benchmarking specific runtime operations.
-  static Future<_TimeResult<T>> timeExecution<T>(FutureOr<T> Function() action) async {
+  static _TimeResult<T> timeExecution<T>(T Function() action) {
+    final watch = Stopwatch()..start();
+    final result = action();
+    watch.stop();
+    return _TimeResult(result, watch);
+  }
+
+  /// Measures the execution time of an asynchronous or synchronous action.
+  ///
+  /// [action] — A function returning a type `T`.
+  /// Returns a [_TimeResult<T>] containing the result and the elapsed time.
+  /// Useful for profiling or benchmarking specific runtime operations.
+  static Future<_TimeResult<T>> timeAsyncExecution<T>(Future<T> Function() action) async {
     final watch = Stopwatch()..start();
     final result = await action();
     watch.stop();
@@ -392,6 +402,9 @@ abstract final class RuntimeBuilder {
   /// Clears all tracked logs. Useful for testing or resetting state.
   static void clearTrackedLogs() {
     _trackedLogs.clear();
+    _trackedLogs = {};
+    _logs.clear();
+    _logs = [];
   }
 }
 

@@ -39,6 +39,31 @@ final class ReflectionUtils {
   /// Private constructor to prevent instantiation.
   const ReflectionUtils._();
 
+  /// {@template reflection_utils.keyword}
+  /// Fallback keyword used when reflection metadata cannot be resolved.
+  ///
+  /// This constant represents a **sentinel value** returned by reflection
+  /// utilities when a library URI, source location, or symbol origin
+  /// cannot be determined via `dart:mirrors`.
+  ///
+  /// ### When is this used?
+  /// - The reflected symbol has no associated source location.
+  /// - The runtime environment strips or omits mirror metadata.
+  /// - Reflection is partially unsupported (e.g. certain AOT contexts).
+  ///
+  /// ### Example
+  /// ```dart
+  /// final name = ReflectionUtils.findQualifiedName(myObject);
+  /// // → "unknown.MyClass"
+  /// ```
+  ///
+  /// ### Notes
+  /// - This value is **not** a real library or package URI.
+  /// - Consumers should treat it as a signal that the origin
+  ///   could not be reliably inferred.
+  /// {@endtemplate}
+  static const String KEYWORD = 'unknown';
+
   // ─────────────────────────────────────────────────────────────
   // Instance Reflection
   // ─────────────────────────────────────────────────────────────
@@ -71,7 +96,7 @@ final class ReflectionUtils {
     final className = mirrors.MirrorSystem.getName(classMirror.simpleName);
 
     // Library URI is taken from owner or type location
-    final libraryUri = classMirror.location?.sourceUri.toString() ?? classMirror.owner?.location?.sourceUri.toString() ?? 'unknown';
+    final libraryUri = classMirror.location?.sourceUri.toString() ?? classMirror.owner?.location?.sourceUri.toString() ?? KEYWORD;
 
     return buildQualifiedName(className, libraryUri);
   }
@@ -172,7 +197,9 @@ final class ReflectionUtils {
   static String findQualifiedNameFromType(Type type) {
     final typeMirror = mirrors.reflectType(type);
     final typeName = mirrors.MirrorSystem.getName(typeMirror.simpleName);
-    final libraryUri = typeMirror.location?.sourceUri.toString() ?? 'unknown';
+    final libraryUri = typeMirror.location?.sourceUri.toString()
+      ?? typeMirror.owner?.location?.sourceUri.toString()
+      ?? KEYWORD;
 
     return buildQualifiedName(typeName, libraryUri);
   }
@@ -197,5 +224,33 @@ final class ReflectionUtils {
   static String buildQualifiedName(String typeName, String libraryUri) {
     // Ensures there’s only one dot between segments
     return '$libraryUri.$typeName'.replaceAll("..", '.');
+  }
+
+  /// Extracts the class name from a fully-qualified name.
+  ///
+  /// Example:
+  /// ```dart
+  /// ReflectionUtils.extractClassName("package:my_app/models/user.dart.User");
+  /// // → "User"
+  ///
+  /// ReflectionUtils.extractClassName("dart:core.String");
+  /// // → "String"
+  /// ```
+  static String extractClassName(String qualifiedName) {
+    final parts = qualifiedName.split('.');
+    return parts.isNotEmpty ? parts.last : qualifiedName;
+  }
+
+  /// Extracts the library/package URI from a fully qualified name.
+  ///
+  /// Example:
+  /// ```
+  /// package:my_app/models/user.dart.User -> package:my_app/models/user.dart
+  /// dart:core.String -> dart:core
+  /// ```
+  static String extractLibraryUri(String qualifiedName) {
+    final lastDotIndex = qualifiedName.lastIndexOf('.');
+    if (lastDotIndex == -1) return qualifiedName; // no dot, return as-is
+    return qualifiedName.substring(0, lastDotIndex);
   }
 }

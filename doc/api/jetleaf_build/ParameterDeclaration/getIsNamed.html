@@ -62,7 +62,12 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns <code>true</code> if the parameter is a named parameter.</p>
+  <p>Returns <code>true</code> if the parameter is a <em>named</em> parameter.</p>
+<p>Examples:</p>
+<pre class="language-dart"><code class="language-dart">void f({int a})   // true
+void f([int a])   // false
+void f(int a)     // false
+</code></pre>
 </section>
 
 
@@ -97,7 +102,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

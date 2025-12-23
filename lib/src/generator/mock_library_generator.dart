@@ -14,8 +14,8 @@
 
 import 'dart:mirrors' as mirrors;
 
+import '../runtime/declaration/declaration.dart';
 import '../utils/utils.dart';
-import '../declaration/declaration.dart';
 import 'default_library_generator.dart';
 import 'library_generator.dart';
 import '../runtime/scanner/runtime_scanner_configuration.dart';

@@ -49,34 +49,113 @@
     data-below-sidebar="jetleaf_build&#47;FileUtility-class-sidebar.html">
     <div>
 <h1><span class="kind-class">FileUtility</span> class 
+    <a href="https://dart.dev/language/class-modifiers#final" class="feature feature-final" title="This class can neither be extended, implemented, nor mixed in.">final</a>
  
 </h1></div>
 
     
 <section class="desc markdown">
-  <p>Utility class for file system operations related to Dart projects.</p>
+  <p>A utility class providing file-system and package-resolution helpers
+for Dart and JetLeaf runtime environments.</p>
+<p><code>FileUtility</code> centralizes logic for interacting with:</p>
+<ul>
+<li><code>package_config.json</code> parsing and caching</li>
+<li>Resolution of package-local and project-local file paths</li>
+<li>Determining safe file access contexts (e.g., inside vs. outside isolates)</li>
+<li>Logging of file-related operations</li>
+</ul>
+<p>This class is used internally by JetLeaf runtime scanners,
+reflection systems, and AOT tooling to robustly locate, load,
+and classify project files.</p>
+<p>The utility caches package configuration entries for performance and
+exposes controlled logging hooks that allow the host application or
+framework to capture scanner output without depending on any logging
+package.</p>
+<p>Fields:</p>
+<ul>
+<li><a href="../jetleaf_build/AbstractFileUtility/packageConfigCache.html">packageConfigCache</a>: Cached list of parsed package configuration entries.</li>
+<li><a href="../jetleaf_build/AbstractFileUtility/currentPackageName.html">currentPackageName</a>: Name of the root package resolved from the
+active package configuration.</li>
+<li><a href="../jetleaf_build/AbstractFileUtility/onInfo.html">onInfo</a>: Callback for informational logging messages.</li>
+<li><a href="../jetleaf_build/AbstractFileUtility/onWarning.html">onWarning</a>: Callback for warnings that do not halt execution.</li>
+<li><a href="../jetleaf_build/AbstractFileUtility/onError.html">onError</a>: Callback for critical errors encountered during file
+operations.</li>
+<li><a href="../jetleaf_build/AbstractFileUtility/tryOutsideIsolate.html">tryOutsideIsolate</a>: Strategy function to determine whether specific
+files must be read in the main isolate.</li>
+<li><a href="../jetleaf_build/AbstractFileUtility/configuration.html">configuration</a>: Runtime scanner configuration options controlling
+scanning behavior and file-system traversal rules.</li>
+</ul>
 </section>
 
 
+    <section>
+      <dl class="dl-horizontal">
+        
+  <dt>Inheritance</dt>
+  <dd>
+    <ul class="gt-separated dark clazz-relationships">
+      <li><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></li>
+        <li><a href="../jetleaf_build/AbstractFileUtility-class.html">AbstractFileUtility</a></li>
+      <li>FileUtility</li>
+    </ul>
+  </dd>
+
+        
+        
+
+
+        
+        
+
+
+      </dl>
+    </section>
 
     
   <section class="summary offset-anchor" id="constructors">
     <h2>Constructors</h2>
     <dl class="constructor-summary-list">
         <dt id="FileUtility.new" class="callable">
-          <span class="name"><a href="../jetleaf_build/FileUtility/FileUtility.html">FileUtility.new</a></span><span class="signature">(<span class="parameter" id="-param-_onInfo"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a></span> <span class="parameter-name">_onInfo</span>, </span><span class="parameter" id="-param-_onWarning"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a></span> <span class="parameter-name">_onWarning</span>, </span><span class="parameter" id="-param-_onError"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a></span> <span class="parameter-name">_onError</span>, </span><span class="parameter" id="-param-_configuration"><span class="type-annotation"><a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">_configuration</span>, </span><span class="parameter" id="-param-_tryOutsideIsolate"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">_tryOutsideIsolate</span></span>)</span>
+          <span class="name"><a href="../jetleaf_build/FileUtility/FileUtility.html">FileUtility.new</a></span><span class="signature">(<span class="parameter" id="-param-onInfo"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a></span> <span class="parameter-name">onInfo</span>, </span><span class="parameter" id="-param-onWarning"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a></span> <span class="parameter-name">onWarning</span>, </span><span class="parameter" id="-param-onError"><span class="type-annotation"><a href="../jetleaf_build/OnLogged.html">OnLogged</a></span> <span class="parameter-name">onError</span>, </span><span class="parameter" id="-param-configuration"><span class="type-annotation"><a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">configuration</span>, </span><span class="parameter" id="-param-tryOutsideIsolate"><span class="type-annotation"><a href="../jetleaf_build/TryOutsideIsolate.html">TryOutsideIsolate</a></span> <span class="parameter-name">tryOutsideIsolate</span></span>)</span>
         </dt>
         <dd>
           File patterns that should be skipped
+A utility class providing file-system and package-resolution helpers
+for Dart and JetLeaf runtime environments.
         </dd>
     </dl>
   </section>
     
   <section
-      class="summary offset-anchor"
+      class="summary offset-anchor inherited"
       id="instance-properties">
     <h2>Properties</h2>
     <dl class="properties">
+        <dt id="configuration" class="property inherited">
+  <span class="name"><a href="../jetleaf_build/AbstractFileUtility/configuration.html">configuration</a></span>
+  <span class="signature">&#8594; <a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  Configuration options controlling runtime scanning behavior.
+  <div class="features"><span class="feature">final</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="currentPackageName" class="property inherited">
+  <span class="name"><a href="../jetleaf_build/AbstractFileUtility/currentPackageName.html">currentPackageName</a></span>
+  <span class="signature">&#8596; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a>?</span>
+  
+
+</dt>
+<dd class="inherited">
+  Name of the root package as determined from the loaded package
+configuration.
+  <div class="features"><span class="feature">getter/setter pair</span><span class="feature">inherited</span></div>
+
+</dd>
+
         <dt id="hashCode" class="property inherited">
   <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/hashCode.html">hashCode</a></span>
   <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/int-class.html">int</a></span>
@@ -89,15 +168,76 @@
 
 </dd>
 
-        <dt id="packageConfig" class="property">
-  <span class="name"><a href="../jetleaf_build/FileUtility/packageConfig.html">packageConfig</a></span>
+        <dt id="jetleafPackages" class="property inherited">
+  <span class="name"><a href="../jetleaf_build/AbstractFileUtility/jetleafPackages.html">jetleafPackages</a></span>
+  <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
+  
+
+</dt>
+<dd class="inherited">
+  List of all Jetleaf packages you care about
+  <div class="features"><span class="feature">final</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="onError" class="property inherited">
+  <span class="name"><a href="../jetleaf_build/AbstractFileUtility/onError.html">onError</a></span>
+  <span class="signature">&#8594; <a href="../jetleaf_build/OnLogged.html">OnLogged</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  Logging callback for critical or unrecoverable file-system errors.
+  <div class="features"><span class="feature">final</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="onInfo" class="property inherited">
+  <span class="name"><a href="../jetleaf_build/AbstractFileUtility/onInfo.html">onInfo</a></span>
+  <span class="signature">&#8594; <a href="../jetleaf_build/OnLogged.html">OnLogged</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  Logging callback for informational output.
+  <div class="features"><span class="feature">final</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="onWarning" class="property inherited">
+  <span class="name"><a href="../jetleaf_build/AbstractFileUtility/onWarning.html">onWarning</a></span>
+  <span class="signature">&#8594; <a href="../jetleaf_build/OnLogged.html">OnLogged</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  Logging callback for non-fatal warnings.
+  <div class="features"><span class="feature">final</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="packageConfig" class="property inherited">
+  <span class="name"><a href="../jetleaf_build/AbstractFileUtility/packageConfig.html">packageConfig</a></span>
   <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/PackageConfigEntry-class.html">PackageConfigEntry</a></span>&gt;</span></span>
   
 
 </dt>
-<dd>
+<dd class="inherited">
+  List of all packages in the project - including dev dependencies
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="packageConfigCache" class="property inherited">
+  <span class="name"><a href="../jetleaf_build/AbstractFileUtility/packageConfigCache.html">packageConfigCache</a></span>
+  <span class="signature">&#8596; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/PackageConfigEntry-class.html">PackageConfigEntry</a></span>&gt;</span>?</span>
   
-  <div class="features"><span class="feature">no setter</span></div>
+
+</dt>
+<dd class="inherited">
+  Cached list of parsed package configuration entries loaded from the
+active <code>package_config.json</code>.
+  <div class="features"><span class="feature">getter/setter pair</span><span class="feature">inherited</span></div>
 
 </dd>
 
@@ -113,6 +253,19 @@
 
 </dd>
 
+        <dt id="tryOutsideIsolate" class="property inherited">
+  <span class="name"><a href="../jetleaf_build/AbstractFileUtility/tryOutsideIsolate.html">tryOutsideIsolate</a></span>
+  <span class="signature">&#8594; <a href="../jetleaf_build/TryOutsideIsolate.html">TryOutsideIsolate</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  Strategy function that determines whether a specific file should be
+accessed outside an isolate.
+  <div class="features"><span class="feature">final</span><span class="feature">inherited</span></div>
+
+</dd>
+
     </dl>
   </section>
 
@@ -122,81 +275,218 @@
       id="instance-methods">
     <h2>Methods</h2>
     <dl class="callables">
-        <dt id="discoverAllResources" class="callable">
-  <span class="name"><a href="../jetleaf_build/FileUtility/discoverAllResources.html">discoverAllResources</a></span><span class="signature">(<wbr><span class="parameter" id="discoverAllResources-param-currentPackageName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">currentPackageName</span>, [</span><span class="parameter" id="discoverAllResources-param-mirrorSystem"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a>?</span> <span class="parameter-name">mirrorSystem</span></span>])
+        <dt id="cleanup" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/FileUtility/cleanup.html">cleanup</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="discoverAllResources" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/FileUtility/discoverAllResources.html">discoverAllResources</a></span><span class="signature">(<wbr><span class="parameter" id="discoverAllResources-param-currentPackageName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">currentPackageName</span>, [</span><span class="parameter" id="discoverAllResources-param-mirrorSystem"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a>?</span> <span class="parameter-name">mirrorSystem</span>, </span><span class="parameter" id="discoverAllResources-param-libraries"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/LibraryMirror-class.html">LibraryMirror</a></span>&gt;</span>?</span> <span class="parameter-name">libraries</span></span>])
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/Asset-class.html">Asset</a></span>&gt;</span></span>&gt;</span></span>
   </span>
   
 
 </dt>
-<dd>
-  Discovers all resource files in the current project and ALL dependencies.
-  
+<dd class="inherited">
+  Discovers <strong>all resource assets</strong> available to the current application,
+including:
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="findDartFiles" class="callable">
-  <span class="name"><a href="../jetleaf_build/FileUtility/findDartFiles.html">findDartFiles</a></span><span class="signature">(<wbr><span class="parameter" id="findDartFiles-param-projectDir"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a></span> <span class="parameter-name">projectDir</span></span>)
-    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span>&gt;</span></span>&gt;</span></span>
+        <dt id="extractJetleafDependencies" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/FileUtility/extractJetleafDependencies.html">extractJetleafDependencies</a></span><span class="signature">(<wbr><span class="parameter" id="extractJetleafDependencies-param-dependencies"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Iterable-class.html">Iterable</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">dependencies</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Iterable-class.html">Iterable</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
   </span>
   
 
 </dt>
-<dd>
-  Finds all Dart files within the current project and ALL its dependencies, respecting only user exclusions.
-  
+<dd class="inherited">
+  Returns the set of <strong>JetLeaf-related dependencies</strong> declared in a package.
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="findNonDartFiles" class="callable">
+        <dt id="extractPubspecDependencyKeys" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/FileUtility/extractPubspecDependencyKeys.html">extractPubspecDependencyKeys</a></span><span class="signature">(<wbr><span class="parameter" id="extractPubspecDependencyKeys-param-packageRoot"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a></span> <span class="parameter-name">packageRoot</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Extracts all dependency keys declared in a <code>pubspec.yaml</code> located at the
+given <code>packageRoot</code>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="findDartFiles" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/FileUtility/findDartFiles.html">findDartFiles</a></span><span class="signature">(<wbr><span class="parameter" id="findDartFiles-param-projectDir"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a></span> <span class="parameter-name">projectDir</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/LocatedFiles-class.html">LocatedFiles</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Scans the current project <strong>and all dependency packages</strong> for Dart source
+files, applying user-defined inclusion and exclusion rules.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="findNonDartFiles" class="callable inherited">
   <span class="name"><a href="../jetleaf_build/FileUtility/findNonDartFiles.html">findNonDartFiles</a></span><span class="signature">(<wbr><span class="parameter" id="findNonDartFiles-param-projectDir"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a></span> <span class="parameter-name">projectDir</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span>&gt;</span></span>&gt;</span></span>
   </span>
   
 
 </dt>
-<dd>
-  Finds all non-Dart files within the current project directory, respecting inclusion/exclusion lists.
-  
+<dd class="inherited">
+  Finds all <strong>non-Dart files</strong> within the current project and optionally
+selected dependency packages, respecting the user's inclusion and exclusion
+rules from the runtime scanner configuration.
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="forceLoadLibrary" class="callable">
+        <dt id="findZeroArgsConstructorSymbol" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/FileUtility/findZeroArgsConstructorSymbol.html">findZeroArgsConstructorSymbol</a></span><span class="signature">(<wbr><span class="parameter" id="findZeroArgsConstructorSymbol-param-mirror"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/ClassMirror-class.html">ClassMirror</a></span> <span class="parameter-name">mirror</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Symbol-class.html">Symbol</a>?</span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Attempts to locate a <strong>zero-argument constructor</strong> for the given class.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="forceLoadLibrary" class="callable inherited">
   <span class="name"><a href="../jetleaf_build/FileUtility/forceLoadLibrary.html">forceLoadLibrary</a></span><span class="signature">(<wbr><span class="parameter" id="forceLoadLibrary-param-uri"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Uri-class.html">Uri</a></span> <span class="parameter-name">uri</span>, </span><span class="parameter" id="forceLoadLibrary-param-file"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span> <span class="parameter-name">file</span>, </span><span class="parameter" id="forceLoadLibrary-param-mirrorSystem"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a></span> <span class="parameter-name">mirrorSystem</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/LibraryMirror-class.html">LibraryMirror</a>?</span>&gt;</span></span>
   </span>
   
 
 </dt>
-<dd>
-  Forces a Dart library at <code>uri</code> to be loaded into the <code>mirrorSystem</code>.
-  
+<dd class="inherited">
+  Forces a Dart library represented by <code>uri</code> to be loaded into the provided
+<code>mirrorSystem</code>.
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="getUrisToLoad" class="callable">
+        <dt id="getDirectiveScanner" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/FileUtility/getDirectiveScanner.html">getDirectiveScanner</a></span><span class="signature">(<wbr><span class="parameter" id="getDirectiveScanner-param-src"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">src</span></span>)
+    <span class="returntype parameter">&#8594; _DirectiveScanner</span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Creates and returns a new <code>_DirectiveScanner</code> for the given raw source.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getJetleafDependencies" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/FileUtility/getJetleafDependencies.html">getJetleafDependencies</a></span><span class="signature">(<wbr><span class="parameter" id="getJetleafDependencies-param-packageRoot"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a></span> <span class="parameter-name">packageRoot</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns the set of <strong>JetLeaf-related dependencies</strong> declared in a package.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getNonJetleafDependencies" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/FileUtility/getNonJetleafDependencies.html">getNonJetleafDependencies</a></span><span class="signature">(<wbr><span class="parameter" id="getNonJetleafDependencies-param-packageRoot"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a></span> <span class="parameter-name">packageRoot</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Returns the set of <strong>non-JetLeaf dependencies</strong> declared in a package.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getUrisToLoad" class="callable inherited">
   <span class="name"><a href="../jetleaf_build/FileUtility/getUrisToLoad.html">getUrisToLoad</a></span><span class="signature">(<wbr><span class="parameter" id="getUrisToLoad-param-files"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span>&gt;</span></span> <span class="parameter-name">files</span>, </span><span class="parameter" id="getUrisToLoad-param-package"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">package</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span>, <span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Uri-class.html">Uri</a></span>&gt;</span></span>
   </span>
   
 
 </dt>
-<dd>
-  Resolves a list of files to their package URIs, being as inclusive as possible.
-  
+<dd class="inherited">
+  Resolves a list of files to their corresponding package or file URIs.
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="isPartFile" class="callable">
+        <dt id="isPartFile" class="callable inherited">
   <span class="name"><a href="../jetleaf_build/FileUtility/isPartFile.html">isPartFile</a></span><span class="signature">(<wbr><span class="parameter" id="isPartFile-param-file"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span> <span class="parameter-name">file</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
   </span>
   
 
 </dt>
-<dd>
-  Checks if a file contains a 'part of' directive
+<dd class="inherited">
+  Returns <code>true</code> if the given <code>file</code> contains a valid <code>part of</code> directive.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="isSubclassOf" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/FileUtility/isSubclassOf.html">isSubclassOf</a></span><span class="signature">(<wbr><span class="parameter" id="isSubclassOf-param-classMirror"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/ClassMirror-class.html">ClassMirror</a></span> <span class="parameter-name">classMirror</span>, </span><span class="parameter" id="isSubclassOf-param-target"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/ClassMirror-class.html">ClassMirror</a></span> <span class="parameter-name">target</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
   
+
+</dt>
+<dd class="inherited">
+  Determines whether <code>classMirror</code> is the same type as <code>target</code> or a
+transitive subtype of it.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="isTestFile" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/AbstractFileUtility/isTestFile.html">isTestFile</a></span><span class="signature">(<wbr><span class="parameter" id="isTestFile-param-filePath"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">filePath</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Determines whether a file path refers to a test file.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="loadPackageConfig" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/AbstractFileUtility/loadPackageConfig.html">loadPackageConfig</a></span><span class="signature">(<wbr>[<span class="parameter" id="loadPackageConfig-param-source"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a>?</span> <span class="parameter-name">source</span></span>])
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Loads the package configuration from <code>.dart_tool/package_config.json</code>.
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
@@ -214,67 +504,71 @@
 </dd>
 
         <dt id="readPackageGraphDependencies" class="callable">
-  <span class="name"><a href="../jetleaf_build/FileUtility/readPackageGraphDependencies.html">readPackageGraphDependencies</a></span><span class="signature">(<wbr><span class="parameter" id="readPackageGraphDependencies-param-projectRoot"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a></span> <span class="parameter-name">projectRoot</span>, [</span><span class="parameter" id="readPackageGraphDependencies-param-mirrorSystem"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a>?</span> <span class="parameter-name">mirrorSystem</span></span>])
+  <span class="name"><a href="../jetleaf_build/FileUtility/readPackageGraphDependencies.html">readPackageGraphDependencies</a></span><span class="signature">(<wbr><span class="parameter" id="readPackageGraphDependencies-param-projectRoot"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a></span> <span class="parameter-name">projectRoot</span>, [</span><span class="parameter" id="readPackageGraphDependencies-param-mirrorSystem"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a>?</span> <span class="parameter-name">mirrorSystem</span>, </span><span class="parameter" id="readPackageGraphDependencies-param-libraries"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/LibraryMirror-class.html">LibraryMirror</a></span>&gt;</span>?</span> <span class="parameter-name">libraries</span></span>])
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/Package-class.html">Package</a></span>&gt;</span></span>&gt;</span></span>
   </span>
   
 
 </dt>
 <dd>
-  Reads dependencies from .dart_tool/package_graph.json.
+  Reads dependency information for the current Dart project by combining
+data from:
   
 
 </dd>
 
-        <dt id="readPackageName" class="callable">
+        <dt id="readPackageName" class="callable inherited">
   <span class="name"><a href="../jetleaf_build/FileUtility/readPackageName.html">readPackageName</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span>
   </span>
   
 
 </dt>
-<dd>
-  Reads the package name from the pubspec.yaml file in the current directory.
-  
+<dd class="inherited">
+  Reads the current package's name from the project's <code>pubspec.yaml</code>.
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="resolveToPackageUri" class="callable">
+        <dt id="resolveToPackageUri" class="callable inherited">
   <span class="name"><a href="../jetleaf_build/FileUtility/resolveToPackageUri.html">resolveToPackageUri</a></span><span class="signature">(<wbr><span class="parameter" id="resolveToPackageUri-param-absoluteFilePath"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">absoluteFilePath</span>, </span><span class="parameter" id="resolveToPackageUri-param-currentPackageName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">currentPackageName</span>, [</span><span class="parameter" id="resolveToPackageUri-param-project"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a>?</span> <span class="parameter-name">project</span></span>])
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a>?</span>
   </span>
   
 
 </dt>
-<dd>
-  Resolves a file system path to a package URI.
-  
+<dd class="inherited">
+  Resolves an absolute file system path into a Dart <code>package:</code> URI, if possible.
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="scanAllDependenciesForDartFiles" class="callable">
-  <span class="name"><a href="../jetleaf_build/FileUtility/scanAllDependenciesForDartFiles.html">scanAllDependenciesForDartFiles</a></span><span class="signature">(<wbr><span class="parameter" id="scanAllDependenciesForDartFiles-param-dartFiles"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span>&gt;</span></span> <span class="parameter-name">dartFiles</span>, </span><span class="parameter" id="scanAllDependenciesForDartFiles-param-filesToScan"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">filesToScan</span>, </span><span class="parameter" id="scanAllDependenciesForDartFiles-param-filesToExclude"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">filesToExclude</span></span>)
+        <dt id="scanAllDependenciesForDartFiles" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/FileUtility/scanAllDependenciesForDartFiles.html">scanAllDependenciesForDartFiles</a></span><span class="signature">(<wbr><span class="parameter" id="scanAllDependenciesForDartFiles-param-located"><span class="type-annotation"><a href="../jetleaf_build/LocatedFiles-class.html">LocatedFiles</a></span> <span class="parameter-name">located</span>, </span><span class="parameter" id="scanAllDependenciesForDartFiles-param-filesToScan"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">filesToScan</span>, </span><span class="parameter" id="scanAllDependenciesForDartFiles-param-filesToExclude"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Set-class.html">Set</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">filesToExclude</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
   </span>
   
 
 </dt>
-<dd>
-  Scans ALL dependencies for Dart files unless explicitly excluded by user
-  
+<dd class="inherited">
+  Scans <strong>all dependency packages</strong> for Dart files using the same filtering
+logic as project scanning, extended with package-level inclusion/exclusion
+configuration and JetLeaf dependency detection.
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
-        <dt id="shouldSkipFile" class="callable">
-  <span class="name"><a href="../jetleaf_build/FileUtility/shouldSkipFile.html">shouldSkipFile</a></span><span class="signature">(<wbr><span class="parameter" id="shouldSkipFile-param-file"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span> <span class="parameter-name">file</span>, </span><span class="parameter" id="shouldSkipFile-param-uri"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Uri-class.html">Uri</a></span> <span class="parameter-name">uri</span></span>)
+        <dt id="shouldSkipFile" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/AbstractFileUtility/shouldSkipFile.html">shouldSkipFile</a></span><span class="signature">(<wbr><span class="parameter" id="shouldSkipFile-param-file"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span> <span class="parameter-name">file</span>, </span><span class="parameter" id="shouldSkipFile-param-uri"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Uri-class.html">Uri</a></span> <span class="parameter-name">uri</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
   </span>
   
 
 </dt>
-<dd>
-  Checks if a file should be skipped based only on user configuration
-  
+<dd class="inherited">
+  Determines whether a file should be skipped based <em>only</em> on user
+configuration and intrinsic unloadability rules.
+  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
@@ -341,7 +635,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

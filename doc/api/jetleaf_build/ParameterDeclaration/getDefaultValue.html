@@ -62,9 +62,15 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the default value of the parameter, or <code>null</code> if none.</p>
-<p>If the parameter doesn't have a default or it is not applicable,
-this returns <code>null</code>.</p>
+  <p>Returns the parameter’s default value, or <code>null</code> if no default exists.</p>
+<p>If the parameter is optional but does not explicitly declare a default,
+this still returns <code>null</code>.</p>
+<p>Example:</p>
+<pre class="language-dart"><code class="language-dart">void f([int x = 10, int y]) {
+  // x.getDefaultValue() → 10
+  // y.getDefaultValue() → null
+}
+</code></pre>
 </section>
 
 
@@ -99,7 +105,7 @@ this returns <code>null</code>.</p>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

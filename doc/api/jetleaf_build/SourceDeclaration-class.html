@@ -50,33 +50,52 @@
     <div>
 <h1><span class="kind-class">SourceDeclaration</span> class 
     <a href="https://dart.dev/language/class-modifiers#abstract" class="feature feature-abstract" title="This type can not be directly constructed.">abstract</a>
-    <a href="https://dart.dev/language/class-modifiers#interface" class="feature feature-interface" title="This class can only be implemented (not extended or mixed in).">interface</a>
+    <a href="https://dart.dev/language/class-modifiers#final" class="feature feature-final" title="This class can neither be extended, implemented, nor mixed in.">final</a>
  
 </h1></div>
 
     
 <section class="desc markdown">
-  <p>Represents any top-level or member declaration in Dart code,
-such as a class, method, field, enum, typedef, etc., and exposes
-its metadata for reflection.</p>
-<p>This interface provides access to:</p>
+  <p>A declaration that originates directly from <strong>source-level Dart code</strong>.</p>
+<p><a href="../jetleaf_build/SourceDeclaration-class.html">SourceDeclaration</a> represents declarations that can be traced back to
+a concrete location in source code, such as:</p>
 <ul>
-<li>The declaration's name</li>
-<li>The library it belongs to</li>
-<li>Attached annotations</li>
-<li>Optional source location (e.g., filename or URI)</li>
+<li>Classes</li>
+<li>Members (methods, fields, constructors)</li>
+<li>Top-level declarations</li>
 </ul>
-<p>It forms the base interface for all reflectable declarations like
-<a href="../jetleaf_build/ClassDeclaration-class.html">ClassDeclaration</a>, <a href="../jetleaf_build/MethodDeclaration-class.html">MethodDeclaration</a>, and <a href="../jetleaf_build/FieldDeclaration-class.html">FieldDeclaration</a>.</p>
-<h3 id="example">Example</h3>
-<pre class="language-dart"><code class="language-dart">final clazz = reflector.reflectType(MyClass).asClassType();
-final methods = clazz?.getMethods();
-
-for (final method in methods!) {
-  print(method.getName());
-  print(method.getSourceLocation());
-}
-</code></pre>
+<p>Unlike purely synthetic or runtime-only declarations, source declarations
+may expose:</p>
+<ul>
+<li>Annotations applied in code</li>
+<li>A source URI pointing to their definition</li>
+</ul>
+<hr>
+<h4 id="identity">Identity</h4>
+<p>The debug identity for a <a href="../jetleaf_build/SourceDeclaration-class.html">SourceDeclaration</a> is derived from:</p>
+<ul>
+<li>The declaration’s runtime type</li>
+<li>Its simple name</li>
+</ul>
+<p>This ensures stability across reflection and generation phases while
+remaining human-readable.</p>
+<hr>
+<h4 id="serialization">Serialization</h4>
+<p><a href="../jetleaf_build/SourceDeclaration-class.html">SourceDeclaration</a> provides a standardized <a href="../jetleaf_build/SourceDeclaration/toJson.html">toJson</a> implementation
+containing:</p>
+<ul>
+<li>Declaration kind</li>
+<li>Name</li>
+<li>Annotations (if any)</li>
+<li>Source location (if available)</li>
+<li>Runtime type information</li>
+</ul>
+<p>This structure is used extensively by:</p>
+<ul>
+<li>Diagnostic tooling</li>
+<li>Debug output</li>
+<li>Metadata inspection</li>
+</ul>
 </section>
 
 
@@ -87,6 +106,7 @@ for (final method in methods!) {
   <dd>
     <ul class="gt-separated dark clazz-relationships">
       <li><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></li>
+        <li><a href="../jetleaf_build/BaseDeclaration-class.html">BaseDeclaration</a></li>
         <li><a href="../jetleaf_build/Declaration-class.html">Declaration</a></li>
         <li><a href="../jetleaf_build/EntityDeclaration-class.html">EntityDeclaration</a></li>
       <li>SourceDeclaration</li>
@@ -100,17 +120,10 @@ for (final method in methods!) {
           <dd><ul class="comma-separated clazz-relationships">
               <li><a href="../jetleaf_build/ClassDeclaration-class.html">ClassDeclaration</a></li>
               <li><a href="../jetleaf_build/EnumDeclaration-class.html">EnumDeclaration</a></li>
-              <li><a href="../jetleaf_build/EnumFieldDeclaration-class.html">EnumFieldDeclaration</a></li>
-              <li><a href="../jetleaf_build/ExtensionDeclaration-class.html">ExtensionDeclaration</a></li>
               <li><a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a></li>
               <li><a href="../jetleaf_build/MemberDeclaration-class.html">MemberDeclaration</a></li>
               <li><a href="../jetleaf_build/MixinDeclaration-class.html">MixinDeclaration</a></li>
               <li><a href="../jetleaf_build/ParameterDeclaration-class.html">ParameterDeclaration</a></li>
-              <li><a href="../jetleaf_build/RecordDeclaration-class.html">RecordDeclaration</a></li>
-              <li><a href="../jetleaf_build/RecordFieldDeclaration-class.html">RecordFieldDeclaration</a></li>
-              <li><a href="../jetleaf_build/StandardSourceDeclaration-class.html">StandardSourceDeclaration</a></li>
-              <li><a href="../jetleaf_build/TypedefDeclaration-class.html">TypedefDeclaration</a></li>
-              <li><a href="../jetleaf_build/TypeVariableDeclaration-class.html">TypeVariableDeclaration</a></li>
           </ul></dd>
 
         
@@ -160,6 +173,19 @@ for (final method in methods!) {
       id="instance-methods">
     <h2>Methods</h2>
     <dl class="callables">
+        <dt id="equalizedProperties" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/equalizedProperties.html">equalizedProperties</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Mixin-style contract for value-based equality, <code>hashCode</code>, and <code>toString</code>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
         <dt id="getAnnotations" class="callable">
   <span class="name"><a href="../jetleaf_build/SourceDeclaration/getAnnotations.html">getAnnotations</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/AnnotationDeclaration-class.html">AnnotationDeclaration</a></span>&gt;</span></span>
@@ -168,21 +194,8 @@ for (final method in methods!) {
 
 </dt>
 <dd>
-  Returns all annotations applied to this declaration.
+  Returns all annotations applied to this declaration in source code.
   
-
-</dd>
-
-        <dt id="getDartType" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/EntityDeclaration/getDartType.html">getDartType</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="https://pub.dev/documentation/analyzer/8.4.1/dart_element_type/DartType-class.html">DartType</a>?</span>
-  </span>
-  
-
-</dt>
-<dd class="inherited">
-  The analyzer DartType of the entity for enhanced type operations.
-  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
@@ -194,21 +207,8 @@ for (final method in methods!) {
 
 </dt>
 <dd>
-  The debug identifier for the entity.
+  Returns the <strong>stable debug identifier</strong> for this entity.
   <div class="features"><span class="feature">override</span></div>
-
-</dd>
-
-        <dt id="getElement" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/EntityDeclaration/getElement.html">getElement</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="https://pub.dev/documentation/analyzer/8.4.1/dart_element_element/Element-class.html">Element</a>?</span>
-  </span>
-  
-
-</dt>
-<dd class="inherited">
-  The analyzer element associated with this declaration.
-  <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
 
@@ -220,7 +220,7 @@ for (final method in methods!) {
 
 </dt>
 <dd class="inherited">
-  Checks if this declaration is a public declaration.
+  Indicates whether this declaration is <strong>publicly visible</strong>.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -233,7 +233,7 @@ for (final method in methods!) {
 
 </dt>
 <dd class="inherited">
-  Checks if a declaration is a synthetic declaration.
+  Indicates whether this declaration is <strong>synthetic</strong>.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -246,21 +246,8 @@ for (final method in methods!) {
 
 </dt>
 <dd class="inherited">
-  Gets the name of the declared element.
+  Returns the simple (unqualified) name of this declaration.
   <div class="features"><span class="feature">inherited</span></div>
-
-</dd>
-
-        <dt id="getParentLibrary" class="callable">
-  <span class="name"><a href="../jetleaf_build/SourceDeclaration/getParentLibrary.html">getParentLibrary</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a></span>
-  </span>
-  
-
-</dt>
-<dd>
-  Returns the <a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a> in which this declaration is defined.
-  
 
 </dd>
 
@@ -272,8 +259,8 @@ for (final method in methods!) {
 
 </dt>
 <dd>
-  Returns the source code location (e.g., file path or URI) where this declaration is defined,
-or <code>null</code> if not available in the current reflection context.
+  Returns the URI pointing to the source location where this declaration
+is defined.
   
 
 </dd>
@@ -286,20 +273,7 @@ or <code>null</code> if not available in the current reflection context.
 
 </dt>
 <dd class="inherited">
-  Gets the runtime type of the declared element.
-  <div class="features"><span class="feature">inherited</span></div>
-
-</dd>
-
-        <dt id="hasAnalyzerSupport" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/EntityDeclaration/hasAnalyzerSupport.html">hasAnalyzerSupport</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
-  </span>
-  
-
-</dt>
-<dd class="inherited">
-  Returns true if this declaration has analyzer information available.
+  Returns the Dart <a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a> represented by this declaration.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -325,7 +299,7 @@ or <code>null</code> if not available in the current reflection context.
 
 </dt>
 <dd>
-  Returns a JSON representation of this entity.
+  Serializes this declaration into a JSON-compatible map.
   <div class="features"><span class="feature">override</span></div>
 
 </dd>
@@ -393,7 +367,7 @@ or <code>null</code> if not available in the current reflection context.
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

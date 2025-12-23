@@ -155,6 +155,18 @@ class RuntimeScannerConfiguration {
   /// Whether to try loading the file or uri outside isolate.
   final TryOutsideIsolate? tryOutsideIsolate;
 
+  /// Additional files that should be turned into [Asset] while building the application
+  final List<String> assetExtensionsToSearch;
+
+  /// Additional files that should be ignored as [Asset] while building the application
+  final List<String> assetExtensionsToIgnoreSearch;
+
+  /// This decides on whether the search for added extension files should be done in the current project
+  /// only, or extended to dependencies too.
+  /// 
+  /// Default is true
+  final bool searchAssetExtensionsInProjectOnly;
+
   /// {@macro runtime_scanner_configuration}
   ///
   /// {@template scan_loader_constructor}
@@ -193,7 +205,10 @@ class RuntimeScannerConfiguration {
     this.writeDeclarationsToFiles = false,
     this.outputPath = 'build/generated',
     this.forceLoadLibraries = false,
-    this.tryOutsideIsolate
+    this.tryOutsideIsolate,
+    this.assetExtensionsToSearch = const [],
+    this.assetExtensionsToIgnoreSearch = const [],
+    this.searchAssetExtensionsInProjectOnly = true
   });
 
   /// Returns a copy of this configuration with updated values.
@@ -219,7 +234,10 @@ class RuntimeScannerConfiguration {
     bool? enableTreeShaking,
     bool? writeDeclarationsToFiles,
     String? outputPath,
-    bool? forceLoadLibraries
+    bool? forceLoadLibraries,
+    List<String>? assetExtensionsToSearch,
+    List<String>? assetExtensionsToIgnoreSearch,
+    bool? searchAssetExtensionsInProjectOnly
   }) {
     return RuntimeScannerConfiguration(
       reload: reload ?? this.reload,
@@ -237,7 +255,10 @@ class RuntimeScannerConfiguration {
       enableTreeShaking: enableTreeShaking ?? this.enableTreeShaking,
       writeDeclarationsToFiles: writeDeclarationsToFiles ?? this.writeDeclarationsToFiles,
       outputPath: outputPath ?? this.outputPath,
-      forceLoadLibraries: forceLoadLibraries ?? this.forceLoadLibraries
+      forceLoadLibraries: forceLoadLibraries ?? this.forceLoadLibraries,
+      assetExtensionsToSearch: assetExtensionsToSearch ?? this.assetExtensionsToSearch,
+      assetExtensionsToIgnoreSearch: assetExtensionsToIgnoreSearch ?? this.assetExtensionsToIgnoreSearch,
+      searchAssetExtensionsInProjectOnly: searchAssetExtensionsInProjectOnly ?? this.searchAssetExtensionsInProjectOnly
     );
   }
 

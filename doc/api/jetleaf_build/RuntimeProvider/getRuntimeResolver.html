@@ -54,7 +54,7 @@
 
     <section class="multi-line-signature">
       
-<span class="returntype"><a href="../../jetleaf_build/RuntimeResolver-class.html">RuntimeResolver</a></span>
+<span class="returntype"><a href="../../jetleaf_build/RuntimeExecutor-class.html">RuntimeExecutor</a></span>
 <span class="name ">getRuntimeResolver</span>(<wbr>)
 
       
@@ -62,34 +62,33 @@
     </section>
     
 <section class="desc markdown">
-  <p>Represents a runtime reflection context for a Dart application,
-providing access to libraries, packages, assets, and metadata.</p>
-<p>This context can be implemented using <code>dart:mirrors</code> for JIT,
-or a custom metadata loader for AOT.</p>
-<p>Common use cases include:</p>
+  <p>Returns the <strong>runtime executor</strong> responsible for resolving and executing
+descriptor-backed entities within the active reflection context.</p>
+<p>The returned <a href="../../jetleaf_build/RuntimeExecutor-class.html">RuntimeExecutor</a> acts as the <strong>execution bridge</strong> between
+JetLeaf’s materialized declaration model and the live Dart runtime.
+It is responsible for:</p>
 <ul>
-<li>Loading all classes, enums, typedefs, and extensions</li>
-<li>Discovering framework-specific types or annotations</li>
-<li>Building reflection-based systems like DI, serialization, or codegen</li>
+<li>Resolving runtime representations of classes, methods, and fields</li>
+<li>Executing reflected constructors and invocations</li>
+<li>Translating descriptor-level abstractions into concrete runtime behavior</li>
 </ul>
-<h3 id="example">Example</h3>
-<pre class="language-dart"><code class="language-dart">RuntimeProvider context = obtainContext();
-
-final libraries = context.getLibraries();
-final packages = context.getPackages();
-
-for (final lib in libraries) {
-  print('Library: ${lib.getName()}');
-}
-</code></pre>
-<p>Returns the runtime resolver used to resolve descriptors entities.</p>
+<p>This executor is tightly coupled to the current <a href="../../jetleaf_build/RuntimeProvider-class.html">RuntimeProvider</a> instance
+and reflects the exact state of the runtime at the moment the reflection
+system was initialized.</p>
+<p>Consumers should treat the returned executor as:</p>
+<ul>
+<li><strong>Context-bound</strong> (not transferable across runtimes)</li>
+<li><strong>Read-only in configuration</strong></li>
+<li><strong>Authoritative</strong> for runtime execution semantics</li>
+</ul>
+<p>Returns a fully-initialized <a href="../../jetleaf_build/RuntimeExecutor-class.html">RuntimeExecutor</a>.</p>
 </section>
 
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">RuntimeResolver getRuntimeResolver();</code></pre>
+  <pre class="language-dart"><code class="language-dart">RuntimeExecutor getRuntimeResolver();</code></pre>
 </section>
 
 
@@ -117,7 +116,7 @@ for (final lib in libraries) {
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

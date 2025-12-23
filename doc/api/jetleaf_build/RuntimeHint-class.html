@@ -49,76 +49,122 @@
     data-below-sidebar="jetleaf_build&#47;RuntimeHint-class-sidebar.html">
     <div>
 <h1><span class="kind-class">RuntimeHint</span> class 
+    <a href="https://dart.dev/language/class-modifiers#abstract" class="feature feature-abstract" title="This type can not be directly constructed.">abstract</a>
+    <a href="https://dart.dev/language/class-modifiers#interface" class="feature feature-interface" title="This class can only be implemented (not extended or mixed in).">interface</a>
  
 </h1></div>
 
     
 <section class="desc markdown">
-  <p>A hint that defines how to interact with a specific type <code>Object</code> through reflection-like operations.</p>
-<p><code>RuntimeHint</code> is a metadata container used by JetLeaf's reflection system, especially
-in environments without <code>dart:mirrors</code>, such as ahead-of-time (AOT) compilation.</p>
-<p>It provides function references to:</p>
+  <p>A contract for providing runtime-level behavioral overrides to the JetLeaf
+execution system.</p>
+<p><code>RuntimeHint</code> is the central extension point that allows AOT-generated
+code, plugins, adapters, and custom reflection layers to intercept,
+replace, or augment:</p>
 <ul>
-<li>Create new instances of <code>Object</code></li>
-<li>Invoke methods on <code>Object</code></li>
-<li>Read fields on <code>Object</code></li>
-<li>Write fields on <code>Object</code></li>
+<li><strong>Instance creation</strong></li>
+<li><strong>Method invocation</strong></li>
+<li><strong>Field access</strong></li>
+<li><strong>Field mutation</strong></li>
 </ul>
-<p>These operations are usually supplied by generated code or runtime hooks.</p>
-<h2 id="example">Example</h2>
-<pre class="language-dart"><code class="language-dart">final descriptor = RuntimeHint(
-  type: MyClass,
-  newInstance: (name, [args = const [], namedArgs = const {}]) =&gt; MyClass(),
-  invokeMethod: (instance, method, {args = const [], namedArgs = const {}}) {
-    if (method == 'sayHello') return instance.sayHello();
-    throw UnimplementedError();
-  },
-  getValue: (instance, name) {
-    if (name == 'value') return instance.value;
-    throw UnimplementedError();
-  },
-  setValue: (instance, name, value) {
-    if (name == 'value') instance.value = value;
-  },
-);
+<p>Instead of relying on the reflective capabilities of the Dart runtime,
+JetLeaf uses a <em>hint-driven execution model</em> where each potential
+runtime action consults available hints before falling back to
+default/native execution.</p>
+<p>Implementations of <a href="../jetleaf_build/RuntimeHint-class.html">RuntimeHint</a> can provide:</p>
+<ul>
+<li>Full overrides (replace the entire behavior)</li>
+<li>Conditional overrides (execute only for specific classes, patterns, or states)</li>
+<li>Diagnostic instrumentation (e.g., logging, tracing)</li>
+<li>Precomputation or AOT-substitution</li>
+</ul>
+<p>All hint operations return a <a href="../jetleaf_build/Hint-class.html">Hint</a>, which communicates:</p>
+<ul>
+<li>Whether the hint actually executed</li>
+<li>Whether it produced a meaningful result</li>
+<li>The result of the operation (if any)</li>
+</ul>
+<h2 id="execution-flow">Execution Flow</h2>
+<p>A typical pipeline that evaluates hints may work as follows:</p>
+<ol>
+<li>The runtime attempts to create/invoke/read/write via hints.</li>
+<li>Each hint implementation receives the call.</li>
+<li>If the hint wants to handle it:
+<ul>
+<li>It returns <code>Hint.executed(...)</code> or <code>Hint.executedWithoutResult()</code>.</li>
+</ul>
+</li>
+<li>If the hint chooses not to handle it:
+<ul>
+<li>It returns <code>Hint.notExecuted()</code>.</li>
+</ul>
+</li>
+<li>If all hints decline, the system performs default behavior.</li>
+</ol>
+<h2 id="implementing-runtimehint">Implementing RuntimeHint</h2>
+<p>Concrete implementations typically:</p>
+<ul>
+<li>Are stateless or lightly cached</li>
+<li>Provide fast pattern detection (e.g. type-based or metadata-based)</li>
+<li>Maintain consistent interpretation of <code>ExecutableArgument</code></li>
+</ul>
+<pre class="language-dart"><code class="language-dart">class MyRuntimeHint implements RuntimeHint {
+  const MyRuntimeHint();
+
+  @override
+  Hint createNewInstance(String constructor, ExecutableArgument args) {
+    if (constructor == 'Special') {
+      return Hint.executed(Special(args.getPositionalArguments().first));
+    }
+    return Hint.notExecuted();
+  }
+
+  @override
+  FutureOr&lt;Hint&gt; invokeMethod(Object instance, String method, ExecutableArgument args) {
+    // custom interception...
+    return Hint.notExecuted();
+  }
+
+  // and so on...
+}
 </code></pre>
 </section>
 
 
+    <section>
+      <dl class="dl-horizontal">
+        
+
+        
+        
+  <dt>Mixed-in types</dt>
+  <dd>
+    <ul class="comma-separated clazz-relationships">
+        <li><a href="../jetleaf_build/EqualsAndHashCode-mixin.html">EqualsAndHashCode</a></li>
+    </ul>
+  </dd>
+
+          <dt>Implementers</dt>
+          <dd><ul class="comma-separated clazz-relationships">
+              <li><a href="../jetleaf_build/AbstractRuntimeHint-class.html">AbstractRuntimeHint</a></li>
+          </ul></dd>
+
+        
+        
+
+
+      </dl>
+    </section>
 
     
-  <section class="summary offset-anchor" id="constructors">
-    <h2>Constructors</h2>
-    <dl class="constructor-summary-list">
-        <dt id="RuntimeHint.new" class="callable">
-          <span class="name"><a href="../jetleaf_build/RuntimeHint/RuntimeHint.html">RuntimeHint.new</a></span><span class="signature">({<span class="parameter" id="-param-type"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a></span> <span class="parameter-name">type</span>, </span><span class="parameter" id="-param-newInstance"><span class="type-annotation"><a href="../jetleaf_build/NewInstanceCreator.html">NewInstanceCreator</a>?</span> <span class="parameter-name">newInstance</span>, </span><span class="parameter" id="-param-invokeMethod"><span class="type-annotation"><a href="../jetleaf_build/InvokeMethodCreator.html">InvokeMethodCreator</a>?</span> <span class="parameter-name">invokeMethod</span>, </span><span class="parameter" id="-param-getValue"><span class="type-annotation"><a href="../jetleaf_build/GetValueCreator.html">GetValueCreator</a>?</span> <span class="parameter-name">getValue</span>, </span><span class="parameter" id="-param-setValue"><span class="type-annotation"><a href="../jetleaf_build/SetValueCreator.html">SetValueCreator</a>?</span> <span class="parameter-name">setValue</span></span>})</span>
-        </dt>
-        <dd>
-          A hint that defines how to interact with a specific type <code>Object</code> through reflection-like operations.
-            <div class="constructor-modifier features">const</div>
-        </dd>
-    </dl>
-  </section>
     
   <section
-      class="summary offset-anchor"
+      class="summary offset-anchor inherited"
       id="instance-properties">
     <h2>Properties</h2>
     <dl class="properties">
-        <dt id="getValue" class="property">
-  <span class="name"><a href="../jetleaf_build/RuntimeHint/getValue.html">getValue</a></span>
-  <span class="signature">&#8594; <a href="../jetleaf_build/GetValueCreator.html">GetValueCreator</a>?</span>
-  
-
-</dt>
-<dd>
-  Function to get the value of a field on an instance of type <code>Object</code>.
-  <div class="features"><span class="feature">final</span></div>
-
-</dd>
-
         <dt id="hashCode" class="property inherited">
-  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/hashCode.html">hashCode</a></span>
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/hashCode.html">hashCode</a></span>
   <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/int-class.html">int</a></span>
   
 
@@ -126,30 +172,6 @@ in environments without <code>dart:mirrors</code>, such as ahead-of-time (AOT) c
 <dd class="inherited">
   The hash code for this object.
   <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
-
-</dd>
-
-        <dt id="invokeMethod" class="property">
-  <span class="name"><a href="../jetleaf_build/RuntimeHint/invokeMethod.html">invokeMethod</a></span>
-  <span class="signature">&#8594; <a href="../jetleaf_build/InvokeMethodCreator.html">InvokeMethodCreator</a>?</span>
-  
-
-</dt>
-<dd>
-  Function to invoke a method on an instance of type <code>Object</code>.
-  <div class="features"><span class="feature">final</span></div>
-
-</dd>
-
-        <dt id="newInstance" class="property">
-  <span class="name"><a href="../jetleaf_build/RuntimeHint/newInstance.html">newInstance</a></span>
-  <span class="signature">&#8594; <a href="../jetleaf_build/NewInstanceCreator.html">NewInstanceCreator</a>?</span>
-  
-
-</dt>
-<dd>
-  Function to create a new instance of type <code>Object</code>.
-  <div class="features"><span class="feature">final</span></div>
 
 </dd>
 
@@ -165,39 +187,67 @@ in environments without <code>dart:mirrors</code>, such as ahead-of-time (AOT) c
 
 </dd>
 
-        <dt id="setValue" class="property">
-  <span class="name"><a href="../jetleaf_build/RuntimeHint/setValue.html">setValue</a></span>
-  <span class="signature">&#8594; <a href="../jetleaf_build/SetValueCreator.html">SetValueCreator</a>?</span>
-  
-
-</dt>
-<dd>
-  Function to set the value of a field on an instance of type <code>Object</code>.
-  <div class="features"><span class="feature">final</span></div>
-
-</dd>
-
-        <dt id="type" class="property">
-  <span class="name"><a href="../jetleaf_build/RuntimeHint/type.html">type</a></span>
-  <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a></span>
-  
-
-</dt>
-<dd>
-  The runtime type this descriptor applies to.
-  <div class="features"><span class="feature">final</span></div>
-
-</dd>
-
     </dl>
   </section>
 
     
   <section
-      class="summary offset-anchor inherited"
+      class="summary offset-anchor"
       id="instance-methods">
     <h2>Methods</h2>
     <dl class="callables">
+        <dt id="createNewInstance" class="callable">
+  <span class="name"><a href="../jetleaf_build/RuntimeHint/createNewInstance.html">createNewInstance</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="createNewInstance-param-constructorName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">constructorName</span>, </span><span class="parameter" id="createNewInstance-param-argument"><span class="type-annotation"><a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></span> <span class="parameter-name">argument</span></span>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/Hint-class.html">Hint</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Attempts to create a new instance using the given constructor and arguments.
+  
+
+</dd>
+
+        <dt id="equalizedProperties" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/equalizedProperties.html">equalizedProperties</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Mixin-style contract for value-based equality, <code>hashCode</code>, and <code>toString</code>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="getFieldValue" class="callable">
+  <span class="name"><a href="../jetleaf_build/RuntimeHint/getFieldValue.html">getFieldValue</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="getFieldValue-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, </span><span class="parameter" id="getFieldValue-param-fieldName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">fieldName</span></span>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/Hint-class.html">Hint</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Attempts to read the value of a field from the given instance.
+  
+
+</dd>
+
+        <dt id="invokeMethod" class="callable">
+  <span class="name"><a href="../jetleaf_build/RuntimeHint/invokeMethod.html">invokeMethod</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="invokeMethod-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, </span><span class="parameter" id="invokeMethod-param-methodName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">methodName</span>, </span><span class="parameter" id="invokeMethod-param-argument"><span class="type-annotation"><a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></span> <span class="parameter-name">argument</span></span>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/Hint-class.html">Hint</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Attempts to invoke a method on the given instance.
+  
+
+</dd>
+
         <dt id="noSuchMethod" class="callable inherited">
   <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Invocation-class.html">Invocation</a></span> <span class="parameter-name">invocation</span></span>)
     <span class="returntype parameter">&#8594; dynamic</span>
@@ -211,8 +261,34 @@ in environments without <code>dart:mirrors</code>, such as ahead-of-time (AOT) c
 
 </dd>
 
+        <dt id="obtainTypeOfRuntimeHint" class="callable">
+  <span class="name"><a href="../jetleaf_build/RuntimeHint/obtainTypeOfRuntimeHint.html">obtainTypeOfRuntimeHint</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Returns the runtime <a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a> associated with this hint implementation.
+  
+
+</dd>
+
+        <dt id="setFieldValue" class="callable">
+  <span class="name"><a href="../jetleaf_build/RuntimeHint/setFieldValue.html">setFieldValue</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="setFieldValue-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, </span><span class="parameter" id="setFieldValue-param-fieldName"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">fieldName</span>, </span><span class="parameter" id="setFieldValue-param-value"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span> <span class="parameter-name">value</span></span>)
+    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/Hint-class.html">Hint</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Attempts to write a value to a field on the given instance.
+  
+
+</dd>
+
         <dt id="toString" class="callable inherited">
-  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/toString.html">toString</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/toString.html">toString</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
   </span>
   
@@ -233,7 +309,7 @@ in environments without <code>dart:mirrors</code>, such as ahead-of-time (AOT) c
     <h2>Operators</h2>
     <dl class="callables">
         <dt id="operator ==" class="callable inherited">
-  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
   </span>
   
@@ -274,7 +350,7 @@ in environments without <code>dart:mirrors</code>, such as ahead-of-time (AOT) c
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

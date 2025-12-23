@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the RuntimeExecutor class from the jetleaf_build library, for the Dart programming language.">
+  <title>RuntimeExecutor class - jetleaf_build library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../static-assets/styles.css?v1">
+  <link rel="icon" href="../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../index.html">jetleaf_build</a></li>
+    <li><a href="../jetleaf_build/">jetleaf_build.dart</a></li>
+    <li class="self-crumb">RuntimeExecutor class</li>
+  </ol>
+  <div class="self-name">RuntimeExecutor</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="jetleaf_build&#47;jetleaf_build-library-sidebar.html"
+    data-below-sidebar="jetleaf_build&#47;RuntimeExecutor-class-sidebar.html">
+    <div>
+<h1><span class="kind-class">RuntimeExecutor</span> class 
+    <a href="https://dart.dev/language/class-modifiers#abstract" class="feature feature-abstract" title="This type can not be directly constructed.">abstract</a>
+    <a href="https://dart.dev/language/class-modifiers#interface" class="feature feature-interface" title="This class can only be implemented (not extended or mixed in).">interface</a>
+ 
+</h1></div>
+
+    
+<section class="desc markdown">
+  <p>Defines an interface for executing runtime operations in a Dart environment,
+providing a high-level abstraction for dynamic object creation, method invocation,
+and field manipulation.</p>
+<p><code>RuntimeExecutor</code> is designed for scenarios where compile-time type knowledge
+is insufficient or unavailable, such as:</p>
+<ul>
+<li>Dependency injection frameworks that dynamically instantiate classes.</li>
+<li>Serialization/deserialization engines that read and write object state generically.</li>
+<li>Plugin systems, code generators, or runtime reflection frameworks like JetLeaf,
+where type information and behavior must be resolved dynamically.</li>
+</ul>
+<p>This interface allows implementers to provide a uniform mechanism for:</p>
+<ol>
+<li><strong>Dynamic instantiation</strong>: Create new objects, including those with named
+constructors, without static type references.</li>
+<li><strong>Dynamic method invocation</strong>: Call methods on instances at runtime,
+supplying positional and named arguments, with proper exception handling
+if a method cannot be resolved.</li>
+<li><strong>Dynamic field access</strong>: Read and write instance fields dynamically,
+supporting both public and internal fields if the implementation allows.</li>
+</ol>
+<p>The interface ensures that all operations can throw descriptive, domain-specific
+exceptions (e.g., <code>ConstructorNotFoundException</code>, <code>MethodNotFoundException</code>,
+<code>FieldAccessException</code>, <code>FieldMutationException</code>) to clearly signal runtime failures.</p>
+<p><strong>Key Design Principles:</strong></p>
+<ul>
+<li><strong>Type safety when possible</strong>: Returns typed results (<code>T</code> in <code>newInstance</code>)
+while allowing dynamic invocation where needed.</li>
+<li><strong>Consistency across Dart platforms</strong>: Works on Dart VM, Flutter, or server
+environments depending on implementation strategy (reflection, mirrors, or
+generated code).</li>
+<li><strong>Extensibility</strong>: Can be extended to support advanced runtime scenarios,
+such as caching constructors/methods or enforcing runtime constraints.</li>
+</ul>
+<p>Example usage:</p>
+<pre class="language-dart"><code class="language-dart">final executor = MyRuntimeExecutor();
+
+// Create a new instance dynamically
+var instance = executor.newInstance&lt;MyClass&gt;('namedConstructor', args: [42], namedArgs: {'flag': true});
+
+// Invoke a method dynamically
+var result = executor.invokeMethod(instance, 'compute', args: [10]);
+
+// Get a field value
+var age = executor.getValue(instance, 'age');
+
+// Set a field value
+executor.setValue(instance, 'age', 30);
+</code></pre>
+</section>
+
+
+    <section>
+      <dl class="dl-horizontal">
+        
+
+        
+        
+
+          <dt>Implementers</dt>
+          <dd><ul class="comma-separated clazz-relationships">
+              <li><a href="../jetleaf_build/AotRuntimeExecutor-class.html">AotRuntimeExecutor</a></li>
+              <li><a href="../jetleaf_build/DefaultRuntimeExecutor-class.html">DefaultRuntimeExecutor</a></li>
+              <li><a href="../jetleaf_build/JitRuntimeExecutor-class.html">JitRuntimeExecutor</a></li>
+          </ul></dd>
+
+        
+        
+
+
+      </dl>
+    </section>
+
+    
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="instance-properties">
+    <h2>Properties</h2>
+    <dl class="properties">
+        <dt id="hashCode" class="property inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/hashCode.html">hashCode</a></span>
+  <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  The hash code for this object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="runtimeType" class="property inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/runtimeType.html">runtimeType</a></span>
+  <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  A representation of the runtime type of the object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-methods">
+    <h2>Methods</h2>
+    <dl class="callables">
+        <dt id="getValue" class="callable">
+  <span class="name"><a href="../jetleaf_build/RuntimeExecutor/getValue.html">getValue</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="getValue-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, </span><span class="parameter" id="getValue-param-name"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">name</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>
+  </span>
+  
+
+</dt>
+<dd>
+  Retrieves the value of a field from the specified instance.
+  
+
+</dd>
+
+        <dt id="invokeMethod" class="callable">
+  <span class="name"><a href="../jetleaf_build/RuntimeExecutor/invokeMethod.html">invokeMethod</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="invokeMethod-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, </span><span class="parameter" id="invokeMethod-param-method"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">method</span>, </span><span class="parameter" id="invokeMethod-param-argument"><span class="type-annotation"><a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></span> <span class="parameter-name">argument</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>
+  </span>
+  
+
+</dt>
+<dd>
+  Invokes a method on a given object instance at runtime.
+  
+
+</dd>
+
+        <dt id="newInstance" class="callable">
+  <span class="name"><a href="../jetleaf_build/RuntimeExecutor/newInstance.html">newInstance</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="newInstance-param-name"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">name</span>, </span><span class="parameter" id="newInstance-param-argument"><span class="type-annotation"><a href="../jetleaf_build/ExecutableArgument-class.html">ExecutableArgument</a></span> <span class="parameter-name">argument</span>, </span><span class="parameter" id="newInstance-param-constructor"><span class="type-annotation"><a href="../jetleaf_build/ConstructorDeclaration-class.html">ConstructorDeclaration</a></span> <span class="parameter-name">constructor</span>, [</span><span class="parameter" id="newInstance-param-returnType"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a>?</span> <span class="parameter-name">returnType</span></span>])
+    <span class="returntype parameter">&#8594; T</span>
+  </span>
+  
+
+</dt>
+<dd>
+  Dynamically creates a new instance of type <code>T</code> using the specified constructor.
+  
+
+</dd>
+
+        <dt id="noSuchMethod" class="callable inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Invocation-class.html">Invocation</a></span> <span class="parameter-name">invocation</span></span>)
+    <span class="returntype parameter">&#8594; dynamic</span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Invoked when a nonexistent method or property is accessed.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="setValue" class="callable">
+  <span class="name"><a href="../jetleaf_build/RuntimeExecutor/setValue.html">setValue</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="setValue-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, </span><span class="parameter" id="setValue-param-name"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">name</span>, </span><span class="parameter" id="setValue-param-value"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span> <span class="parameter-name">value</span></span>)
+    <span class="returntype parameter">&#8594; void</span>
+  </span>
+  
+
+</dt>
+<dd>
+  Sets the value of a field on the specified instance at runtime.
+  
+
+</dd>
+
+        <dt id="toString" class="callable inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/toString.html">toString</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  A string representation of this object.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="operators">
+    <h2>Operators</h2>
+    <dl class="callables">
+        <dt id="operator ==" class="callable inherited">
+  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  The equality operator.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+    
+    
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../index.html">jetleaf_build</a></li>
+    <li><a href="../jetleaf_build/">jetleaf_build</a></li>
+    <li class="self-crumb">RuntimeExecutor class</li>
+</ol>
+
+    <h5>jetleaf_build library</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    jetleaf_build
+      1.1.0
+  </span>
+  
+</footer>
+
+
+<script src="../static-assets/highlight.pack.js?v1"></script>
+<script src="../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

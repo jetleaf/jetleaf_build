@@ -64,15 +64,12 @@
     
 <section class="desc markdown">
   <p>Instantiates this class using the default (unnamed) constructor.</p>
-<p><code>arguments</code> is a map where keys are parameter names and values are passed to the constructor.</p>
+<p><code>arguments</code> is a map of parameter names to their corresponding values.
+The runtime system resolves the constructor and passes the arguments.</p>
 <h3 id="example">Example</h3>
-<pre class="language-dart"><code class="language-dart">final instance = clazz.newInstance({'name': 'John', 'age': 30});
+<pre class="language-dart"><code class="language-dart">final instance = clazz.newInstance({'name': 'Alice', 'age': 25});
 print(instance); // Instance of MyClass
 </code></pre>
-<blockquote>
-<p><strong>Note:</strong> In a real reflection system, this would delegate to generated code
-or a dynamic factory registry.</p>
-</blockquote>
 </section>
 
 
@@ -107,7 +104,7 @@ or a dynamic factory registry.</p>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

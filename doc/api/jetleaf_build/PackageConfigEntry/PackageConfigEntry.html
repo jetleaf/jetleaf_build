@@ -61,6 +61,22 @@
 </ol>})
     </section>
     
+<section class="desc markdown">
+  <p>Creates a new <a href="../../jetleaf_build/PackageConfigEntry-class.html">PackageConfigEntry</a> with fully initialized metadata.</p>
+<p>All fields must be provided and represent one complete package entry.</p>
+<p>Represents a single entry in a parsed <code>package_config.json</code> file.</p>
+<p>A <code>PackageConfigEntry</code> provides the essential metadata needed to resolve
+package-relative file paths during scanning and runtime analysis.
+It captures both the declared URIs from the configuration file and a fully
+resolved absolute filesystem path for the package’s root.</p>
+<p>JetLeaf uses this model to:</p>
+<ul>
+<li>Locate source files belonging to a specific package</li>
+<li>Resolve <code>package:</code> URIs into physical paths</li>
+<li>Distinguish between the root package and its dependencies</li>
+<li>Support runtime scanning and reflection operations</li>
+</ul>
+</section>
 
 
     
@@ -99,7 +115,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

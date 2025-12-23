@@ -12,9 +12,9 @@
 // 
 // 🔧 Powered by Hapnium — the Dart backend engine 🍃
 
-import 'package:jetleaf_build/src/generative/generative.dart';
+import 'package:jetleaf_build/jetleaf_build.dart';
 
-class BuildGenerativePackage implements GenerativePackage {
+class BuildGenerativePackage extends GenerativePackage {
   @override
   String? getFilePath() => "lib/src/generated/";
 
@@ -34,6 +34,9 @@ class BuildGenerativePackage implements GenerativePackage {
   String getVersion() => "1.0.0";
 
   @override
+  Iterable<String> getJetleafDependencies() => [];
+
+  @override
   Map<String, Object> toJson() {
     return {
       "name": getName(),
@@ -46,7 +49,7 @@ class BuildGenerativePackage implements GenerativePackage {
   }
 }
 
-class BuildGenerativePackageA implements GenerativePackage {
+class BuildGenerativePackageA extends GenerativePackage {
   @override
   String? getFilePath() => "packages/a/lib/";
 
@@ -66,6 +69,9 @@ class BuildGenerativePackageA implements GenerativePackage {
   String getVersion() => "0.9.1";
 
   @override
+  Iterable<String> getJetleafDependencies() => [];
+
+  @override
   Map<String, Object> toJson() {
     return {
       "name": getName(),
@@ -78,7 +84,7 @@ class BuildGenerativePackageA implements GenerativePackage {
   }
 }
 
-class BuildGenerativePackageB implements GenerativePackage {
+class BuildGenerativePackageB extends GenerativePackage {
   @override
   String? getFilePath() => "packages/b/lib/src/";
 
@@ -93,6 +99,9 @@ class BuildGenerativePackageB implements GenerativePackage {
 
   @override
   String? getRootUri() => "package:package_b/";
+
+  @override
+  Iterable<String> getJetleafDependencies() => [];
 
   @override
   String getVersion() => "2.3.0-dev";
@@ -110,7 +119,7 @@ class BuildGenerativePackageB implements GenerativePackage {
   }
 }
 
-class BuildGenerativePackageC implements GenerativePackage {
+class BuildGenerativePackageC extends GenerativePackage {
   @override
   String? getFilePath() => "modules/c/generated/";
 
@@ -125,6 +134,9 @@ class BuildGenerativePackageC implements GenerativePackage {
 
   @override
   String? getRootUri() => "package:package_c/";
+
+  @override
+  Iterable<String> getJetleafDependencies() => [];
 
   @override
   String getVersion() => "0.1.0-alpha";

@@ -54,52 +54,81 @@
 
         <section class="multi-line-signature">
           
-          _MetaRuntimeProvider
+          <a href="../jetleaf_build/RuntimeProvider-class.html">RuntimeProvider</a>
           <span class="name ">Runtime</span>
           <div class="features"><span class="feature">final</span></div>
 
         </section>
         
 <section class="desc markdown">
-  <p>A central, globally accessible proxy for runtime metadata in JetLeaf.</p>
-<p>The <code>_MetaRuntimeProvider</code> class is the internal implementation behind the
-global <a href="../jetleaf_build/Runtime.html">Runtime</a> instance. It delegates all reflection and metadata queries
-to a configured <a href="../jetleaf_build/RuntimeProvider-class.html">RuntimeProvider</a> that is registered during bootstrap.</p>
-<p>Once initialized, it allows the system to:</p>
+  <p>🔹 JetLeaf Runtime Singleton</p>
+<p>The <code>Runtime</code> object is the <strong>singleton instance of <code>RuntimeProvider</code></strong>
+that represents the <strong>active runtime reflection and execution context</strong>
+within the JetLeaf framework.</p>
+<p>This singleton is the primary entry point for runtime-aware operations,
+including:</p>
 <ul>
-<li>Discover all reflected Dart entities (classes, enums, mixins, typedefs, etc.).</li>
-<li>Access runtime metadata such as <a href="../jetleaf_build/Package-class.html">Package</a>s, <a href="../jetleaf_build/Asset-class.html">Asset</a>s, <a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a>s, etc.</li>
-<li>Query annotations, fields, methods, constructors, and more from a
-single, consistent API.</li>
+<li>Accessing all materialized libraries (<code>MaterialLibrary</code>)</li>
+<li>Resolving Dart packages and their metadata</li>
+<li>Enumerating runtime assets (images, configuration files, templates)</li>
+<li>Executing reflected constructors, methods, and other runtime entities</li>
 </ul>
-<hr>
-<p>⚠️ <strong>Initialization Requirement</strong>
-The <code>register</code> method must be invoked before calling any query methods,
-typically from generated bootstrap code:</p>
-<pre class="language-dart"><code class="language-dart">void main() {
-  final provider = MyGeneratedRuntimeProvider();
-  Runtime.register(StandardRuntimeRegistry.create(provider));
-  runApp();
-}
-
-final clazz = Runtime.getAllClasses().firstWhere(
-  (c) =&gt; c.getName() == 'MyService',
-);
-</code></pre>
-<p>This singleton is the <strong>globally accessible runtime registry</strong>.
-It must be registered before any queries are made.</p>
-<p>Example:</p>
-<pre class="language-dart"><code class="language-dart">void main() {
-  Runtime.register(MyGeneratedRegistry());
-  print(Runtime.getAllPackages());
+<p>⚠️ This object is <strong>internally initialized</strong> and should <strong>never be reassigned</strong>
+by application code. It is fully initialized at runtime startup via
+<code>_InternalRuntime</code>.</p>
+<h3 id="key-features">Key Features</h3>
+<ol>
+<li><strong>Materialized Library Access</strong></li>
+</ol>
+<pre class="language-dart"><code class="language-dart">final libraries = Runtime.getSourceLibraries();
+for (final lib in libraries) {
+  print(lib.getUri());
 }
 </code></pre>
+<ol start="2">
+<li><strong>Runtime Package Access</strong></li>
+</ol>
+<pre class="language-dart"><code class="language-dart">final packages = Runtime.getAllPackages();
+for (final pkg in packages) {
+  print(pkg.getName());
+}
+</code></pre>
+<ol start="3">
+<li><strong>Asset Access</strong></li>
+</ol>
+<pre class="language-dart"><code class="language-dart">final assets = Runtime.getAllAssets();
+for (final asset in assets) {
+  print(asset.getFilePath());
+}
+</code></pre>
+<ol start="4">
+<li><strong>Runtime Execution</strong></li>
+</ol>
+<pre class="language-dart"><code class="language-dart">final executor = Runtime.getRuntimeResolver();
+executor.invokeConstructor(SomeClass, []);
+</code></pre>
+<h3 id="behavior">Behavior</h3>
+<ul>
+<li>Immutable after initialization: the registry of libraries, assets, and packages
+is frozen for safe, thread-safe access.</li>
+<li>Deterministic: results are consistent across queries within the same runtime.</li>
+<li>Context-bound: the runtime executor reflects the state of the current runtime
+instance and cannot be transferred across runtimes.</li>
+</ul>
+<h3 id="usage-notes">Usage Notes</h3>
+<ul>
+<li>Use <code>Runtime</code> whenever <strong>both reflection data and runtime execution</strong> are required.</li>
+<li>Avoid direct modifications; use the JetLeaf API to add packages, assets,
+or to perform runtime scans during the internal population phase.</li>
+<li>Designed for <strong>internal framework usage</strong>, though it is exposed for diagnostics,
+generators, and reflection-aware applications.</li>
+</ul>
 </section>
 
         
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">final _MetaRuntimeProvider Runtime = _MetaRuntimeProvider._();</code></pre>
+  <pre class="language-dart"><code class="language-dart">final RuntimeProvider Runtime = _InternalRuntime;</code></pre>
 </section>
 
 
@@ -127,7 +156,7 @@ It must be registered before any queries are made.</p>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

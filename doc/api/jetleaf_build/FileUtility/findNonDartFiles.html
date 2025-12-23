@@ -58,12 +58,28 @@
 <span class="name ">findNonDartFiles</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="findNonDartFiles-param-projectDir"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-io/Directory-class.html">Directory</a></span> <span class="parameter-name">projectDir</span></span></li>
 </ol>)
 
-      
+      <div class="features"><span class="feature">inherited</span></div>
 
     </section>
     
 <section class="desc markdown">
-  <p>Finds all non-Dart files within the current project directory, respecting inclusion/exclusion lists.</p>
+  <p>Finds all <strong>non-Dart files</strong> within the current project and optionally
+selected dependency packages, respecting the user's inclusion and exclusion
+rules from the runtime scanner configuration.</p>
+<h3 id="behavior">Behavior</h3>
+<ul>
+<li>Any file ending <strong>not</strong> with <code>.dart</code> is eligible.</li>
+<li>Files listed in <code>filesToExclude</code> are always skipped.</li>
+<li>If <code>filesToScan</code> is non-empty, only explicitly listed files are included.</li>
+<li>Dependencies are scanned <strong>only</strong> when the user explicitly lists them in
+<code>packagesToScan</code>, and not present in <code>packagesToExclude</code>.</li>
+</ul>
+<h3 id="parameters">Parameters</h3>
+<ul>
+<li><code>projectDir</code> — The root directory of the user project.</li>
+</ul>
+<h3 id="returns">Returns</h3>
+<p>A <code>Set&lt;File&gt;</code> containing all discovered non-Dart files.</p>
 </section>
 
 
@@ -73,8 +89,8 @@
   <pre class="language-dart"><code class="language-dart">Future&lt;Set&lt;File&gt;&gt; findNonDartFiles(Directory projectDir) async {
   final Set&lt;File&gt; nonDartFiles = {};
 
-  final allFilesToScan = (_configuration.filesToScan).map((f) =&gt; p.normalize(f.absolute.path)).toSet();
-  final allFilesToExclude = (_configuration.filesToExclude).map((f) =&gt; p.normalize(f.absolute.path)).toSet();
+  final allFilesToScan = (configuration.filesToScan).map((f) =&gt; p.normalize(f.absolute.path)).toSet();
+  final allFilesToExclude = (configuration.filesToExclude).map((f) =&gt; p.normalize(f.absolute.path)).toSet();
 
   &#47;&#47; Helper to check if a file should be included
   bool shouldIncludeFile(String filePath) {
@@ -98,13 +114,13 @@
   }
 
   &#47;&#47; 2. Find non-Dart files in dependencies (only if explicitly requested)
-  if (_configuration.packagesToScan.isNotEmpty &amp;&amp; _packageConfig != null) {
-    for (final pkg in _packageConfig!) {
+  if (configuration.packagesToScan.isNotEmpty &amp;&amp; packageConfigCache != null) {
+    for (final pkg in packageConfigCache!) {
       final packageName = pkg.name;
       final packageRoot = Directory(pkg.absoluteRootPath);
 
-      final bool includePackage = _configuration.packagesToScan.contains(packageName);
-      final bool excludePackage = _configuration.packagesToExclude.contains(packageName);
+      final bool includePackage = configuration.packagesToScan.contains(packageName);
+      final bool excludePackage = configuration.packagesToExclude.contains(packageName);
 
       if (includePackage &amp;&amp; !excludePackage &amp;&amp; await packageRoot.exists()) {
         await for (final entity in packageRoot.list(recursive: true, followLinks: false)) {
@@ -147,7 +163,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

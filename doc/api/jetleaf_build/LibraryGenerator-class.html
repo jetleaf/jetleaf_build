@@ -92,7 +92,7 @@ final libraries = await generator.generate();
 
           <dt>Implementers</dt>
           <dd><ul class="comma-separated clazz-relationships">
-              <li><a href="../jetleaf_build/ApplicationLibraryGenerator-class.html">ApplicationLibraryGenerator</a></li>
+              <li><a href="../jetleaf_build/DefaultLibraryGenerator-class.html">DefaultLibraryGenerator</a></li>
           </ul></dd>
 
         
@@ -107,7 +107,7 @@ final libraries = await generator.generate();
     <h2>Constructors</h2>
     <dl class="constructor-summary-list">
         <dt id="LibraryGenerator.new" class="callable">
-          <span class="name"><a href="../jetleaf_build/LibraryGenerator/LibraryGenerator.html">LibraryGenerator.new</a></span><span class="signature">({<span class="parameter" id="-param-mirrorSystem"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a></span> <span class="parameter-name">mirrorSystem</span>, </span><span class="parameter" id="-param-forceLoadedMirrors"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/LibraryMirror-class.html">LibraryMirror</a></span>&gt;</span></span> <span class="parameter-name">forceLoadedMirrors</span>, </span><span class="parameter" id="-param-onInfo"><span>required</span> <span class="type-annotation">void</span> <span class="parameter-name">onInfo</span>(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span>), </span><span class="parameter" id="-param-onWarning"><span>required</span> <span class="type-annotation">void</span> <span class="parameter-name">onWarning</span>(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span>), </span><span class="parameter" id="-param-onError"><span>required</span> <span class="type-annotation">void</span> <span class="parameter-name">onError</span>(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span>), </span><span class="parameter" id="-param-configuration"><span>required</span> <span class="type-annotation"><a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">configuration</span>, </span><span class="parameter" id="-param-packages"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/Package-class.html">Package</a></span>&gt;</span></span> <span class="parameter-name">packages</span></span>})</span>
+          <span class="name"><a href="../jetleaf_build/LibraryGenerator/LibraryGenerator.html">LibraryGenerator.new</a></span><span class="signature">({<span class="parameter" id="-param-mirrorSystem"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a></span> <span class="parameter-name">mirrorSystem</span>, </span><span class="parameter" id="-param-forceLoadedMirrors"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/LibraryMirror-class.html">LibraryMirror</a></span>&gt;</span></span> <span class="parameter-name">forceLoadedMirrors</span>, </span><span class="parameter" id="-param-configuration"><span>required</span> <span class="type-annotation"><a href="../jetleaf_build/RuntimeScannerConfiguration-class.html">RuntimeScannerConfiguration</a></span> <span class="parameter-name">configuration</span>, </span><span class="parameter" id="-param-packages"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/Package-class.html">Package</a></span>&gt;</span></span> <span class="parameter-name">packages</span></span>})</span>
         </dt>
         <dd>
           Enhanced reflection generator that creates both metadata and reflector classes.
@@ -168,42 +168,6 @@ final libraries = await generator.generate();
 
 </dd>
 
-        <dt id="onError" class="property">
-  <span class="name"><a href="../jetleaf_build/LibraryGenerator/onError.html">onError</a></span>
-  <span class="signature">&#8594; void Function<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span>)</span></span>
-  
-
-</dt>
-<dd>
-  Callback for error messages
-  <div class="features"><span class="feature">final</span></div>
-
-</dd>
-
-        <dt id="onInfo" class="property">
-  <span class="name"><a href="../jetleaf_build/LibraryGenerator/onInfo.html">onInfo</a></span>
-  <span class="signature">&#8594; void Function<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span>)</span></span>
-  
-
-</dt>
-<dd>
-  Callback for informational messages
-  <div class="features"><span class="feature">final</span></div>
-
-</dd>
-
-        <dt id="onWarning" class="property">
-  <span class="name"><a href="../jetleaf_build/LibraryGenerator/onWarning.html">onWarning</a></span>
-  <span class="signature">&#8594; void Function<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span></span>)</span></span>
-  
-
-</dt>
-<dd>
-  Callback for warning messages
-  <div class="features"><span class="feature">final</span></div>
-
-</dd>
-
         <dt id="packages" class="property">
   <span class="name"><a href="../jetleaf_build/LibraryGenerator/packages.html">packages</a></span>
   <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/Package-class.html">Package</a></span>&gt;</span></span>
@@ -239,13 +203,26 @@ final libraries = await generator.generate();
     <dl class="callables">
         <dt id="generate" class="callable">
   <span class="name"><a href="../jetleaf_build/LibraryGenerator/generate.html">generate</a></span><span class="signature">(<wbr><span class="parameter" id="generate-param-dartFiles"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-io/File-class.html">File</a></span>&gt;</span></span> <span class="parameter-name">dartFiles</span></span>)
-    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../jetleaf_build/LibraryDeclaration-class.html">LibraryDeclaration</a></span>&gt;</span></span>&gt;</span></span>
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
   </span>
   
 
 </dt>
 <dd>
   Generates both reflection metadata and concrete reflector classes.
+  
+
+</dd>
+
+        <dt id="getLibraries" class="callable">
+  <span class="name"><a href="../jetleaf_build/LibraryGenerator/getLibraries.html">getLibraries</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/LibraryMirror-class.html">LibraryMirror</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  List of library mirrors to process
   
 
 </dd>
@@ -430,7 +407,7 @@ final libraries = await generator.generate();
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

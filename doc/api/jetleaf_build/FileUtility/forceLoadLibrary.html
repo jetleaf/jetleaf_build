@@ -60,12 +60,43 @@
 <li><span class="parameter" id="forceLoadLibrary-param-mirrorSystem"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/MirrorSystem-class.html">MirrorSystem</a></span> <span class="parameter-name">mirrorSystem</span></span></li>
 </ol>)
 
-      
+      <div class="features"><span class="feature">inherited</span></div>
 
     </section>
     
 <section class="desc markdown">
-  <p>Forces a Dart library at <code>uri</code> to be loaded into the <code>mirrorSystem</code>.</p>
+  <p>Forces a Dart library represented by <code>uri</code> to be loaded into the provided
+<code>mirrorSystem</code>.</p>
+<p>This method exists because the Dart mirrors API does <strong>not</strong> eagerly load
+libraries referenced in the package graph. Many analyses require fully
+loaded libraries, so this method enforces loading with fallback strategies.</p>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>
+<p>Returns <code>null</code> when the library should not be loaded (e.g., part files,
+excluded Jetleaf build internals, already-loaded libraries).</p>
+</li>
+<li>
+<p>Attempts to load in a fresh isolate first, which is safer for libraries
+that may execute top-level initialization.</p>
+</li>
+<li>
+<p>If isolate loading fails, attempts a direct load as a last resort.</p>
+</li>
+<li>
+<p>Logs warnings for dependency errors and errors for user-project errors.</p>
+</li>
+<li>
+<p><code>uri</code>: The resolved package or file URI of the library.</p>
+</li>
+<li>
+<p><code>file</code>: The file backing the URI, used for fallback checks.</p>
+</li>
+<li>
+<p><code>mirrorSystem</code>: The active mirror system performing the load.</p>
+</li>
+</ul>
+<p>Returns the loaded <a href="https://api.dart.dev/stable/3.9.2/dart-mirrors/LibraryMirror-class.html">LibraryMirror</a>, or <code>null</code> if loading failed or was skipped.</p>
 </section>
 
 
@@ -92,13 +123,13 @@
     return await Isolate.run&lt;mirrors.LibraryMirror?&gt;(() =&gt; _loadLibrary(uri, file, mirrorSystem), debugName: &#39;lib_$uri&#39;);
   } catch (e) {
     try {
-      if(_tryOutsideIsolate) {
+      if(tryOutsideIsolate(file, uri)) {
         return await _loadLibrary(uri, file, mirrorSystem);
       }
     } catch (e) {
       &#47;&#47; Only log as warning for dependency files, error for user files
       if (_isUserProjectFile(file.absolute.path)) {
-        _onError(&#39;Error loading user library $uri: $e&#39;);
+        onError(&#39;Error loading user library $uri: $e&#39;, true);
       }
     }
   }
@@ -132,7 +163,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

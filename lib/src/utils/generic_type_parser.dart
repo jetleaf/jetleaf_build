@@ -76,7 +76,7 @@ class GenericTypeParser {
   /// print(result); // true
   /// ```
   /// {@endtemplate}
-  static bool shouldCheckGeneric(Type type) => isGenericMirror(type.toString());
+  static bool shouldCheckGeneric(Type type) => isMirrored(type.toString());
 
   /// {@template is_generic_mirror}
   /// Checks if the given type string is a mirror type to format with generic parameters.
@@ -90,11 +90,11 @@ class GenericTypeParser {
   ///
   /// Example:
   /// ```dart
-  /// final result = GenericTypeParser.isGenericMirror("_ClassMirror");
+  /// final result = GenericTypeParser.isMirrored("_ClassMirror");
   /// print(result); // true
   /// ```
   /// {@endtemplate}
-  static bool isGenericMirror(String typeString) {
+  static bool isMirrored(String typeString) {
     if (typeString == "_SpecialTypeMirror") {
       return true;
     }
@@ -316,7 +316,5 @@ class GenericTypeParsingResult {
   GenericTypeParsingResult(this.base, this.typeString, this.types);
   
   @override
-  String toString() {
-    return 'GenericParsingResult(base: $base, typeString: $typeString, types: $types)';
-  }
+  String toString() => 'GenericParsingResult(base: $base, typeString: $typeString, types: $types)';
 }

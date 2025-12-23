@@ -15,7 +15,7 @@
 import 'dart:typed_data';
 import 'package:jetleaf_build/jetleaf_build.dart';
 
-class SimpleUserHtml implements GenerativeAsset {
+class SimpleUserHtml extends GenerativeAsset {
   @override
   Uint8List getContentBytes() {
     const html = "<html><body><h1>User Page</h1><p>Dummy user data.</p></body></html>";
@@ -45,7 +45,7 @@ class SimpleUserHtml implements GenerativeAsset {
   }
 }
 
-class SimpleAdminHtml implements GenerativeAsset {
+class SimpleAdminHtml extends GenerativeAsset {
   @override
   Uint8List getContentBytes() {
     const html =
@@ -76,7 +76,7 @@ class SimpleAdminHtml implements GenerativeAsset {
   }
 }
 
-class SimpleReportHtml implements GenerativeAsset {
+class SimpleReportHtml extends GenerativeAsset {
   @override
   Uint8List getContentBytes() {
     const html =
@@ -107,7 +107,7 @@ class SimpleReportHtml implements GenerativeAsset {
   }
 }
 
-class SimpleEmailTemplateHtml implements GenerativeAsset {
+class SimpleEmailTemplateHtml extends GenerativeAsset {
   @override
   Uint8List getContentBytes() {
     const html = """

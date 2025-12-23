@@ -50,6 +50,7 @@
     <div>
 <h1><span class="kind-class">LinkDeclaration</span> class 
     <a href="https://dart.dev/language/class-modifiers#abstract" class="feature feature-abstract" title="This type can not be directly constructed.">abstract</a>
+    <a href="https://dart.dev/language/class-modifiers#final" class="feature feature-final" title="This class can neither be extended, implemented, nor mixed in.">final</a>
  
 </h1></div>
 
@@ -95,6 +96,7 @@ print(link.getVariance()); // TypeVariance.invariant
   <dd>
     <ul class="gt-separated dark clazz-relationships">
       <li><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></li>
+        <li><a href="../jetleaf_build/BaseDeclaration-class.html">BaseDeclaration</a></li>
         <li><a href="../jetleaf_build/Declaration-class.html">Declaration</a></li>
       <li>LinkDeclaration</li>
     </ul>
@@ -105,7 +107,8 @@ print(link.getVariance()); // TypeVariance.invariant
 
           <dt>Implementers</dt>
           <dd><ul class="comma-separated clazz-relationships">
-              <li><a href="../jetleaf_build/StandardLinkDeclaration-class.html">StandardLinkDeclaration</a></li>
+              <li><a href="../jetleaf_build/FunctionDeclaration-class.html">FunctionDeclaration</a></li>
+              <li><a href="../jetleaf_build/RecordDeclaration-class.html">RecordDeclaration</a></li>
           </ul></dd>
 
         
@@ -116,18 +119,6 @@ print(link.getVariance()); // TypeVariance.invariant
     </section>
 
     
-  <section class="summary offset-anchor" id="constructors">
-    <h2>Constructors</h2>
-    <dl class="constructor-summary-list">
-        <dt id="LinkDeclaration.new" class="callable">
-          <span class="name"><a href="../jetleaf_build/LinkDeclaration/LinkDeclaration.html">LinkDeclaration.new</a></span><span class="signature">()</span>
-        </dt>
-        <dd>
-          
-            <div class="constructor-modifier features">const</div>
-        </dd>
-    </dl>
-  </section>
     
   <section
       class="summary offset-anchor inherited"
@@ -135,7 +126,7 @@ print(link.getVariance()); // TypeVariance.invariant
     <h2>Properties</h2>
     <dl class="properties">
         <dt id="hashCode" class="property inherited">
-  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/hashCode.html">hashCode</a></span>
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/hashCode.html">hashCode</a></span>
   <span class="signature">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/int-class.html">int</a></span>
   
 
@@ -167,6 +158,19 @@ print(link.getVariance()); // TypeVariance.invariant
       id="instance-methods">
     <h2>Methods</h2>
     <dl class="callables">
+        <dt id="equalizedProperties" class="callable inherited">
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/equalizedProperties.html">equalizedProperties</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Mixin-style contract for value-based equality, <code>hashCode</code>, and <code>toString</code>.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
         <dt id="getCanonicalUri" class="callable">
   <span class="name"><a href="../jetleaf_build/LinkDeclaration/getCanonicalUri.html">getCanonicalUri</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Uri-class.html">Uri</a>?</span>
@@ -201,7 +205,7 @@ print(link.getVariance()); // TypeVariance.invariant
 
 </dt>
 <dd class="inherited">
-  Checks if this declaration is a public declaration.
+  Indicates whether this declaration is <strong>publicly visible</strong>.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -214,7 +218,7 @@ print(link.getVariance()); // TypeVariance.invariant
 
 </dt>
 <dd class="inherited">
-  Checks if a declaration is a synthetic declaration.
+  Indicates whether this declaration is <strong>synthetic</strong>.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -227,7 +231,7 @@ print(link.getVariance()); // TypeVariance.invariant
 
 </dt>
 <dd class="inherited">
-  Gets the name of the declared element.
+  Returns the simple (unqualified) name of this declaration.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -279,7 +283,7 @@ print(link.getVariance()); // TypeVariance.invariant
 
 </dt>
 <dd class="inherited">
-  Gets the runtime type of the declared element.
+  Returns the Dart <a href="https://api.dart.dev/stable/3.9.2/dart-core/Type-class.html">Type</a> represented by this declaration.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -293,32 +297,6 @@ print(link.getVariance()); // TypeVariance.invariant
 </dt>
 <dd>
   Gets the type arguments for this reference.
-  
-
-</dd>
-
-        <dt id="getUpperBound" class="callable">
-  <span class="name"><a href="../jetleaf_build/LinkDeclaration/getUpperBound.html">getUpperBound</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/LinkDeclaration-class.html">LinkDeclaration</a>?</span>
-  </span>
-  
-
-</dt>
-<dd>
-  Gets the upper bound for type variables.
-  
-
-</dd>
-
-        <dt id="getVariance" class="callable">
-  <span class="name"><a href="../jetleaf_build/LinkDeclaration/getVariance.html">getVariance</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="../jetleaf_build/TypeVariance.html">TypeVariance</a></span>
-  </span>
-  
-
-</dt>
-<dd>
-  Gets the variance annotation for this reference.
   
 
 </dd>
@@ -337,14 +315,14 @@ print(link.getVariance()); // TypeVariance.invariant
 </dd>
 
         <dt id="toJson" class="callable inherited">
-  <span class="name"><a href="../jetleaf_build/Declaration/toJson.html">toJson</a></span><span class="signature">(<wbr>)
+  <span class="name"><a href="../jetleaf_build/BaseDeclaration/toJson.html">toJson</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>, <span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span>&gt;</span></span>
   </span>
   
 
 </dt>
 <dd class="inherited">
-  Returns a JSON representation of this entity.
+  Serializes this declaration into a JSON-compatible map.
   <div class="features"><span class="feature">inherited</span></div>
 
 </dd>
@@ -371,7 +349,7 @@ print(link.getVariance()); // TypeVariance.invariant
     <h2>Operators</h2>
     <dl class="callables">
         <dt id="operator ==" class="callable inherited">
-  <span class="name"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+  <span class="name"><a href="../jetleaf_build/EqualsAndHashCode/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
     <span class="returntype parameter">&#8594; <a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span>
   </span>
   
@@ -412,7 +390,7 @@ print(link.getVariance()); // TypeVariance.invariant
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

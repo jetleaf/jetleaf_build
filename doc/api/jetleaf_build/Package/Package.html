@@ -60,23 +60,49 @@
 <li><span class="parameter" id="-param-isRootPackage"><span>required</span> <span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">isRootPackage</span>, </span></li>
 <li><span class="parameter" id="-param-filePath"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">filePath</span>, </span></li>
 <li><span class="parameter" id="-param-rootUri"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">rootUri</span>, </span></li>
+<li><span class="parameter" id="-param-jetleafDependencies"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Iterable-class.html">Iterable</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">jetleafDependencies</span> = <span class="default-value">const []</span>, </span></li>
+<li><span class="parameter" id="-param-dependencies"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Iterable-class.html">Iterable</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">dependencies</span> = <span class="default-value">const []</span>, </span></li>
+<li><span class="parameter" id="-param-devDependencies"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/Iterable-class.html">Iterable</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">devDependencies</span> = <span class="default-value">const []</span>, </span></li>
 </ol>})
     </section>
     
 <section class="desc markdown">
-  <p>🍃 JetLeaf Framework - Represents a Dart package within the runtime context.</p>
-<p>This metadata is usually generated at compile time (JIT or AOT) to describe:</p>
+  <p>Represents a <strong>Dart package</strong> within the JetLeaf reflection and
+code generation system.</p>
+<p>A <a href="../../jetleaf_build/Package-class.html">Package</a> is a <strong>pure metadata model</strong> describing a Dart package
+and its relationship to the JetLeaf ecosystem. It is used by the
+runtime provider, class loader, and code generator to understand
+where types originate and how they should be resolved.</p>
+<p>A <a href="../../jetleaf_build/Package-class.html">Package</a> encapsulates:</p>
 <ul>
-<li>The root application package</li>
-<li>Any dependent packages (e.g., <code>args</code>, <code>collection</code>)</li>
+<li>Package name and semantic version</li>
+<li>Dart language version constraints</li>
+<li>Package root location (file system path or URI)</li>
+<li>Dependency metadata (runtime, dev, and JetLeaf-specific)</li>
+<li>Whether the package is the root application package</li>
 </ul>
-<p>This class allows tools, scanners, and the reflection system to access
-package-specific information like name, version, and file location.</p>
-<p>Example:</p>
-<pre class="language-dart"><code class="language-dart">Package pkg = ...;
-print(pkg.getName()); // =&gt; "jetleaf"
-print(pkg.getIsRootPackage()); // =&gt; true
-</code></pre>
+<hr>
+<h2 id="design-notes">Design Notes</h2>
+<ul>
+<li>This class performs <strong>no I/O or resolution</strong></li>
+<li>All instances are <strong>immutable</strong></li>
+<li>It acts as a declarative description only</li>
+<li>Package resolution and graph construction occur elsewhere</li>
+</ul>
+<hr>
+<h2 id="usage">Usage</h2>
+<p><a href="../../jetleaf_build/Package-class.html">Package</a> instances are typically constructed from:</p>
+<ul>
+<li><code>package_graph.json</code></li>
+<li><code>pubspec.yaml</code></li>
+<li>Runtime package discovery</li>
+</ul>
+<p>and then consumed by:</p>
+<ul>
+<li>Class loaders</li>
+<li>Reflection utilities</li>
+<li>Code generators</li>
+</ul>
 </section>
 
 
@@ -90,7 +116,18 @@ print(pkg.getIsRootPackage()); // =&gt; true
   required bool isRootPackage,
   String? filePath,
   String? rootUri,
-}) : _filePath = filePath, _languageVersion = languageVersion, _version = version, _name = name, _isRootPackage = isRootPackage, _rootUri = rootUri;</code></pre>
+  Iterable&lt;String&gt; jetleafDependencies = const [],
+  Iterable&lt;String&gt; dependencies = const [],
+  Iterable&lt;String&gt; devDependencies = const [],
+})  : _filePath = filePath,
+      _languageVersion = languageVersion,
+      _version = version,
+      _name = name,
+      _isRootPackage = isRootPackage,
+      _jetleafDependencies = jetleafDependencies,
+      _dependencies = dependencies,
+      _devDependencies = devDependencies,
+      _rootUri = rootUri;</code></pre>
 </section>
 
 
@@ -118,7 +155,7 @@ print(pkg.getIsRootPackage()); // =&gt; true
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

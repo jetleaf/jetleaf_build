@@ -59,12 +59,27 @@
 <li><span class="parameter" id="getUrisToLoad-param-package"><span class="type-annotation"><a href="https://api.dart.dev/stable/3.9.2/dart-core/String-class.html">String</a></span> <span class="parameter-name">package</span></span></li>
 </ol>)
 
-      
+      <div class="features"><span class="feature">inherited</span></div>
 
     </section>
     
 <section class="desc markdown">
-  <p>Resolves a list of files to their package URIs, being as inclusive as possible.</p>
+  <p>Resolves a list of files to their corresponding package or file URIs.</p>
+<p>This method attempts to produce a usable <code>Uri</code> for every file in <code>files</code>,
+prioritizing <strong>package: URIs</strong> whenever possible. If a file cannot be
+resolved to a package URI (e.g., it lives outside any package <code>lib/</code>
+directory or is an excluded dependency), a <code>file://</code> URI is used instead
+so the file is still loadable.</p>
+<p>Files are skipped <strong>only</strong> when <code>shouldSkipFile</code> indicates they should be,
+such as for user-excluded paths or files that cannot safely be mirrored.</p>
+<p>A summary of skipped files is logged for diagnostic purposes.</p>
+<p>Returns a mapping of each resolved file to the URI that should be used
+when loading it into the mirror system.</p>
+<ul>
+<li><code>files</code>: The set of Dart or non-Dart files to resolve.</li>
+<li><code>package</code>: The current project’s package name, used when generating
+fallback <code>package:</code> URIs.</li>
+</ul>
 </section>
 
 
@@ -87,7 +102,7 @@
     } else {
       &#47;&#47; Use file URI as fallback - don&#39;t skip files just because they can&#39;t be resolved to package URIs
       uri = file.uri;
-      _onInfo(&#39;Using file URI for $normalizedFilePath (could not resolve to package URI)&#39;);
+      onInfo(&#39;Using file URI for $normalizedFilePath (could not resolve to package URI)&#39;, true);
     }
 
     &#47;&#47; Only skip if user explicitly wants to exclude or if genuinely unloadable
@@ -99,7 +114,7 @@
   }
 
   if (skippedCount &gt; 0) {
-    _onInfo(&#39;Skipped $skippedCount files due to user configuration or unloadable files&#39;);
+    onInfo(&#39;Skipped $skippedCount files due to user configuration or unloadable files&#39;, true);
   }
 
   return uris;
@@ -131,7 +146,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

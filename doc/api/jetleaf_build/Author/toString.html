@@ -78,7 +78,22 @@ property values in a readable format.</p>
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">@override
-String toString() =&gt; &#39;Author(name: $name, emailAddress: $emailAddress, organization: $organization, website: $website, comment: $comment)&#39;;</code></pre>
+String toString() {
+  final fields = &lt;String&gt;[&#39;name: $name&#39;];
+
+  void addIfPresent(String label, String? value) {
+    if (value != null &amp;&amp; value.isNotEmpty) {
+      fields.add(&#39;$label: $value&#39;);
+    }
+  }
+
+  addIfPresent(&#39;emailAddress&#39;, emailAddress);
+  addIfPresent(&#39;organization&#39;, organization);
+  addIfPresent(&#39;website&#39;, website);
+  addIfPresent(&#39;comment&#39;, comment);
+
+  return &#39;Author(${fields.join(&#39;, &#39;)})&#39;;
+}</code></pre>
 </section>
 
 
@@ -106,7 +121,7 @@ String toString() =&gt; &#39;Author(name: $name, emailAddress: $emailAddress, or
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

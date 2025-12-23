@@ -67,7 +67,10 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the root URI of the package.</p>
+  <p>Returns the <strong>root URI</strong> of the package, or <code>null</code> if unavailable.</p>
+<p>Example:</p>
+<pre class="language-dart"><code class="language-dart">final uri = myPackage.getRootUri(); // 'file:///Users/me/projects/my_package/'
+</code></pre>
 </section>
 
 
@@ -103,7 +106,7 @@ String? getRootUri();</code></pre>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

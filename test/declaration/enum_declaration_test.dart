@@ -229,17 +229,14 @@ void main() async {
 
   group('EnumDeclaration Basic Properties', () {
     test('should identify enum type kind', () {
-      final simpleEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'SimpleEnum');
+      final simpleEnum = Runtime.findClass<SimpleEnum>();
       
       expect(simpleEnum.getKind(), equals(TypeKind.enumType));
       expect(simpleEnum.getSimpleName(), equals('SimpleEnum'));
-      expect(simpleEnum.getIsNullable(), isFalse);
     });
 
     test('should inherit from ClassDeclaration', () {
-      final colorEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'Color');
+      final colorEnum = Runtime.findClass<Color>();
       
       expect(colorEnum, isA<ClassDeclaration>());
       expect(colorEnum, isA<EnumDeclaration>());
@@ -259,55 +256,51 @@ void main() async {
 
   group('EnumDeclaration Real Enum Fields (EnumFieldDeclaration)', () {
     test('should retrieve real enum values', () {
-      final simpleEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'SimpleEnum');
-      final enumDecl = simpleEnum.asEnum();
+      final simpleEnum = Runtime.findClass<SimpleEnum>();
+      final enumDecl = simpleEnum as EnumDeclaration;
       
       expect(enumDecl, isNotNull);
       
-      final values = enumDecl!.getValues();
+      final values = enumDecl.getValues();
       expect(values.length, equals(3));
       expect(values.map((v) => v.getName()), containsAll(['first', 'second', 'third']));
     });
 
     test('should retrieve enum value instances', () {
-      final colorEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'Color');
-      final enumDecl = colorEnum.asEnum();
+      final colorEnum = Runtime.findClass<Color>();
+      final enumDecl = colorEnum as EnumDeclaration;
       
       expect(enumDecl, isNotNull);
       
-      final values = enumDecl!.getValues();
+      final values = enumDecl.getValues();
       final redValue = values.firstWhere((v) => v.getName() == 'red');
       
-      expect(redValue.getValue(), equals(Color.red));
+      expect(redValue.getEnumValue(), equals(Color.red));
       expect(redValue.getPosition(), equals(0));
       expect(redValue.isNullable(), isFalse);
     });
 
     test('should handle enhanced enum values with fields', () {
-      final colorEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'Color');
-      final enumDecl = colorEnum.asEnum();
+      final colorEnum = Runtime.findClass<Color>();
+      final enumDecl = colorEnum as EnumDeclaration;
       
       expect(enumDecl, isNotNull);
       
-      final values = enumDecl!.getValues();
+      final values = enumDecl.getValues();
       expect(values.length, equals(5));
       
       final blueValue = values.firstWhere((v) => v.getName() == 'blue');
-      expect(blueValue.getValue(), equals(Color.blue));
+      expect(blueValue.getEnumValue(), equals(Color.blue));
       expect(blueValue.getPosition(), equals(2));
     });
 
     test('should handle private enum values', () {
-      final privateEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'PrivateEnum');
-      final enumDecl = privateEnum.asEnum();
+      final privateEnum = Runtime.findClass<PrivateEnum>();
+      final enumDecl = privateEnum as EnumDeclaration;
       
       expect(enumDecl, isNotNull);
       
-      final values = enumDecl!.getValues();
+      final values = enumDecl.getValues();
       expect(values.length, equals(3));
       
       final privateValue = values.firstWhere((v) => v.getName() == '_private');
@@ -320,8 +313,7 @@ void main() async {
 
   group('EnumDeclaration Regular Class Members (inherited from ClassDeclaration)', () {
     test('should retrieve enum constructors', () {
-      final colorEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'Color');
+      final colorEnum = Runtime.findClass<Color>();
       
       final constructors = colorEnum.getConstructors();
       expect(constructors.length, equals(1)); // All enum values use the same constructor
@@ -331,8 +323,7 @@ void main() async {
     });
 
     test('should retrieve enum fields (regular class fields, not enum values)', () {
-      final colorEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'Color');
+      final colorEnum = Runtime.findClass<Color>();
       
       final fields = colorEnum.getFields();
       print(fields.map((f) => f.getName()));
@@ -342,8 +333,7 @@ void main() async {
     });
 
     test('should retrieve enum methods (regular class methods)', () {
-      final colorEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'Color');
+      final colorEnum = Runtime.findClass<Color>();
       
       final methods = colorEnum.getMethods();
       expect(methods.length, greaterThanOrEqualTo(4)); // rgb getter, mix, isPrimary, parse
@@ -354,8 +344,7 @@ void main() async {
     });
 
     test('should retrieve static members', () {
-      final directionEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'Direction');
+      final directionEnum = Runtime.findClass<Direction>();
       
       final staticFields = directionEnum.getStaticFields();
       expect(staticFields.any((f) => f.getName() == 'fromAbbreviation'), isTrue);
@@ -365,8 +354,7 @@ void main() async {
     });
 
     test('should handle private members in enums', () {
-      final secretEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'SecretCode');
+      final secretEnum = Runtime.findClassByType(SecretCode);
       
       final fields = secretEnum.getFields();
       final privateField = fields.firstWhere((f) => f.getName() == '_code');
@@ -386,8 +374,7 @@ void main() async {
 
   group('EnumDeclaration Inheritance and Interfaces', () {
     test('should retrieve implemented interfaces', () {
-      final priorityEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'Priority');
+      final priorityEnum = Runtime.findClass<Priority>();
       
       final interfaces = priorityEnum.getInterfaces();
       expect(interfaces, isNotEmpty);
@@ -395,8 +382,7 @@ void main() async {
     });
 
     test('should handle enums without interfaces', () {
-      final simpleEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'SimpleEnum');
+      final simpleEnum = Runtime.findClass<SimpleEnum>();
       
       final interfaces = simpleEnum.getInterfaces();
       expect(interfaces, isEmpty);
@@ -405,8 +391,7 @@ void main() async {
 
   group('EnumDeclaration Special Methods', () {
     test('should have values getter', () {
-      final colorEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'Color');
+      final colorEnum = Runtime.findClass<Color>();
       
       final methods = colorEnum.getMethods();
       final valuesGetter = methods.firstWhere((m) => m.getName() == 'isPrimary' && m.getIsGetter());
@@ -414,13 +399,12 @@ void main() async {
     });
 
     test('should have name getter on enum values', () {
-      final colorEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'Color');
-      final enumDecl = colorEnum.asEnum();
+      final colorEnum = Runtime.findClass<Color>();
+      final enumDecl = colorEnum as EnumDeclaration;
       
       expect(enumDecl, isNotNull);
       
-      final values = enumDecl!.getValues();
+      final values = enumDecl.getValues();
       final redValue = values.firstWhere((v) => v.getName() == 'red');
       
       // Each enum value should have access to its name
@@ -430,8 +414,7 @@ void main() async {
 
   group('EnumDeclaration Factory Constructors', () {
     test('should handle enums with factory constructors', () {
-      final fileTypeEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'FileType');
+      final fileTypeEnum = Runtime.findClass<FileType>();
       
       final constructors = fileTypeEnum.getConstructors();
       expect(constructors.length, equals(2)); // const constructor + factory constructor
@@ -444,23 +427,21 @@ void main() async {
 
   group('EnumDeclaration Usage Examples', () {
     test('should demonstrate enum value access', () {
-      final colorEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'Color');
-      final enumDecl = colorEnum.asEnum();
+      final colorEnum = Runtime.findClass<Color>();
+      final enumDecl = colorEnum as EnumDeclaration;
       
       expect(enumDecl, isNotNull);
       
-      final values = enumDecl!.getValues();
+      final values = enumDecl.getValues();
       final redValue = values.firstWhere((v) => v.getName() == 'red');
       
-      expect(redValue.getValue(), equals(Color.red));
-      expect((redValue.getValue() as Color).hexCode, equals(0xFF0000));
-      expect((redValue.getValue() as Color).displayName, equals('Red'));
+      expect(redValue.getEnumValue(), equals(Color.red));
+      expect((redValue.getEnumValue() as Color).hexCode, equals(0xFF0000));
+      expect((redValue.getEnumValue() as Color).displayName, equals('Red'));
     });
 
     test('should demonstrate enum method invocation', () {
-      final colorEnum = Runtime.getAllEnums()
-          .firstWhere((c) => c.getName() == 'Color');
+      final colorEnum = Runtime.findClassByType(Color);
       
       final red = Color.red;
       final blue = Color.blue;
@@ -498,28 +479,27 @@ void main() async {
     });
 
     test('should handle enums with only private values', () {
-      final privateEnum = Runtime.getAllClasses()
-          .firstWhere((c) => c.getName() == 'PrivateEnum');
-      final enumDecl = privateEnum.asEnum();
+      final privateEnum = Runtime.findClass<PrivateEnum>();
+      final enumDecl = privateEnum as EnumDeclaration;
       
       expect(enumDecl, isNotNull);
       
-      final values = enumDecl!.getValues();
+      final values = enumDecl.getValues();
       expect(values.length, equals(3));
       
       // Even private enum values should be accessible through reflection
       final privateValue = values.firstWhere((v) => v.getName() == '_private');
-      expect(privateValue.getValue(), equals(PrivateEnum._private));
+      expect(privateValue.getEnumValue(), equals(PrivateEnum._private));
     });
 
     test('should distinguish between enum values and class fields', () {
-      final colorEnum = Runtime.getAllClasses().firstWhere((c) => c.getName() == 'Color');
-      final enumDecl = colorEnum.asEnum();
+      final colorEnum = Runtime.obtainClassDeclaration(Color);
+      final enumDecl = colorEnum as EnumDeclaration;
       
       expect(enumDecl, isNotNull);
       
       // EnumFieldDeclaration for enum values
-      final enumValues = enumDecl!.getValues();
+      final enumValues = enumDecl.getValues();
       expect(enumValues.length, equals(5));
       expect(enumValues.any((v) => v.getName() == 'red'), isTrue);
       

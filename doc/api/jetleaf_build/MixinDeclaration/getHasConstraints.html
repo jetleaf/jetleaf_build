@@ -62,7 +62,13 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns <code>true</code> if this mixin has <code>on</code> type constraints.</p>
+  <p>Returns <code>true</code> if this mixin declares <code>on</code> type constraints.</p>
+<p>This is a convenience method equivalent to checking
+<code>getConstraints().isNotEmpty</code>.</p>
+<h3 id="example">Example</h3>
+<pre class="language-dart"><code class="language-dart">mixin MyMixin on BaseClass {}
+print(mixinDecl.getHasConstraints()); // true
+</code></pre>
 </section>
 
 
@@ -97,7 +103,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

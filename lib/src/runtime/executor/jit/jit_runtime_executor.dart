@@ -15,7 +15,7 @@
 import 'dart:mirrors' as mirrors;
 
 import '../../../argument/executable_argument.dart';
-import '../../../declaration/declaration.dart';
+import '../../declaration/declaration.dart';
 import '../../../exceptions.dart';
 import 'abstract_method_jit_runtime_executor.dart';
 import '../runtime_executor.dart';

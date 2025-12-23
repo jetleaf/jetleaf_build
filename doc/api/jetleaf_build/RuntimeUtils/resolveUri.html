@@ -86,15 +86,36 @@
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">static Future&lt;Uri?&gt; resolveUri(Uri uri) async {
+  &#47;&#47; 1. Direct file URIs
   if (uri.scheme == &quot;file&quot;) {
     return uri;
   }
 
-  if (uri.scheme == &quot;dart&quot; || uri.scheme != &quot;package&quot;) {
-    return null;
+  &#47;&#47; 2. Resolve package: URIs using Isolate API
+  if (uri.scheme == &quot;package&quot;) {
+    return await Isolate.resolvePackageUri(uri);
   }
 
-  return await Isolate.resolvePackageUri(uri);
+  &#47;&#47; 3. Resolve dart: URIs (e.g., dart:core&#47;string.dart)
+  if (uri.scheme == &quot;dart&quot;) {
+    &#47;&#47; Platform.resolvedExecutable gives path&#47;to&#47;sdk&#47;bin&#47;dart
+    &#47;&#47; The libraries are located in path&#47;to&#47;sdk&#47;lib&#47;
+    final sdkPath = p.dirname(p.dirname(Platform.resolvedExecutable));
+    final libDir = p.join(sdkPath, &#39;lib&#39;);
+
+    &#47;&#47; Convert &#39;dart:core&#47;string.dart&#39; to &#39;core&#47;string.dart&#39;
+    String internalPath = uri.path;
+
+    &#47;&#47; If the path is just &#39;core&#39;, Dart usually maps it to &#39;core&#47;core.dart&#39;
+    if (!internalPath.contains(&#39;&#47;&#39;)) {
+      internalPath = &#39;$internalPath&#47;$internalPath.dart&#39;;
+    }
+
+    final file = File(p.join(libDir, internalPath));
+    return file.existsSync() ? file.uri : null;
+  }
+
+  return null;
 }</code></pre>
 </section>
 
@@ -123,7 +144,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

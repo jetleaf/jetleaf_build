@@ -64,12 +64,19 @@
     </section>
     
 <section class="desc markdown">
-  <p>Sets the value of this field on the given <code>instance</code>.</p>
+  <p>Sets the runtime value of this field on the given <code>instance</code>.</p>
 <ul>
-<li>If the field is static, <code>instance</code> must be <code>null</code>.</li>
-<li>If the field is instance-based, <code>instance</code> must be a valid object.</li>
+<li>For <strong>static fields</strong>, <code>instance</code> must be <code>null</code>.</li>
+<li>For <strong>instance fields</strong>, <code>instance</code> must be a valid object of the
+declaring type.</li>
 </ul>
-<p>Throws if the field is <code>final</code>, <code>const</code>, or cannot be written to.</p>
+<p>This operation will throw if the field is <code>final</code>, <code>const</code>, or
+otherwise not writable, or if the value violates type constraints.</p>
+<h3 id="parameters">Parameters</h3>
+<ul>
+<li><code>instance</code> — The target object, or <code>null</code> for static fields.</li>
+<li><code>value</code> — The new value to assign to the field.</li>
+</ul>
 </section>
 
 
@@ -104,7 +111,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

@@ -67,7 +67,11 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns the language version of the package.</p>
+  <p>Returns the <strong>Dart language version constraint</strong> of the package,
+or <code>null</code> if it was not specified.</p>
+<p>Example:</p>
+<pre class="language-dart"><code class="language-dart">final languageVersion = myPackage.getLanguageVersion(); // '3.3'
+</code></pre>
 </section>
 
 
@@ -103,7 +107,7 @@ String? getLanguageVersion();</code></pre>
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

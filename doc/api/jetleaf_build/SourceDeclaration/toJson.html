@@ -67,7 +67,18 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns a JSON representation of this entity.</p>
+  <p>Serializes this declaration into a JSON-compatible map.</p>
+<p>The returned map must:</p>
+<ul>
+<li>Contain only JSON-encodable values</li>
+<li>Fully describe the declaration’s identity and structure</li>
+</ul>
+<p>This method is used for:</p>
+<ul>
+<li>Debugging</li>
+<li>Tooling output</li>
+<li>Snapshot comparisons</li>
+</ul>
 </section>
 
 
@@ -79,7 +90,6 @@ Map&lt;String, Object&gt; toJson() {
   Map&lt;String, Object&gt; result = {};
   result[&#39;declaration&#39;] = &#39;source&#39;;
   result[&#39;name&#39;] = getName();
-  result[&#39;parentLibrary&#39;] = getParentLibrary().toJson();
 
   final annotations = getAnnotations().map((a) =&gt; a.toJson()).toList();
   if (annotations.isNotEmpty) {
@@ -122,7 +132,7 @@ Map&lt;String, Object&gt; toJson() {
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>

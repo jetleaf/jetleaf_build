@@ -473,9 +473,7 @@ void main() async {
 }
 
 void printRuntimeSummary() {
-  final classes = List<ClassDeclaration>.from(Runtime.getAllClasses());
-  final enums = List<EnumDeclaration>.from(Runtime.getAllEnums());
-  final libs = List<LibraryDeclaration>.from(Runtime.getAllLibraries());
+  final libs = List<SourceLibrary>.from(Runtime.getSourceLibraries());
   final assets = List<Asset>.from(Runtime.getAllAssets());
   final packages = List<Package>.from(Runtime.getAllPackages());
 
@@ -485,18 +483,6 @@ void printRuntimeSummary() {
   libs.sort((a, b) => a.getName().compareTo(b.getName()));
   for (final lib in libs) {
     print("  - ${lib.getName()}");
-  }
-
-  print("\nClasses (${classes.length}):");
-  classes.sort((a, b) => a.getName().compareTo(b.getName()));
-  for (final c in classes) {
-    print("  - ${c.getName()} (${c.getQualifiedName()})");
-  }
-
-  print("\nEnums (${enums.length}):");
-  enums.sort((a, b) => a.getName().compareTo(b.getName()));
-  for (final e in enums) {
-    print("  - ${e.getName()}");
   }
 
   print("\nAssets (${assets.length}):");
@@ -512,24 +498,24 @@ void printRuntimeSummary() {
   }
 
   print("****************************************** CHECKING CLASS ************************************************");
-  final check = classes.where((cls) => cls.getName() == "Checking" && cls.getQualifiedName().endsWith("Checking")).firstOrNull;
-  print(check?.getMethods().where((me) => me.getName() == Checking.NULL_NAME).firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
-  print(check?.getConstructors().where((me) => me.getName() == Checking.NULL_CONST).firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
-  print(check?.getFields().where((pa) => pa.isNullable()).map((pa) => pa.getName()));
+  final check = Runtime.findClass<Checking>();
+  print(check.getMethods().where((me) => me.getName() == Checking.NULL_NAME).firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
+  print(check.getConstructors().where((me) => me.getName() == Checking.NULL_CONST).firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
+  print(check.getFields().where((pa) => pa.isNullable()).map((pa) => pa.getName()));
 
   print("********************************* CONFIGURABLE MESSAGE SOURCE CLASS **************************************");
-  final cms = classes.where((cls) => cls.getName() == "ConfigurableMessageSource" && cls.getQualifiedName().endsWith("ConfigurableMessageSource")).firstOrNull;
-  print(cms?.getConstructors().where((me) => me.getName() == "").firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
-  print(cms?.getConstructors().firstOrNull?.getParameters().map((pa) => pa.getName()));
-  print(cms?.getConstructors().firstOrNull?.getName());
-  print(cms?.getFields().where((pa) => pa.isNullable()).map((pa) => pa.getName()));
+  final cms = Runtime.findClass<ConfigurableMessageSource>();
+  print(cms.getConstructors().where((me) => me.getName() == "").firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
+  print(cms.getConstructors().firstOrNull?.getParameters().map((pa) => pa.getName()));
+  print(cms.getConstructors().firstOrNull?.getName());
+  print(cms.getFields().where((pa) => pa.isNullable()).map((pa) => pa.getName()));
 
   print("************************************** JUST MESSAGE SOURCE CLASS *****************************************");
-  final jms = classes.where((cls) => cls.getName() == "JustMessageSource" && cls.getQualifiedName().endsWith("JustMessageSource")).firstOrNull;
-  print(jms?.getConstructors().where((me) => me.getName() == "").firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
-  print(jms?.getConstructors().firstOrNull?.getParameters().map((pa) => pa.getName()));
-  print(jms?.getConstructors().firstOrNull?.getName());
-  print(jms?.getFields().where((pa) => pa.isNullable()).map((pa) => pa.getName()));
+  final jms = Runtime.findClass<JustMessageSource>();
+  print(jms.getConstructors().where((me) => me.getName() == "").firstOrNull?.getParameters().where((pa) => pa.getIsNullable()).map((pa) => pa.getName()));
+  print(jms.getConstructors().firstOrNull?.getParameters().map((pa) => pa.getName()));
+  print(jms.getConstructors().firstOrNull?.getName());
+  print(jms.getFields().where((pa) => pa.isNullable()).map((pa) => pa.getName()));
 
   print("\nEnvironment ready!\n");
 }

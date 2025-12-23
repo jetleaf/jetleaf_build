@@ -62,7 +62,14 @@
     </section>
     
 <section class="desc markdown">
-  <p>Returns <code>true</code> if this class is marked <code>final</code>.</p>
+  <p>Returns <code>true</code> if this class is declared as <strong>final</strong>.</p>
+<p>Final classes cannot be extended, mixed in, or subclassed.
+This guarantees a closed inheritance hierarchy for the type.</p>
+<h3 id="use-cases">Use cases</h3>
+<ul>
+<li>Security-sensitive types</li>
+<li>Performance-critical or invariant-dependent implementations</li>
+</ul>
 </section>
 
 
@@ -97,7 +104,7 @@
 <footer>
   <span class="no-break">
     jetleaf_build
-      1.0.0
+      1.1.0
   </span>
   
 </footer>
