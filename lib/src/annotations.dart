@@ -226,6 +226,10 @@ class Generic extends ReflectableAnnotation {
 /// }
 /// ```
 @Target({TargetKind.classType})
+@Deprecated(
+  "This annotation is no longer used by the JetLeaf framework and has no effect. "
+  "It will be removed in a future release."
+)
 @Author("Evaristus Adimonyemma")
 class Resolved extends ReflectableAnnotation {
   const Resolved();
