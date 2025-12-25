@@ -361,6 +361,12 @@ abstract final class _MaterialLibrary extends AbstractClassDeclarationSupport im
 
     _cleanupWhenNeeded();
 
+    for (final source in _sourceLibraries) {
+      if (source._classReferences.where((ref) => ref._qualifiedName == qualifiedName).firstOrNull case final reference?) {
+        return _fetchOrGenerate(reference._classMirror, reference._libraryUri, source._sourceCode);
+      }
+    }
+
     final uriString = ReflectionUtils.extractLibraryUri(qualifiedName);
     final className = ReflectionUtils.extractClassName(qualifiedName);
     if (_performLibraryLookup(uriString) case final source?) {
